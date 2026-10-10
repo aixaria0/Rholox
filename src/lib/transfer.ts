@@ -144,7 +144,7 @@ async function readBalanceWithBlock(address: string): Promise<{ balance: number;
   const parsed = JSON.parse(text) as { expr?: Array<{ ExprInt?: { data?: number } | number }>; block?: TransferBlock }
   const wrapped = parsed.expr?.[0]?.ExprInt
   const balance = typeof wrapped === 'number' ? wrapped : wrapped?.data
-  if (typeof balance !== 'number') throw new Error('Unexpected balance response from RChain node.')
+  if (typeof balance !== 'number') throw new Error('Unexpected balance response from connected node.')
   return { balance, block: parsed.block }
 }
 
