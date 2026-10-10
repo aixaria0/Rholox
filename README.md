@@ -9,12 +9,14 @@ The first vertical slice is deliberately small: observe the public RChain testne
 - Live node status from `https://testnet.rhobot.net/api/status`
 - Node capabilities from `/api/v1/capabilities`
 - Latest finalized block and bonded-validator evidence from `/api/last-finalized-block`
-- No private keys, no custody, no mainnet value
+- Session-only browser wallet with local key generation/import
+- Native testnet faucet funding and live REV balance reads
+- No custody, no mainnet value; private keys are never persisted by Rholox
 
 ## Roadmap
 
 1. Network console — live testnet observation
-2. Wallet + faucet — local-only key handling and test REV
+2. Wallet + faucet — session-only key handling, test REV and live balance reads
 3. Rholox Proof — signed Rholang deploy, inclusion, finality receipt
 4. Explorer — block/evidence detail backed by independent verification
 5. `rev.exchange` — only after the deploy/read/finality primitives are proven

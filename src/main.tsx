@@ -1,48 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
-
-const API = 'https://testnet.rhobot.net'
-
-type NodeStatus = {
-  version?: { api?: string; node?: string }
-  address?: string
-  networkId?: string
-  shardId?: string
-  peers?: number
-  nodes?: number
-  minPhloPrice?: number
-  latestBlockNumber?: number
-  autopropose?: boolean
-  proposeOnDeploy?: boolean
-  manualPropose?: boolean
-  adminHttp?: boolean
-  devMode?: boolean
-  finalityStall?: unknown
-  finalityStallEpisodes?: number
-}
-
-type Capabilities = {
-  autopropose?: boolean
-  proposeOnDeploy?: boolean
-  manualPropose?: boolean
-  adminHttp?: boolean
-  devMode?: boolean
-  faucet?: boolean
-  faucetRemaining?: number
-}
-
-type Finalized = {
-  blockInfo?: {
-    blockHash?: string
-    blockNumber?: number
-    shardId?: string
-    sender?: string
-    bonds?: Array<{ validator: string; stake: number }>
-    deployCount?: number
-    timestamp?: number
-  }
-}
+import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
+import {
+  RCHAIN_API,
+  dropsToRev,
+  getJson,
+  readBalance,
+  readDeployStatus,
+  requestFaucet,
+  type Capabilities,
+  type FaucetResponse,
+  type Finalized,
+  type NodeStatus,
+} from './lib/rchain'
 
 function short(value?: string, left = 8, right = 6) {
   if (!value) return '—'
@@ -50,10 +21,8 @@ function short(value?: string, left = 8, right = 6) {
   return `${value.slice(0, left)}…${value.slice(-right)}`
 }
 
-async function getJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${API}${path}`, { cache: 'no-store' })
-  if (!response.ok) throw new Error(`${path} returned ${response.status}`)
-  return response.json() as Promise<T>
+function sleep(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
 }
 
 function Metric({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
@@ -63,6 +32,164 @@ function Metric({ label, value, sub }: { label: string; value: React.ReactNode; 
       <div className="metric-value">{value}</div>
       {sub && <div className="metric-sub">{sub}</div>}
     </div>
+  )
+}
+
+async function copyText(value: string) {
+  await navigator.clipboard.writeText(value)
+}
+
+function WalletPanel() {
+  const [wallet, setWallet] = useState<RholoxWallet | null>(null)
+  const [balance, setBalance] = useState<number | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [faucetResult, setFaucetResult] = useState<FaucetResponse | null>(null)
+  const [showPrivate, setShowPrivate] = useState(false)
+  const [showImport, setShowImport] = useState(false)
+  const [importKey, setImportKey] = useState('')
+
+  async function updateBalance(target = wallet) {
+    if (!target) return
+    try {
+      const next = await readBalance(target.revAddress)
+      setBalance(next)
+      setError(null)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to read wallet balance.')
+    }
+  }
+
+  async function selectWallet(next: RholoxWallet) {
+    setWallet(next)
+    setBalance(null)
+    setFaucetResult(null)
+    setShowPrivate(false)
+    setError(null)
+    try {
+      setBalance(await readBalance(next.revAddress))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to read wallet balance.')
+    }
+  }
+
+  async function generate() {
+    await selectWallet(createWallet())
+  }
+
+  async function importWallet() {
+    try {
+      const next = walletFromPrivateKey(importKey)
+      setImportKey('')
+      setShowImport(false)
+      await selectWallet(next)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Invalid private key.')
+    }
+  }
+
+  async function fund() {
+    if (!wallet || busy) return
+    setBusy(true)
+    setError(null)
+    try {
+      const result = await requestFaucet(wallet.revAddress)
+      setFaucetResult(result)
+      if (result.status === 'failed') {
+        throw new Error(result.deployError || 'Faucet deploy failed.')
+      }
+
+      for (let i = 0; i < 20; i += 1) {
+        await sleep(3000)
+        const status = await readDeployStatus(result.deployId) as Record<string, unknown>
+        if ('ProcessedWithError' in status) throw new Error('Faucet deploy was processed with an error.')
+        if ('ProcessedWithSuccess' in status) break
+      }
+      await updateBalance(wallet)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Faucet request failed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (!wallet) {
+    return (
+      <section className="wallet-card">
+        <div className="wallet-intro">
+          <div>
+            <div className="eyebrow">PHASE 2 · WALLET</div>
+            <h2>Create a testnet identity.</h2>
+            <p>Keys are generated and held only in this browser session. Rholox does not upload or persist your private key.</p>
+          </div>
+          <div className="wallet-actions">
+            <button className="primary" onClick={generate}>CREATE TESTNET WALLET</button>
+            <button className="ghost" onClick={() => setShowImport((value) => !value)}>IMPORT PRIVATE KEY</button>
+          </div>
+        </div>
+        {showImport && (
+          <div className="import-row">
+            <input
+              type="password"
+              value={importKey}
+              onChange={(event) => setImportKey(event.target.value)}
+              placeholder="64-character secp256k1 private key"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <button className="ghost" onClick={importWallet}>IMPORT</button>
+          </div>
+        )}
+        {error && <div className="error">{error}</div>}
+      </section>
+    )
+  }
+
+  return (
+    <section className="wallet-card wallet-live">
+      <div className="panel-head">
+        <div>
+          <div className="eyebrow">RHOLOX WALLET · SESSION ONLY</div>
+          <h2>{balance === null ? 'Reading balance…' : `${dropsToRev(balance)} REV`}</h2>
+        </div>
+        <span className="badge">TESTNET</span>
+      </div>
+
+      <div className="wallet-address">
+        <span>REV ADDRESS</span>
+        <code>{wallet.revAddress}</code>
+        <button className="mini" onClick={() => copyText(wallet.revAddress)}>COPY</button>
+      </div>
+
+      <div className="wallet-grid">
+        <div><span>PUBLIC KEY</span><code title={wallet.publicKey}>{short(wallet.publicKey, 18, 12)}</code></div>
+        <div><span>ETH ADDRESS</span><code>{wallet.ethAddress}</code></div>
+      </div>
+
+      <div className="wallet-controls">
+        <button className="primary" onClick={fund} disabled={busy}>{busy ? 'WAITING FOR CHAIN…' : 'GET 0.3 TEST REV'}</button>
+        <button className="ghost" onClick={() => updateBalance()} disabled={busy}>REFRESH BALANCE</button>
+        <button className="ghost" onClick={() => setShowPrivate((value) => !value)}>{showPrivate ? 'HIDE PRIVATE KEY' : 'SHOW PRIVATE KEY'}</button>
+      </div>
+
+      {showPrivate && (
+        <div className="private-key-box">
+          <strong>PRIVATE KEY — TESTNET</strong>
+          <code>{wallet.privateKey}</code>
+          <button className="mini" onClick={() => copyText(wallet.privateKey)}>COPY</button>
+          <small>Save it before reloading if you want to keep this test wallet. Rholox does not store it.</small>
+        </div>
+      )}
+
+      {faucetResult && (
+        <div className="receipt-line">
+          <span>FAUCET {faucetResult.status.toUpperCase()}</span>
+          <code title={faucetResult.deployId}>{short(faucetResult.deployId, 14, 10)}</code>
+          <span>{dropsToRev(faucetResult.amount)} REV</span>
+        </div>
+      )}
+      {error && <div className="error">{error}</div>}
+    </section>
   )
 }
 
@@ -110,30 +237,18 @@ function App() {
   return (
     <main>
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Rholox home">
-          <span className="mark">ρ</span>
-          <span>RHOLOX</span>
-        </a>
+        <a className="brand" href="/" aria-label="Rholox home"><span className="mark">ρ</span><span>RHOLOX</span></a>
         <div className="top-actions">
           <span className="testnet-pill">RCHAIN TESTNET</span>
-          <button className="ghost" onClick={refresh} disabled={refreshing}>
-            {refreshing ? 'SYNCING…' : 'REFRESH'}
-          </button>
+          <button className="ghost" onClick={refresh} disabled={refreshing}>{refreshing ? 'SYNCING…' : 'REFRESH'}</button>
         </div>
       </header>
 
       <section className="hero">
         <div className="eyebrow">RCHAIN, OBSERVABLE.</div>
         <h1>One surface for the chain<br />and the DApps built on it.</h1>
-        <p>
-          Rholox is starting on the public RChain testnet. This console reads live node, capability,
-          validator and finality data directly from <code>testnet.rhobot.net</code>.
-        </p>
-        <div className="status-line">
-          <span className={`dot ${online ? 'live' : 'dead'}`} />
-          <strong>{online ? 'NETWORK REACHABLE' : 'NETWORK UNREACHABLE'}</strong>
-          <span className="muted">{updatedAt ? `updated ${updatedAt.toLocaleTimeString()}` : 'waiting for first observation'}</span>
-        </div>
+        <p>Rholox is starting on the public RChain testnet. This console reads live node, capability, validator and finality data directly from <code>testnet.rhobot.net</code>.</p>
+        <div className="status-line"><span className={`dot ${online ? 'live' : 'dead'}`} /><strong>{online ? 'NETWORK REACHABLE' : 'NETWORK UNREACHABLE'}</strong><span className="muted">{updatedAt ? `updated ${updatedAt.toLocaleTimeString()}` : 'waiting for first observation'}</span></div>
         {error && <div className="error">{error}</div>}
       </section>
 
@@ -148,13 +263,7 @@ function App() {
 
       <section className="panel-row">
         <article className="panel">
-          <div className="panel-head">
-            <div>
-              <div className="eyebrow">LATEST FINALIZED</div>
-              <h2>Block evidence</h2>
-            </div>
-            <span className="badge">LIVE</span>
-          </div>
+          <div className="panel-head"><div><div className="eyebrow">LATEST FINALIZED</div><h2>Block evidence</h2></div><span className="badge">LIVE</span></div>
           <dl>
             <div><dt>Block</dt><dd>#{finalBlock ?? '—'}</dd></div>
             <div><dt>Hash</dt><dd title={finalized?.blockInfo?.blockHash}>{short(finalized?.blockInfo?.blockHash, 12, 10)}</dd></div>
@@ -162,15 +271,8 @@ function App() {
             <div><dt>Deploys</dt><dd>{finalized?.blockInfo?.deployCount ?? '—'}</dd></div>
           </dl>
         </article>
-
         <article className="panel">
-          <div className="panel-head">
-            <div>
-              <div className="eyebrow">CAPABILITIES</div>
-              <h2>DApp readiness</h2>
-            </div>
-            <span className="badge">TESTNET</span>
-          </div>
+          <div className="panel-head"><div><div className="eyebrow">CAPABILITIES</div><h2>DApp readiness</h2></div><span className="badge">TESTNET</span></div>
           <dl>
             <div><dt>Propose on deploy</dt><dd>{capabilities?.proposeOnDeploy ? 'YES' : 'NO'}</dd></div>
             <div><dt>Faucet</dt><dd>{capabilities?.faucet ? 'AVAILABLE' : 'UNAVAILABLE'}</dd></div>
@@ -180,29 +282,21 @@ function App() {
         </article>
       </section>
 
+      <WalletPanel />
+
       <section className="roadmap">
-        <div>
-          <div className="eyebrow">FIRST VERTICAL SLICE</div>
-          <h2>From observation to signed deploy.</h2>
-        </div>
+        <div><div className="eyebrow">FIRST VERTICAL SLICE</div><h2>From observation to signed deploy.</h2></div>
         <ol>
           <li className="done"><span>01</span><div><strong>Network console</strong><small>Live status, capabilities, validators and finality.</small></div></li>
-          <li><span>02</span><div><strong>Wallet + test REV</strong><small>Local keys, faucet funding and balance reads.</small></div></li>
+          <li className="active"><span>02</span><div><strong>Wallet + test REV</strong><small>Session-only keys, faucet funding and balance reads.</small></div></li>
           <li><span>03</span><div><strong>Rholox Proof</strong><small>Signed Rholang deploy → inclusion → finalized receipt.</small></div></li>
           <li><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
         </ol>
       </section>
 
-      <footer>
-        <span>Rholox v0.1 · testnet only · no monetary value</span>
-        <a href="https://testnet.rhobot.net/api/status" target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a>
-      </footer>
+      <footer><span>Rholox v0.2 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
     </main>
   )
 }
 
-createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)
