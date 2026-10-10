@@ -123,7 +123,7 @@ export async function readBalance(revAddress: string): Promise<number> {
   const first = parsed.expr?.[0]
   const wrapped = first?.ExprInt
   const balance = typeof wrapped === 'number' ? wrapped : wrapped?.data
-  if (typeof balance !== 'number') throw new Error('Unexpected balance response from RChain node.')
+  if (typeof balance !== 'number') throw new Error('Unexpected balance response from connected node.')
   return balance
 }
 

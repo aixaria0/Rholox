@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
+import rholoxLogo from './assets/rholox-logo.svg'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
 import { sendRev, type TransferReceipt } from './lib/transfer'
@@ -43,6 +44,43 @@ function Metric({ label, value, sub }: { label: string; value: React.ReactNode; 
 
 async function copyText(value: string) {
   await navigator.clipboard.writeText(value)
+}
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function ModuleCard({ index, title, detail, target, next = false }: { index: string; title: string; detail: string; target?: string; next?: boolean }) {
+  const body = (
+    <>
+      <span className="module-index">{index}</span>
+      <span className="module-copy"><strong>{title}</strong><small>{detail}</small></span>
+      <span className="module-arrow" aria-hidden="true">{next ? 'NEXT' : '↗'}</span>
+    </>
+  )
+  return target
+    ? <button className="module-card" type="button" onClick={() => scrollToSection(target)}>{body}</button>
+    : <div className="module-card module-card--next" aria-label={`${title}, coming next`}>{body}</div>
+}
+
+function TopologyMark() {
+  return (
+    <div className="topology-mark" aria-hidden="true">
+      <svg viewBox="0 0 680 300" focusable="false">
+        <g className="topology-lines">
+          <path d="M12 224 C112 180 168 246 256 196 S420 170 668 224" />
+          <path d="M18 252 C118 210 184 268 274 226 S440 204 662 248" />
+          <path d="M72 206 L142 166 L228 208 L310 142 L400 198 L486 150 L602 204" />
+          <path d="M142 166 L174 112 M228 208 L258 154 M310 142 L348 96 M400 198 L430 132 M486 150 L534 96" />
+        </g>
+        <g className="topology-nodes">
+          {[['72','206'],['142','166'],['174','112'],['228','208'],['258','154'],['310','142'],['348','96'],['400','198'],['430','132'],['486','150'],['534','96'],['602','204']].map(([cx, cy]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="4" />)}
+        </g>
+      </svg>
+      <div className="topology-orbit topology-orbit--one" />
+      <div className="topology-orbit topology-orbit--two" />
+    </div>
+  )
 }
 
 function WalletPanel() {
@@ -121,10 +159,10 @@ function WalletPanel() {
 
   if (!wallet) {
     return (
-      <section className="wallet-card">
+      <section className="wallet-card" id="wallet">
         <div className="wallet-intro">
           <div>
-            <div className="eyebrow">PHASE 2 · WALLET</div>
+            <div className="eyebrow">SESSION WALLET</div>
             <h2>Create a testnet identity.</h2>
             <p>Keys are generated and held only in this browser session. Rholox does not upload or persist your private key.</p>
           </div>
@@ -152,14 +190,14 @@ function WalletPanel() {
   }
 
   return (
-    <>
-    <section className="wallet-card wallet-live">
+    <div className="wallet-workspace">
+    <section className="wallet-card wallet-live" id="wallet">
       <div className="panel-head">
         <div>
-          <div className="eyebrow">RHOLOX WALLET · SESSION ONLY</div>
+          <div className="eyebrow">SESSION WALLET · LOCAL KEY</div>
           <h2>{balance === null ? 'Reading balance…' : `${dropsToRev(balance)} REV`}</h2>
         </div>
-        <span className="badge">TESTNET</span>
+        <span className="badge">PUBLIC TESTNET</span>
       </div>
 
       <div className="wallet-address">
@@ -197,9 +235,11 @@ function WalletPanel() {
       )}
       {error && <div className="error">{error}</div>}
     </section>
-    <ProofPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
-    <TransferPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
-    </>
+    <div className="signed-actions-grid">
+      <ProofPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
+      <TransferPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
+    </div>
+    </div>
   )
 }
 
@@ -227,10 +267,10 @@ function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; b
   }
 
   return (
-    <section className="transfer-card">
+    <section className="transfer-card" id="transfer">
       <div className="panel-head">
-        <div><div className="eyebrow">PHASE 5 · REV TRANSFER</div><h2>Send test REV with a signed deploy.</h2></div>
-        <span className="badge">TESTNET</span>
+        <div><div className="eyebrow">REV TRANSFER</div><h2>Send test REV with a signed deploy.</h2></div>
+        <span className="badge">PUBLIC TESTNET</span>
       </div>
       <p className="proof-copy">The transfer is signed locally with this session key. Rholox waits for inclusion, then confirms the recipient balance from finalized state.</p>
       <div className="transfer-grid">
@@ -283,12 +323,12 @@ function ProofPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; bala
   }
 
   return (
-    <section className="proof-card">
+    <section className="proof-card" id="proof">
       <div className="panel-head">
-        <div><div className="eyebrow">PHASE 3 · RHOLOX PROOF</div><h2>Anchor a SHA-256 proof on RChain.</h2></div>
+        <div><div className="eyebrow">PROOF</div><h2>Anchor a SHA-256 proof on the public testnet.</h2></div>
         <span className="badge">SIGNED DEPLOY</span>
       </div>
-      <p className="proof-copy">The payload stays in your browser. Rholox hashes it locally, signs a Rholang deploy with this session key, then waits for block inclusion and checks whether the proof is visible from finalized state.</p>
+      <p className="proof-copy">The payload stays in your browser. Rholox hashes it locally, signs a Rholang deploy with this session key, then waits for inclusion and verifies the proof against finalized state.</p>
       <textarea value={payload} onChange={(event) => setPayload(event.target.value)} maxLength={500} spellCheck={false} />
       <div className="wallet-controls">
         <button className="primary" onClick={anchor} disabled={busy || !payload.trim()}>{busy ? 'SIGNING / VERIFYING…' : 'SIGN + ANCHOR PROOF'}</button>
@@ -349,7 +389,7 @@ function ExplorerPanel() {
     try {
       if (/^[0-9a-fA-F]{64}$/.test(value)) {
         setBlock(await getBlockByHash(value))
-      } else if (/^\\d+$/.test(value)) {
+      } else if (/^\d+$/.test(value)) {
         const match = recent.find((item) => item.blockNumber === Number(value))
         if (!match) throw new Error('That height is not in the recent block window. Paste a block hash for older blocks.')
         setBlock(await getBlockByHash(match.blockHash))
@@ -370,9 +410,9 @@ function ExplorerPanel() {
       : null
 
   return (
-    <section className="explorer-card">
+    <section className="explorer-card" id="explorer">
       <div className="panel-head">
-        <div><div className="eyebrow">PHASE 4 · EXPLORER</div><h2>Inspect blocks and deploy evidence.</h2></div>
+        <div><div className="eyebrow">EXPLORER</div><h2>Inspect blocks and deploy evidence.</h2></div>
         <button className="ghost" onClick={loadRecent}>REFRESH BLOCKS</button>
       </div>
       <div className="explorer-search">
@@ -444,7 +484,7 @@ function App() {
       setUpdatedAt(new Date())
       setError(null)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Unable to reach the RChain testnet')
+      setError(cause instanceof Error ? cause.message : 'Unable to reach the public testnet')
     } finally {
       setRefreshing(false)
     }
@@ -464,69 +504,115 @@ function App() {
   const online = Boolean(status && !error)
 
   return (
-    <main>
+    <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Rholox home"><span className="mark">ρ</span><span>RHOLOX</span></a>
+        <button className="brand" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Rholox home">
+          <img src={rholoxLogo} alt="" />
+          <span>RHOLOX</span>
+        </button>
+        <nav className="primary-nav" aria-label="Primary navigation">
+          <button type="button" onClick={() => scrollToSection('network')}>Network</button>
+          <button type="button" onClick={() => scrollToSection('wallet')}>Wallet</button>
+          <button type="button" onClick={() => scrollToSection('proof')}>Proof</button>
+          <button type="button" onClick={() => scrollToSection('explorer')}>Explorer</button>
+          <button type="button" onClick={() => scrollToSection('transfer')}>Transfer</button>
+        </nav>
         <div className="top-actions">
-          <span className="testnet-pill">RCHAIN TESTNET</span>
-          <button className="ghost" onClick={refresh} disabled={refreshing}>{refreshing ? 'SYNCING…' : 'REFRESH'}</button>
+          <span className={`environment-pill ${online ? 'environment-pill--online' : 'environment-pill--offline'}`}><span className="dot" />PUBLIC TESTNET</span>
+          <button className="ghost compact" onClick={refresh} disabled={refreshing}>{refreshing ? 'SYNCING…' : 'REFRESH'}</button>
         </div>
       </header>
 
-      <section className="hero">
-        <div className="eyebrow">RCHAIN, OBSERVABLE.</div>
-        <h1>One surface for the chain<br />and the DApps built on it.</h1>
-        <p>Rholox is starting on the public RChain testnet. This console reads live node, capability, validator and finality data directly from <code>testnet.rhobot.net</code>.</p>
-        <div className="status-line"><span className={`dot ${online ? 'live' : 'dead'}`} /><strong>{online ? 'NETWORK REACHABLE' : 'NETWORK UNREACHABLE'}</strong><span className="muted">{updatedAt ? `updated ${updatedAt.toLocaleTimeString()}` : 'waiting for first observation'}</span></div>
-        {error && <div className="error">{error}</div>}
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-copy">
+          <div className="eyebrow">EVIDENCE-FIRST TESTNET INTERFACE</div>
+          <h1 id="hero-title">One surface for <span>consensus</span>, <span>provenance</span>, and testnet execution.</h1>
+          <p>Observe live node state, work with session-only keys, obtain test REV, anchor proofs, inspect blocks, and verify signed transfers from one operational interface.</p>
+          <div className="hero-actions">
+            <button className="primary" type="button" onClick={() => scrollToSection('wallet')}>OPEN WALLET <span aria-hidden="true">→</span></button>
+            <button className="secondary" type="button" onClick={() => scrollToSection('network')}>INSPECT NETWORK</button>
+          </div>
+          <div className="hero-state" role="status">
+            <span className={`dot ${online ? 'live' : 'dead'}`} />
+            <strong>{online ? 'NODE REACHABLE' : 'NODE UNREACHABLE'}</strong>
+            <span>{updatedAt ? `observed ${updatedAt.toLocaleTimeString()}` : 'awaiting first observation'}</span>
+          </div>
+          {error && <div className="error">{error}</div>}
+        </div>
+        <div className="hero-visual">
+          <TopologyMark />
+          <div className="logo-stage"><img src={rholoxLogo} alt="Rholox" /></div>
+          <div className="hero-keywords" aria-hidden="true"><span>CONSENSUS</span><span>PROVENANCE</span><span>HORIZONTAL</span><span>FRACTAL</span></div>
+        </div>
       </section>
 
-      <section className="grid">
-        <Metric label="NETWORK" value={status?.networkId ?? '—'} sub={status?.version?.node} />
-        <Metric label="SHARD" value={status?.shardId ?? finalized?.blockInfo?.shardId ?? '—'} />
-        <Metric label="CHAIN HEIGHT" value={latest ?? '—'} sub="latest observed block" />
-        <Metric label="FINALIZED" value={finalBlock ?? '—'} sub={finalityGap === null ? undefined : `${finalityGap} block gap`} />
-        <Metric label="BONDED VALIDATORS" value={bonds.length || '—'} sub={bonds.length ? `${totalStake} total observed stake` : undefined} />
-        <Metric label="CONNECTED PEERS" value={status?.peers ?? '—'} sub={status?.nodes !== undefined ? `${status.nodes} reported nodes` : undefined} />
+      <section className="module-grid" aria-label="Rholox modules">
+        <ModuleCard index="01" title="Network Console" detail="Live node, shard, height, finality" target="network" />
+        <ModuleCard index="02" title="Wallet + Test REV" detail="Session keys, faucet, balance" target="wallet" />
+        <ModuleCard index="03" title="Proof" detail="SHA-256 anchor + finalized receipt" target="proof" />
+        <ModuleCard index="04" title="Explorer" detail="Blocks, deploys, evidence" target="explorer" />
+        <ModuleCard index="05" title="REV Transfer" detail="Signed test transfers" target="transfer" />
+        <ModuleCard index="06" title="Asset Lab" detail="Next phase" next />
       </section>
 
-      <section className="panel-row">
-        <article className="panel">
-          <div className="panel-head"><div><div className="eyebrow">LATEST FINALIZED</div><h2>Block evidence</h2></div><span className="badge">LIVE</span></div>
-          <dl>
-            <div><dt>Block</dt><dd>#{finalBlock ?? '—'}</dd></div>
-            <div><dt>Hash</dt><dd title={finalized?.blockInfo?.blockHash}>{short(finalized?.blockInfo?.blockHash, 12, 10)}</dd></div>
-            <div><dt>Proposer</dt><dd title={finalized?.blockInfo?.sender}>{short(finalized?.blockInfo?.sender, 12, 8)}</dd></div>
-            <div><dt>Deploys</dt><dd>{finalized?.blockInfo?.deployCount ?? '—'}</dd></div>
-          </dl>
-        </article>
-        <article className="panel">
-          <div className="panel-head"><div><div className="eyebrow">CAPABILITIES</div><h2>DApp readiness</h2></div><span className="badge">TESTNET</span></div>
-          <dl>
-            <div><dt>Propose on deploy</dt><dd>{capabilities?.proposeOnDeploy ? 'YES' : 'NO'}</dd></div>
-            <div><dt>Faucet</dt><dd>{capabilities?.faucet ? 'AVAILABLE' : 'UNAVAILABLE'}</dd></div>
-            <div><dt>Dev mode</dt><dd>{capabilities?.devMode ? 'ON' : 'OFF'}</dd></div>
-            <div><dt>Admin exposed</dt><dd>{capabilities?.adminHttp ? 'YES' : 'NO'}</dd></div>
-          </dl>
-        </article>
+      <section className="network-surface" id="network">
+        <div className="section-heading">
+          <div><div className="eyebrow">LIVE OBSERVATION</div><h2>Network state</h2></div>
+          <span className="observation-note">No synthetic metrics · values come from the connected node</span>
+        </div>
+        <div className="grid status-grid">
+          <Metric label="NETWORK" value={status?.networkId ?? '—'} sub={status?.version?.node} />
+          <Metric label="SHARD" value={status?.shardId ?? finalized?.blockInfo?.shardId ?? '—'} />
+          <Metric label="LATEST BLOCK" value={latest ?? '—'} sub="latest observed block" />
+          <Metric label="FINALIZED BLOCK" value={finalBlock ?? '—'} sub={finalityGap === null ? undefined : `${finalityGap} block gap`} />
+          <Metric label="VALIDATORS" value={bonds.length || '—'} sub={bonds.length ? `${totalStake} observed stake` : undefined} />
+          <Metric label="PEERS" value={status?.peers ?? '—'} sub={status?.nodes !== undefined ? `${status.nodes} reported nodes` : undefined} />
+        </div>
+
+        <div className="panel-row evidence-row">
+          <article className="panel evidence-panel">
+            <div className="panel-head"><div><div className="eyebrow">FINALIZED EVIDENCE</div><h2>Latest finalized block</h2></div><span className="badge badge--verified">OBSERVED</span></div>
+            <dl>
+              <div><dt>Block</dt><dd>#{finalBlock ?? '—'}</dd></div>
+              <div><dt>Hash</dt><dd title={finalized?.blockInfo?.blockHash}>{short(finalized?.blockInfo?.blockHash, 12, 10)}</dd></div>
+              <div><dt>Proposer</dt><dd title={finalized?.blockInfo?.sender}>{short(finalized?.blockInfo?.sender, 12, 8)}</dd></div>
+              <div><dt>Deploys</dt><dd>{finalized?.blockInfo?.deployCount ?? '—'}</dd></div>
+            </dl>
+          </article>
+          <article className="panel evidence-panel">
+            <div className="panel-head"><div><div className="eyebrow">NODE CAPABILITIES</div><h2>Execution surface</h2></div><span className="badge">PUBLIC TESTNET</span></div>
+            <dl>
+              <div><dt>Propose on deploy</dt><dd>{capabilities?.proposeOnDeploy ? 'YES' : 'NO'}</dd></div>
+              <div><dt>Faucet</dt><dd>{capabilities?.faucet ? 'AVAILABLE' : 'UNAVAILABLE'}</dd></div>
+              <div><dt>Dev mode</dt><dd>{capabilities?.devMode ? 'ON' : 'OFF'}</dd></div>
+              <div><dt>Admin exposed</dt><dd>{capabilities?.adminHttp ? 'YES' : 'NO'}</dd></div>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section className="concept-strip" aria-label="Design principles">
+        <article><div className="concept-glyph concept-glyph--consensus" aria-hidden="true"><i /><i /><i /><i /></div><div><strong>Consensus</strong><p>Observe validator, justification, and finality evidence without hiding the underlying block structure.</p></div></article>
+        <article><div className="concept-glyph concept-glyph--provenance" aria-hidden="true"><i /><i /><i /></div><div><strong>Provenance</strong><p>Follow a signed action from submission to inclusion and finalized state.</p></div></article>
+        <article><div className="concept-glyph concept-glyph--fractal" aria-hidden="true"><i /><i /><i /><i /><i /></div><div><strong>Fractal structure</strong><p>Repeated node-and-edge motifs keep dense, horizontal evidence navigable.</p></div></article>
       </section>
 
       <WalletPanel />
-
       <ExplorerPanel />
 
-      <section className="roadmap">
-        <div><div className="eyebrow">FIRST VERTICAL SLICE</div><h2>From observation to signed deploy.</h2></div>
+      <section className="roadmap" id="asset-lab">
+        <div><div className="eyebrow">VERIFIED SURFACE</div><h2>Implemented before expanded.</h2><p>Each capability stays explicit about what is observed, signed, included, and finalized.</p></div>
         <ol>
           <li className="done"><span>01</span><div><strong>Network console</strong><small>Live status, capabilities, validators and finality.</small></div></li>
           <li className="done"><span>02</span><div><strong>Wallet + test REV</strong><small>Session-only keys, faucet funding and balance reads.</small></div></li>
-          <li className="done"><span>03</span><div><strong>Rholox Proof</strong><small>Signed Rholang deploy → inclusion → finalized receipt.</small></div></li>
+          <li className="done"><span>03</span><div><strong>Rholox Proof</strong><small>Signed deploy → inclusion → finalized receipt.</small></div></li>
           <li className="done"><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
-          <li className="active"><span>05</span><div><strong>REV transfer</strong><small>Signed value transfer → inclusion → finalized balance verification.</small></div></li>
+          <li className="done"><span>05</span><div><strong>REV transfer</strong><small>Signed value transfer → inclusion → finalized balance verification.</small></div></li>
+          <li className="active"><span>06</span><div><strong>Asset Lab</strong><small>Next phase; not presented as implemented.</small></div></li>
         </ol>
       </section>
 
-      <footer><span>Rholox v0.5 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
+      <footer><span>Rholox v0.6 · public testnet · test value only</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
     </main>
   )
 }
