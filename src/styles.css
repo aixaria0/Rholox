@@ -108,3 +108,15 @@ li.active { background: linear-gradient(90deg, rgba(67,98,151,.10), transparent)
   .private-key-box { grid-template-columns: 1fr auto; }
   .private-key-box strong { grid-column: 1 / -1; }
 }
+
+.proof-card { margin-top: 16px; padding: 28px; border: 1px solid #202738; border-radius: 16px; background: rgba(10,14,23,.82); }
+.proof-copy { max-width: 820px; color: #7f8ca1; line-height: 1.65; font-size: 14px; }
+.proof-card textarea { width: 100%; min-height: 118px; margin-top: 18px; resize: vertical; border: 1px solid #2a3448; border-radius: 12px; background: #080d17; color: #eef4ff; padding: 16px; font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; outline: none; }
+.proof-card textarea:focus { border-color: #5f7fb2; box-shadow: 0 0 0 3px rgba(95,127,178,.12); }
+.proof-receipt { margin-top: 20px; border-top: 1px solid #202738; }
+.proof-receipt > div { display: grid; grid-template-columns: 110px 1fr; gap: 18px; padding: 13px 0; border-bottom: 1px solid #202738; align-items: start; }
+.proof-receipt span { color: #68758b; font-size: 11px; letter-spacing: .12em; }
+.proof-receipt code { overflow-wrap: anywhere; color: #c7d8f4; }
+.receipt-good { color: #73e4a5; font-size: 12px; letter-spacing: .08em; }
+.receipt-warn { color: #f1c97a; font-size: 12px; letter-spacing: .08em; }
+@media (max-width: 760px) { .proof-card { padding: 20px; } .proof-receipt > div { grid-template-columns: 1fr; gap: 6px; } }

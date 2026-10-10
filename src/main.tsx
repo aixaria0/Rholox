@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
+import { createProof, type ProofReceipt } from './lib/proof'
 import {
   RCHAIN_API,
   dropsToRev,
@@ -146,6 +147,7 @@ function WalletPanel() {
   }
 
   return (
+    <>
     <section className="wallet-card wallet-live">
       <div className="panel-head">
         <div>
@@ -186,6 +188,58 @@ function WalletPanel() {
           <span>FAUCET {faucetResult.status.toUpperCase()}</span>
           <code title={faucetResult.deployId}>{short(faucetResult.deployId, 14, 10)}</code>
           <span>{dropsToRev(faucetResult.amount)} REV</span>
+        </div>
+      )}
+      {error && <div className="error">{error}</div>}
+    </section>
+    <ProofPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
+    </>
+  )
+}
+
+function ProofPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; balance: number | null; onBalance: () => Promise<void> }) {
+  const [payload, setPayload] = useState('Rholox first proof')
+  const [receipt, setReceipt] = useState<ProofReceipt | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function anchor() {
+    if (busy) return
+    if (balance !== null && balance <= 0) {
+      setError('Fund this testnet wallet before signing a proof.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    setReceipt(null)
+    try {
+      const next = await createProof(wallet, payload)
+      setReceipt(next)
+      await onBalance()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to create Rholox proof.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="proof-card">
+      <div className="panel-head">
+        <div><div className="eyebrow">PHASE 3 · RHOLOX PROOF</div><h2>Anchor a SHA-256 proof on RChain.</h2></div>
+        <span className="badge">SIGNED DEPLOY</span>
+      </div>
+      <p className="proof-copy">The payload stays in your browser. Rholox hashes it locally, signs a Rholang deploy with this session key, then waits for block inclusion and checks whether the proof is visible from finalized state.</p>
+      <textarea value={payload} onChange={(event) => setPayload(event.target.value)} maxLength={500} spellCheck={false} />
+      <div className="wallet-controls">
+        <button className="primary" onClick={anchor} disabled={busy || !payload.trim()}>{busy ? 'SIGNING / VERIFYING…' : 'SIGN + ANCHOR PROOF'}</button>
+      </div>
+      {receipt && (
+        <div className="proof-receipt">
+          <div><span>SHA-256</span><code>{receipt.sha256}</code></div>
+          <div><span>DEPLOY</span><code>{receipt.deployId}</code></div>
+          <div><span>INCLUSION</span><code>#{receipt.inclusionBlock.blockNumber} · {short(receipt.inclusionBlock.blockHash, 14, 10)}</code></div>
+          <div><span>FINALITY</span><strong className={receipt.finalized ? 'receipt-good' : 'receipt-warn'}>{receipt.finalized ? `VERIFIED @ #${receipt.finalizedBlock?.blockNumber}` : 'PENDING — inclusion verified'}</strong></div>
         </div>
       )}
       {error && <div className="error">{error}</div>}
@@ -288,13 +342,13 @@ function App() {
         <div><div className="eyebrow">FIRST VERTICAL SLICE</div><h2>From observation to signed deploy.</h2></div>
         <ol>
           <li className="done"><span>01</span><div><strong>Network console</strong><small>Live status, capabilities, validators and finality.</small></div></li>
-          <li className="active"><span>02</span><div><strong>Wallet + test REV</strong><small>Session-only keys, faucet funding and balance reads.</small></div></li>
-          <li><span>03</span><div><strong>Rholox Proof</strong><small>Signed Rholang deploy → inclusion → finalized receipt.</small></div></li>
+          <li className="done"><span>02</span><div><strong>Wallet + test REV</strong><small>Session-only keys, faucet funding and balance reads.</small></div></li>
+          <li className="active"><span>03</span><div><strong>Rholox Proof</strong><small>Signed Rholang deploy → inclusion → finalized receipt.</small></div></li>
           <li><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
         </ol>
       </section>
 
-      <footer><span>Rholox v0.2 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
+      <footer><span>Rholox v0.3 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
     </main>
   )
 }
