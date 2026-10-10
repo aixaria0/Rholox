@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './styles.css'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
+import { sendRev, type TransferReceipt } from './lib/transfer'
 import {
   RCHAIN_API,
   dropsToRev,
@@ -197,7 +198,61 @@ function WalletPanel() {
       {error && <div className="error">{error}</div>}
     </section>
     <ProofPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
+    <TransferPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
     </>
+  )
+}
+
+function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; balance: number | null; onBalance: () => Promise<void> }) {
+  const [recipient, setRecipient] = useState('')
+  const [amount, setAmount] = useState('0.01')
+  const [receipt, setReceipt] = useState<TransferReceipt | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function transfer() {
+    if (busy) return
+    setBusy(true)
+    setError(null)
+    setReceipt(null)
+    try {
+      const next = await sendRev(wallet, recipient, amount)
+      setReceipt(next)
+      await onBalance()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to send REV.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="transfer-card">
+      <div className="panel-head">
+        <div><div className="eyebrow">PHASE 5 · REV TRANSFER</div><h2>Send test REV with a signed deploy.</h2></div>
+        <span className="badge">TESTNET</span>
+      </div>
+      <p className="proof-copy">The transfer is signed locally with this session key. Rholox waits for inclusion, then confirms the recipient balance from finalized state.</p>
+      <div className="transfer-grid">
+        <input value={recipient} onChange={(event) => setRecipient(event.target.value)} placeholder="Recipient REV address" spellCheck={false} autoComplete="off" />
+        <input value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Amount in REV" inputMode="decimal" />
+      </div>
+      <div className="wallet-controls">
+        <button className="primary" onClick={transfer} disabled={busy || !recipient.trim() || !amount.trim()}>{busy ? 'SIGNING / VERIFYING…' : 'SEND TEST REV'}</button>
+        <span className="muted">Available: {balance === null ? '—' : `${dropsToRev(balance)} REV`}</span>
+      </div>
+      {receipt && (
+        <div className="proof-receipt">
+          <div><span>AMOUNT</span><strong>{receipt.amountRev} REV</strong></div>
+          <div><span>TO</span><code>{receipt.to}</code></div>
+          <div><span>DEPLOY</span><code>{receipt.deployId}</code></div>
+          <div><span>INCLUSION</span><code>#{receipt.inclusionBlock.blockNumber} · {short(receipt.inclusionBlock.blockHash, 14, 10)}</code></div>
+          <div><span>FINALITY</span><strong className={receipt.finalized ? 'receipt-good' : 'receipt-warn'}>{receipt.finalized ? `VERIFIED @ #${receipt.finalizedBlock?.blockNumber}` : 'PENDING — inclusion verified'}</strong></div>
+          <div><span>RECIPIENT</span><code>{receipt.recipientBalanceAfter === undefined ? '—' : `${dropsToRev(receipt.recipientBalanceAfter)} REV`}</code></div>
+        </div>
+      )}
+      {error && <div className="error">{error}</div>}
+    </section>
   )
 }
 
@@ -466,11 +521,12 @@ function App() {
           <li className="done"><span>01</span><div><strong>Network console</strong><small>Live status, capabilities, validators and finality.</small></div></li>
           <li className="done"><span>02</span><div><strong>Wallet + test REV</strong><small>Session-only keys, faucet funding and balance reads.</small></div></li>
           <li className="done"><span>03</span><div><strong>Rholox Proof</strong><small>Signed Rholang deploy → inclusion → finalized receipt.</small></div></li>
-          <li className="active"><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
+          <li className="done"><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
+          <li className="active"><span>05</span><div><strong>REV transfer</strong><small>Signed value transfer → inclusion → finalized balance verification.</small></div></li>
         </ol>
       </section>
 
-      <footer><span>Rholox v0.4 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
+      <footer><span>Rholox v0.5 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
     </main>
   )
 }
