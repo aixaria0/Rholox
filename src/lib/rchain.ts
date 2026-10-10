@@ -41,6 +41,43 @@ export type Finalized = {
   }
 }
 
+
+export type LightBlock = {
+  version: number
+  shardId: string
+  blockHash: string
+  blockNumber: number
+  sender: string
+  seqNum: number
+  preStateHash: string
+  postStateHash: string
+  justifications: string[]
+  bonds: Array<{ validator: string; stake: number }>
+  sigAlgorithm: string
+  sig: string
+  blockSize: string
+  deployCount: number
+  rejectedDeploys: string[]
+  timestamp: number
+}
+
+export type BlockDetails = {
+  blockInfo: LightBlock
+  deploys: Array<{
+    deployer: string
+    term: string
+    timestamp: number
+    sig: string
+    sigAlgorithm: string
+    phloPrice: number
+    phloLimit: number
+    validAfterBlockNumber: number
+    cost: number
+    errored: boolean
+    systemDeployError: string
+  }>
+}
+
 export type FaucetResponse = {
   deployId: string
   amount: number
@@ -96,6 +133,14 @@ export async function requestFaucet(revAddress: string): Promise<FaucetResponse>
 
 export async function readDeployStatus(deployId: string): Promise<unknown> {
   return getJson<unknown>(`/api/v1/deploy-status/${deployId}`)
+}
+
+export async function getRecentBlocks(): Promise<LightBlock[]> {
+  return getJson<LightBlock[]>('/api/v1/blocks')
+}
+
+export async function getBlockByHash(hash: string): Promise<BlockDetails> {
+  return getJson<BlockDetails>(`/api/v1/block/${encodeURIComponent(hash)}`)
 }
 
 export function dropsToRev(drops: number): string {

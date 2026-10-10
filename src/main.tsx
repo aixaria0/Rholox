@@ -7,6 +7,8 @@ import {
   RCHAIN_API,
   dropsToRev,
   getJson,
+  getRecentBlocks,
+  getBlockByHash,
   readBalance,
   readDeployStatus,
   requestFaucet,
@@ -14,6 +16,8 @@ import {
   type FaucetResponse,
   type Finalized,
   type NodeStatus,
+  type LightBlock,
+  type BlockDetails,
 } from './lib/rchain'
 
 function short(value?: string, left = 8, right = 6) {
@@ -247,6 +251,122 @@ function ProofPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; bala
   )
 }
 
+function ExplorerPanel() {
+  const [recent, setRecent] = useState<LightBlock[]>([])
+  const [query, setQuery] = useState('')
+  const [block, setBlock] = useState<BlockDetails | null>(null)
+  const [deployStatus, setDeployStatus] = useState<Record<string, unknown> | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadRecent() {
+    try {
+      setRecent(await getRecentBlocks())
+      setError(null)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to read recent blocks.')
+    }
+  }
+
+  useEffect(() => { void loadRecent() }, [])
+
+  async function openBlock(hash: string) {
+    setBusy(true)
+    setError(null)
+    setDeployStatus(null)
+    try {
+      setBlock(await getBlockByHash(hash))
+    } catch (cause) {
+      setBlock(null)
+      setError(cause instanceof Error ? cause.message : 'Unable to read block.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function lookup() {
+    const value = query.trim()
+    if (!value || busy) return
+    setBusy(true)
+    setError(null)
+    setBlock(null)
+    setDeployStatus(null)
+    try {
+      if (/^[0-9a-fA-F]{64}$/.test(value)) {
+        setBlock(await getBlockByHash(value))
+      } else if (/^\\d+$/.test(value)) {
+        const match = recent.find((item) => item.blockNumber === Number(value))
+        if (!match) throw new Error('That height is not in the recent block window. Paste a block hash for older blocks.')
+        setBlock(await getBlockByHash(match.blockHash))
+      } else {
+        setDeployStatus(await readDeployStatus(value) as Record<string, unknown>)
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Explorer lookup failed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const deployBlock = deployStatus && 'ProcessedWithSuccess' in deployStatus
+    ? (deployStatus.ProcessedWithSuccess as { block?: LightBlock }).block
+    : deployStatus && 'ProcessedWithError' in deployStatus
+      ? (deployStatus.ProcessedWithError as { block?: LightBlock }).block
+      : null
+
+  return (
+    <section className="explorer-card">
+      <div className="panel-head">
+        <div><div className="eyebrow">PHASE 4 · EXPLORER</div><h2>Inspect blocks and deploy evidence.</h2></div>
+        <button className="ghost" onClick={loadRecent}>REFRESH BLOCKS</button>
+      </div>
+      <div className="explorer-search">
+        <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void lookup() }} placeholder="Block hash, recent height, or deploy ID" spellCheck={false} />
+        <button className="primary" onClick={lookup} disabled={busy || !query.trim()}>{busy ? 'LOOKING…' : 'LOOK UP'}</button>
+      </div>
+
+      <div className="recent-blocks">
+        {recent.map((item) => (
+          <button key={item.blockHash} className="block-row" onClick={() => openBlock(item.blockHash)}>
+            <span className="block-height">#{item.blockNumber}</span>
+            <code>{short(item.blockHash, 14, 10)}</code>
+            <span>{item.deployCount} deploy{item.deployCount === 1 ? '' : 's'}</span>
+            <span>{item.rejectedDeploys.length} rejected</span>
+          </button>
+        ))}
+      </div>
+
+      {block && (
+        <div className="explorer-detail">
+          <div><span>BLOCK</span><strong>#{block.blockInfo.blockNumber}</strong></div>
+          <div><span>HASH</span><code>{block.blockInfo.blockHash}</code></div>
+          <div><span>PROPOSER</span><code>{block.blockInfo.sender}</code></div>
+          <div><span>STATE</span><code>{short(block.blockInfo.preStateHash, 14, 10)} → {short(block.blockInfo.postStateHash, 14, 10)}</code></div>
+          <div><span>JUSTIFICATIONS</span><strong>{block.blockInfo.justifications.length}</strong></div>
+          <div><span>BONDS</span><strong>{block.blockInfo.bonds.length}</strong></div>
+          <div><span>DEPLOYS</span><strong>{block.deploys.length}</strong></div>
+          <div><span>REJECTED</span><strong>{block.blockInfo.rejectedDeploys.length}</strong></div>
+          {block.deploys.map((deploy) => (
+            <div className="deploy-detail" key={deploy.sig}>
+              <span>DEPLOY {short(deploy.sig, 12, 10)}</span>
+              <code>{short(deploy.deployer, 16, 12)} · cost {deploy.cost} · {deploy.errored ? 'ERROR' : 'SUCCESS'}</code>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {deployStatus && (
+        <div className="explorer-detail">
+          <div><span>DEPLOY STATUS</span><strong>{'ProcessedWithSuccess' in deployStatus ? 'PROCESSED · SUCCESS' : 'ProcessedWithError' in deployStatus ? 'PROCESSED · ERROR' : 'NOT PROCESSED'}</strong></div>
+          {deployBlock && <div><span>BLOCK</span><button className="text-button" onClick={() => openBlock(deployBlock.blockHash)}>#{deployBlock.blockNumber} · {short(deployBlock.blockHash, 14, 10)}</button></div>}
+          {'NotProcessed' in deployStatus && <div><span>STATE</span><code>{JSON.stringify(deployStatus.NotProcessed)}</code></div>}
+        </div>
+      )}
+      {error && <div className="error">{error}</div>}
+    </section>
+  )
+}
+
 function App() {
   const [status, setStatus] = useState<NodeStatus | null>(null)
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null)
@@ -338,17 +458,19 @@ function App() {
 
       <WalletPanel />
 
+      <ExplorerPanel />
+
       <section className="roadmap">
         <div><div className="eyebrow">FIRST VERTICAL SLICE</div><h2>From observation to signed deploy.</h2></div>
         <ol>
           <li className="done"><span>01</span><div><strong>Network console</strong><small>Live status, capabilities, validators and finality.</small></div></li>
           <li className="done"><span>02</span><div><strong>Wallet + test REV</strong><small>Session-only keys, faucet funding and balance reads.</small></div></li>
-          <li className="active"><span>03</span><div><strong>Rholox Proof</strong><small>Signed Rholang deploy → inclusion → finalized receipt.</small></div></li>
-          <li><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
+          <li className="done"><span>03</span><div><strong>Rholox Proof</strong><small>Signed Rholang deploy → inclusion → finalized receipt.</small></div></li>
+          <li className="active"><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
         </ol>
       </section>
 
-      <footer><span>Rholox v0.3 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
+      <footer><span>Rholox v0.4 · testnet only · no monetary value</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
     </main>
   )
 }

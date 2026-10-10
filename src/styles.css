@@ -120,3 +120,17 @@ li.active { background: linear-gradient(90deg, rgba(67,98,151,.10), transparent)
 .receipt-good { color: #73e4a5; font-size: 12px; letter-spacing: .08em; }
 .receipt-warn { color: #f1c97a; font-size: 12px; letter-spacing: .08em; }
 @media (max-width: 760px) { .proof-card { padding: 20px; } .proof-receipt > div { grid-template-columns: 1fr; gap: 6px; } }
+
+.explorer-card{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:32px;background:rgba(8,14,28,.64)}
+.explorer-search{display:grid;grid-template-columns:1fr auto;gap:12px;margin:20px 0}
+.explorer-search input{min-width:0;background:#070d1a;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:15px 16px;font:inherit}
+.recent-blocks{display:grid;gap:8px;margin-top:16px}
+.block-row{display:grid;grid-template-columns:80px minmax(0,1fr) 110px 110px;gap:14px;align-items:center;width:100%;text-align:left;background:transparent;border:1px solid var(--line);color:var(--muted);padding:13px 15px;border-radius:10px;cursor:pointer}
+.block-row:hover{border-color:#6689cc;color:var(--text)}
+.block-height{color:#a9c4ff;font-weight:700}.block-row code{overflow:hidden;text-overflow:ellipsis}
+.explorer-detail{margin-top:18px;border-top:1px solid var(--line)}
+.explorer-detail>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;padding:13px 0;border-bottom:1px solid var(--line);align-items:start}
+.explorer-detail span{color:var(--muted);font-size:12px;letter-spacing:.12em}.explorer-detail code{overflow-wrap:anywhere}
+.deploy-detail{grid-column:1/-1!important;background:rgba(125,161,229,.04);padding-left:14px!important;padding-right:14px!important}
+.text-button{background:none;border:0;color:#9dbdff;padding:0;text-align:left;font:inherit;cursor:pointer}
+@media(max-width:700px){.explorer-search{grid-template-columns:1fr}.block-row{grid-template-columns:62px minmax(0,1fr);}.block-row span:nth-child(3),.block-row span:nth-child(4){font-size:11px}.explorer-detail>div{grid-template-columns:105px minmax(0,1fr)}.explorer-card{padding:22px 18px}}
