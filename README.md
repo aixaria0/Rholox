@@ -1,4 +1,4 @@
-# Rholox[https://Rholox.com/]
+# Rholox 
 
 Rholox is an evidence-first public-testnet interface for observing network state and exercising a small set of signed DApp primitives without pretending the system is more mature than it is.
 
