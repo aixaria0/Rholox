@@ -119,6 +119,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .environment-pill .dot { width: 7px; height: 7px; background: currentColor; }
 .environment-pill--offline { color: #f2a2aa; border-color: rgba(255,125,140,.26); background: rgba(68,21,27,.28); }
+.environment-pill--pending { color: #aaa4b5; border-color: rgba(151,130,190,.20); background: rgba(24,22,31,.30); }
 .ghost, .secondary, .mini {
   appearance: none;
   border: 1px solid var(--line);
@@ -168,6 +169,10 @@ h2 { margin: 7px 0 0; font-size: 23px; line-height: 1.16; letter-spacing: -.025e
 .dot.live { color: var(--emerald); background: currentColor; }
 .dot.dead { color: var(--danger); background: currentColor; }
 .error { margin-top: 15px; padding: 12px 14px; border: 1px solid rgba(255,125,140,.28); background: rgba(74,24,31,.35); border-radius: 10px; color: #ffadb7; font-size: 13px; }
+
+.empty-state, .stale-note { margin: 10px 0; padding: 12px 14px; border: 1px solid rgba(151,130,190,.15); border-radius: 9px; color: var(--text-2); background: rgba(255,255,255,.012); font-size: 12px; line-height: 1.45; }
+.stale-note { color: var(--warning); border-color: rgba(231,191,110,.22); }
+.compact-error { margin-top: 12px; }
 
 .hero-visual { position: relative; min-height: 410px; overflow: hidden; border-radius: 32px; }
 .hero-visual::before {

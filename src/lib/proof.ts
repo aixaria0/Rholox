@@ -1,6 +1,6 @@
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { blake2b } from 'blakejs'
-import { RCHAIN_API, getJson, type NodeStatus } from './rchain'
+import { RCHAIN_API, fetchWithTimeout, getJson, type NodeStatus } from './rchain'
 import type { RholoxWallet } from './wallet'
 
 export type LightBlock = {
@@ -127,7 +127,7 @@ async function submitSignedDeploy(wallet: RholoxWallet, hash: string): Promise<s
     shardId: status.shardId ?? '/root',
   }
   const signed = signDeploy(data, wallet)
-  const response = await fetch(`${RCHAIN_API}/api/deploy`, {
+  const response = await fetchWithTimeout(`${RCHAIN_API}/api/deploy`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(signed),
@@ -160,7 +160,7 @@ async function waitForInclusion(deployId: string): Promise<LightBlock> {
 async function finalizedVisibility(hash: string, inclusionHeight: number): Promise<LightBlock | undefined> {
   const term = `new return in { for (@value <- @"${proofName(hash)}") { return!(value) } }`
   for (let i = 0; i < 20; i += 1) {
-    const response = await fetch(`${RCHAIN_API}/api/explore-deploy`, {
+    const response = await fetchWithTimeout(`${RCHAIN_API}/api/explore-deploy`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(term),

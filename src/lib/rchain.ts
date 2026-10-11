@@ -86,14 +86,29 @@ export type FaucetResponse = {
   deployError?: string | null
 }
 
+export async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = 12_000): Promise<Response> {
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(input, { ...init, signal: controller.signal })
+  } catch (cause) {
+    if (cause instanceof DOMException && cause.name === 'AbortError') {
+      throw new Error('Connected node request timed out.')
+    }
+    throw cause
+  } finally {
+    window.clearTimeout(timer)
+  }
+}
+
 export async function getJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${RCHAIN_API}${path}`, { cache: 'no-store' })
+  const response = await fetchWithTimeout(`${RCHAIN_API}${path}`, { cache: 'no-store' })
   if (!response.ok) throw new Error(`${path} returned ${response.status}`)
   return response.json() as Promise<T>
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${RCHAIN_API}${path}`, {
+  const response = await fetchWithTimeout(`${RCHAIN_API}${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -111,7 +126,7 @@ export async function readBalance(revAddress: string): Promise<number> {
     }
   `
 
-  const response = await fetch(`${RCHAIN_API}/api/explore-deploy`, {
+  const response = await fetchWithTimeout(`${RCHAIN_API}/api/explore-deploy`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(term),

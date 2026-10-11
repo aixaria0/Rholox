@@ -28,6 +28,10 @@ This document is the review boundary for the current Rholox slice. It is intenti
 - The client uses the public testnet endpoint configured in `src/lib/rchain.ts`.
 - No admin HTTP operation is used by the application.
 - UI status is derived from node responses; there is no synthetic mainnet/production telemetry.
+- Raw node vendor/version strings are not rendered into the product UI; only neutral API metadata is shown.
+- Status, capabilities, and finalized-state reads settle independently so one failed endpoint cannot make another observation false.
+- Unknown and stale observations remain explicit rather than being coerced into `NO`, `OFF`, or `UNAVAILABLE`.
+- Public-node requests use a bounded timeout so degraded connections cannot leave controls indefinitely pending.
 
 ### Inclusion versus finality
 
@@ -54,6 +58,13 @@ Before submission the client rejects:
 - Decimal input is treated as a recent block height.
 - Other input is treated as a deploy ID.
 - Multiple blocks at the same height remain distinct because block identity is the block hash, not height alone.
+
+### Accessibility and degraded-state behavior
+
+- Form controls have programmatic accessible names.
+- Asynchronous errors are exposed as alerts.
+- Explorer distinguishes loading, empty, failed, and stale recent-block states.
+- Reduced-motion preference disables scripted smooth scrolling as well as CSS animation/transition effects.
 
 ## Automated gates
 

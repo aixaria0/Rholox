@@ -1,7 +1,7 @@
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { blake2b } from 'blakejs'
 import bs58 from 'bs58'
-import { RCHAIN_API, getJson, type NodeStatus } from './rchain'
+import { RCHAIN_API, fetchWithTimeout, getJson, type NodeStatus } from './rchain'
 import type { RholoxWallet } from './wallet'
 
 export type TransferBlock = {
@@ -134,7 +134,7 @@ async function readBalanceWithBlock(address: string): Promise<{ balance: number;
     revVault!("getBalance", "${address}", *balanceCh) |
     for (@balance <- balanceCh) { return!(balance) }
   }`
-  const response = await fetch(`${RCHAIN_API}/api/explore-deploy`, {
+  const response = await fetchWithTimeout(`${RCHAIN_API}/api/explore-deploy`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(term),
@@ -158,7 +158,7 @@ async function submit(wallet: RholoxWallet, to: string, amountDrops: number): Pr
     validAfterBlockNumber: status.latestBlockNumber ?? 0,
     shardId: status.shardId ?? '/root',
   }
-  const response = await fetch(`${RCHAIN_API}/api/deploy`, {
+  const response = await fetchWithTimeout(`${RCHAIN_API}/api/deploy`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(signDeploy(data, wallet)),
