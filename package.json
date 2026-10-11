@@ -8,9 +8,10 @@
     "build": "node node_modules/typescript/bin/tsc -b && node node_modules/vite/bin/vite.js build",
     "preview": "node node_modules/vite/bin/vite.js preview --host 0.0.0.0",
     "verify:source": "node scripts/verify-source.mjs",
-    "verify": "npm run verify:source && npm run test:amm && npm run test:amm:actors && npm run build",
+    "verify": "npm run verify:source && npm run test:amm && npm run test:amm:actors && npm run test:exchange:recovery-source && npm run build",
     "test:amm": "node scripts/test-amm.mjs",
-    "test:amm:actors": "node scripts/test-amm-actors.mjs"
+    "test:amm:actors": "node scripts/test-amm-actors.mjs",
+    "test:exchange:recovery-source": "node scripts/test-exchange-recovery-source.mjs"
   },
   "dependencies": {
     "@noble/curves": "^2.0.1",
