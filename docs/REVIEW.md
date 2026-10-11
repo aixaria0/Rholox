@@ -199,3 +199,9 @@ The current slice does **not** claim:
 - a new consensus or finality theorem.
 
 The purpose is narrower: provide a reproducible public-testnet execution surface whose visible claims map to recorded evidence.
+
+### Phase 07 recovery evidence update — 2026-10-11
+
+The exact recovery-core and public custody-guard Rholang blocks are now exercised through non-persistent `explore-deploy` fault injection. Twelve scenarios cover compensated and `pool-fatal` second-leg failures for add/remove/both swap directions, fail-closed custody mismatch on all public mutation entrypoints, and rejection of a fresh private name as a `deployerId`. See `docs/evidence/phase07-rholang-recovery-explore-2026-10-11.json`.
+
+This closes the previous **Rholang semantics** gap for those branches, but not the stronger isolated-node deployment gate. The evidence does not claim mainnet safety or an independent security audit.

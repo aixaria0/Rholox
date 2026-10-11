@@ -294,4 +294,23 @@ The reproducible CI command `npm run test:amm:actors` now tests a two-holder LP 
 
 ### Compensation-path source regression gate (2026-10-11)
 
-`npm run test:exchange:recovery-source` statically checks that add liquidity, remove liquidity and both swap directions retain inverse compensation calls, separate compensated-error vs `pool-fatal` outcomes, and state restoration. It also checks custody-mismatch and stale-state guards on all three public mutation entry points. This is a **source-shape regression guard**, not an injected-failure test and not a proof that an on-chain compensation attempt completes. The live two-leg failure/failed-compensation scenarios remain **UNVERIFIED** and block release approval.
+`npm run test:exchange:recovery-source` statically checks that add liquidity, remove liquidity and both swap directions retain inverse compensation calls, separate compensated-error vs `pool-fatal` outcomes, and state restoration. It also checks custody-mismatch and stale-state guards on all three public mutation entry points. This is a **source-shape regression guard**, not an injected-failure test and not a proof that an on-chain compensation attempt completes. This source-only gate does not itself execute failures; the non-persistent Rholang fault-injection run below executes those branches. A committed isolated-node deployment/fault-injection run remains unverified.
+
+### Non-persistent Rholang fault-injection evidence (2026-10-11)
+
+`npm run test:exchange:rholang` extracts the **actual** `addCore`, `removeCore`, `swapAtoB`, `swapBtoA`, and public mutation guard contract blocks from `src/lib/exchange.ts` and executes them through the public node's `explore-deploy` path. `explore-deploy` is non-persistent: these probes evaluate against a finalized context but do not write shared testnet state.
+
+The recorded run exercised 12 scenarios at finalized context block `#441`:
+
+- add-liquidity second-leg failure with successful compensation;
+- add-liquidity second-leg failure with failed compensation (`pool-fatal`);
+- remove-liquidity second-leg failure with successful compensation;
+- remove-liquidity second-leg failure with failed compensation;
+- both swap directions with successful compensation;
+- both swap directions with failed compensation;
+- `addLiquidity`, `removeLiquidity`, and `swap` public entrypoints refusing a forced recorded-vs-actual custody mismatch before mutation;
+- a fresh private/unforgeable name being rejected by `rho:rev:address("fromDeployerId", ...)`, a negative control for caller-identity forgery.
+
+Successful compensation restored actual custody to the recorded reserves. Forced compensation failure preserved the old recorded state but intentionally left actual custody different, yielding `pool-fatal`; the public mutation guards then independently refuse a custody mismatch. Machine-readable observations, receipts, finalized-context block hash, and expected/actual custody values are recorded in `docs/evidence/phase07-rholang-recovery-explore-2026-10-11.json`.
+
+**Boundary:** this is real Rholang evaluation of the exact extracted recovery/guard blocks, but it is still exploratory execution rather than a committed deploy on an isolated local node. It materially strengthens the failure-path evidence without mutating the shared public testnet. An isolated-node end-to-end deployment remains desirable before any production/mainnet claim.
