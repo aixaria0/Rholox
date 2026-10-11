@@ -1,25 +1,27 @@
-import { secp256k1 } from '@noble/curves/secp256k1.js'
-import { blake2b } from 'blakejs'
-import { RCHAIN_API, fetchWithTimeout, getJson, type NodeStatus } from './rchain'
+import {
+  decodeDeployTuple,
+  decodeExpr,
+  exploreTerm,
+  sleep,
+  submitSignedTerm,
+  waitForProcessedDeploy,
+  type ChainBlock,
+} from './deploy'
 import { isValidRevAddress } from './transfer'
 import type { RholoxWallet } from './wallet'
 
-export type AssetBlock = {
-  blockHash: string
-  blockNumber: number
-  shardId: string
-  sender: string
-}
+export type AssetBlock = ChainBlock
 
 export type AssetInfo = {
   assetId: string
-  channel: string
+  locator: string
   name: string
   symbol: string
   decimals: number
   supplyUnits: number
   issuerAddress: string
   model: 'MakeMint fixed-supply purse asset'
+  runtimeVersion: 1 | 2
 }
 
 export type AssetObservation<T> = {
@@ -54,86 +56,31 @@ export type AssetTransferReceipt = {
   finalized: boolean
 }
 
-type DeployData = {
-  term: string
-  timestamp: number
-  phloPrice: number
-  phloLimit: number
-  validAfterBlockNumber: number
-  shardId: string
-}
-
-type DeployExecStatus =
-  | { ProcessedWithSuccess: { deployResult: unknown[]; block: AssetBlock } }
-  | { ProcessedWithError: { deployError: string; block: AssetBlock } }
-  | { NotProcessed: { status: string } }
-
-type Processed = { deployResult: unknown[]; block: AssetBlock }
-
-type Expr = Record<string, unknown>
-
-const enc = new TextEncoder()
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const ASSET_ID = /^[0-9a-f]{64}$/
+const REGISTRY_URI = /^rho:id:[a-z0-9]+$/
 
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
-}
-
-function hexToBytes(hex: string): Uint8Array {
-  const clean = hex.replace(/^0x/, '')
-  const out = new Uint8Array(clean.length / 2)
-  for (let i = 0; i < out.length; i += 1) out[i] = Number.parseInt(clean.slice(i * 2, i * 2 + 2), 16)
-  return out
-}
-
-function varint(value: number): number[] {
-  let n = BigInt(value)
-  const out: number[] = []
-  while (n >= 0x80n) {
-    out.push(Number((n & 0x7fn) | 0x80n))
-    n >>= 7n
-  }
-  out.push(Number(n))
-  return out
-}
-
-function pushString(out: number[], field: number, value: string) {
-  if (!value) return
-  const bytes = enc.encode(value)
-  out.push(...varint((field << 3) | 2), ...varint(bytes.length), ...bytes)
-}
-
-function pushInt64(out: number[], field: number, value: number) {
-  if (!value) return
-  out.push(...varint(field << 3), ...varint(value))
-}
-
-function serializeDeployData(data: DeployData): Uint8Array {
-  const out: number[] = []
-  pushString(out, 2, data.term)
-  pushInt64(out, 3, data.timestamp)
-  pushInt64(out, 7, data.phloPrice)
-  pushInt64(out, 8, data.phloLimit)
-  pushInt64(out, 10, data.validAfterBlockNumber)
-  pushString(out, 11, data.shardId)
-  return new Uint8Array(out)
-}
-
-function signDeploy(data: DeployData, wallet: RholoxWallet) {
-  const digest = blake2b(serializeDeployData(data), undefined, 32)
-  const signature = secp256k1.sign(digest, hexToBytes(wallet.privateKey), { prehash: false, format: 'der' }) as Uint8Array
-  return { data, deployer: wallet.publicKey, signature: bytesToHex(signature), sigAlgorithm: 'secp256k1' as const }
 }
 
 function quote(value: string): string {
   return JSON.stringify(value)
 }
 
+function rhoUri(value: string): string {
+  const clean = value.trim().toLowerCase()
+  if (!REGISTRY_URI.test(clean)) throw new Error('Registry locator must be a rho:id: URI.')
+  return '`' + clean + '`'
+}
+
 export function assetChannel(assetId: string): string {
   const id = assetId.trim().toLowerCase()
   if (!ASSET_ID.test(id)) throw new Error('Asset ID must be 64 lowercase hexadecimal characters.')
   return `rholox:asset:v1:${id}`
+}
+
+export function isRegistryAssetLocator(value: string): boolean {
+  return REGISTRY_URI.test(value.trim().toLowerCase())
 }
 
 export function createAssetId(): string {
@@ -182,13 +129,13 @@ export function formatAssetUnits(units: number, decimals: number): string {
 }
 
 function installAssetTerm(assetId: string, name: string, symbol: string, decimals: number, supplyUnits: number): string {
-  const channel = assetChannel(assetId)
   return `new
   rl(\`rho:registry:lookup\`),
+  insertArbitrary(\`rho:registry:insertArbitrary\`),
   revAddr(\`rho:rev:address\`),
   deployerId(\`rho:rchain:deployerId\`),
   deployId(\`rho:rchain:deployId\`),
-  makeMintCh, mintCh, issuerPurseCh, issuerAddrCh, pursesCh
+  makeMintCh, mintCh, issuerPurseCh, issuerAddrCh, pursesCh, assetService, uriCh
 in {
   rl!(\`rho:rchain:makeMint\`, *makeMintCh) |
   revAddr!("fromDeployerId", *deployerId, *issuerAddrCh) |
@@ -199,11 +146,11 @@ in {
       for (issuerPurse <- issuerPurseCh) {
         pursesCh!({}.set(issuerAddr, *issuerPurse)) |
 
-        contract @${quote(channel)}(@"info", ret) = {
-          ret!(("rholox-asset-v1", ${quote(name)}, ${quote(symbol)}, ${decimals}, ${supplyUnits}, issuerAddr, "MakeMint fixed-supply purse asset"))
+        contract assetService(@"info", ret) = {
+          ret!(("rholox-asset-v2", ${quote(assetId)}, ${quote(name)}, ${quote(symbol)}, ${decimals}, ${supplyUnits}, issuerAddr, "MakeMint fixed-supply purse asset"))
         } |
 
-        contract @${quote(channel)}(@"balanceOf", @holder, ret) = {
+        contract assetService(@"balanceOf", @holder, ret) = {
           for (@purses <<- pursesCh) {
             match purses.get(holder) {
               Nil => { ret!(0) }
@@ -217,7 +164,7 @@ in {
           }
         } |
 
-        contract @${quote(channel)}(@"verifyBrand", @holder, ret) = {
+        contract assetService(@"verifyBrand", @holder, ret) = {
           for (@purses <<- pursesCh) {
             match purses.get(holder) {
               Nil => { ret!(false) }
@@ -234,7 +181,70 @@ in {
           }
         } |
 
-        contract @${quote(channel)}(_id, @"transfer", @to, @amount, ret) = {
+        contract assetService(@"makeEmptyPurse", ret) = {
+          issuerPurse!("sprout", *ret)
+        } |
+
+        contract assetService(_id, @"depositInto", destinationPurse, @amount, ret) = {
+          new fromCh in {
+            revAddr!("fromDeployerId", *_id, *fromCh) |
+            for (@from <- fromCh) {
+              if (amount <= 0) {
+                ret!(false)
+              } else {
+                for (@purses <- pursesCh) {
+                  match purses.get(from) {
+                    Nil => { pursesCh!(purses) | ret!(false) }
+                    sourcePurse => {
+                      new successCh in {
+                        destinationPurse!("deposit", amount, sourcePurse, *successCh) |
+                        for (@success <- successCh) {
+                          pursesCh!(purses) | ret!(success)
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } |
+
+        contract assetService(@"withdrawFrom", sourcePurse, @to, @amount, ret) = {
+          if (amount <= 0) {
+            ret!(false)
+          } else {
+            for (@purses <- pursesCh) {
+              match purses.get(to) {
+                Nil => {
+                  new destinationCh, successCh in {
+                    mint!("makePurse", 0, *destinationCh) |
+                    for (destinationPurse <- destinationCh) {
+                      destinationPurse!("deposit", amount, *sourcePurse, *successCh) |
+                      for (@success <- successCh) {
+                        if (success) {
+                          pursesCh!(purses.set(to, *destinationPurse)) | ret!(true)
+                        } else {
+                          pursesCh!(purses) | ret!(false)
+                        }
+                      }
+                    }
+                  }
+                }
+                destinationPurse => {
+                  new successCh in {
+                    @destinationPurse!("deposit", amount, *sourcePurse, *successCh) |
+                    for (@success <- successCh) {
+                      pursesCh!(purses) | ret!(success)
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } |
+
+        contract assetService(_id, @"transfer", @to, @amount, ret) = {
           new fromCh in {
             revAddr!("fromDeployerId", *_id, *fromCh) |
             for (@from <- fromCh) {
@@ -287,25 +297,37 @@ in {
           }
         } |
 
-        deployId!((true, "asset-created", ${quote(assetId)}, ${quote(channel)}, issuerAddr))
+        insertArbitrary!(bundle+{*assetService}, *uriCh) |
+        for (@uri <- uriCh) {
+          deployId!((true, "asset-created", ${quote(assetId)}, uri, issuerAddr))
+        }
       }
     }
   }
 }`
 }
 
-function readAssetTerm(assetId: string, verb: 'info' | 'balanceOf' | 'verifyBrand', arg?: string): string {
-  const channel = assetChannel(assetId)
+function readLegacyAssetTerm(channel: string, verb: 'info' | 'balanceOf' | 'verifyBrand', arg?: string): string {
   const suffix = arg === undefined ? '' : `, ${quote(arg)}`
-  return `new return in {
-    @${quote(channel)}!("${verb}"${suffix}, *return)
+  return `new return in { @${quote(channel)}!("${verb}"${suffix}, *return) }`
+}
+
+function readRegisteredAssetTerm(locator: string, verb: 'info' | 'balanceOf' | 'verifyBrand', arg?: string): string {
+  const suffix = arg === undefined ? '' : `, ${quote(arg)}`
+  return `new rl(\`rho:registry:lookup\`), assetCh, return in {
+    rl!(${rhoUri(locator)}, *assetCh) |
+    for (assetService <- assetCh) {
+      assetService!("${verb}"${suffix}, *return)
+    }
   }`
 }
 
-function transferAssetTerm(assetId: string, to: string, amountUnits: number): string {
-  const channel = assetChannel(assetId)
+function transferAssetTerm(asset: AssetInfo, to: string, amountUnits: number): string {
+  const call = asset.runtimeVersion === 2
+    ? `new rl(\`rho:registry:lookup\`), assetCh in { rl!(${rhoUri(asset.locator)}, *assetCh) | for (assetService <- assetCh) { assetService!(*deployerId, "transfer", ${quote(to)}, ${amountUnits}, *ret) } }`
+    : `@${quote(asset.locator)}!(*deployerId, "transfer", ${quote(to)}, ${amountUnits}, *ret)`
   return `new deployerId(\`rho:rchain:deployerId\`), deployId(\`rho:rchain:deployId\`), ret in {
-    @${quote(channel)}!(*deployerId, "transfer", ${quote(to)}, ${amountUnits}, *ret) |
+    ${call} |
     for (@result <- ret) {
       match result {
         ("transferred", amount, from, destination) => { deployId!((true, "asset-transfer", amount, from, destination)) }
@@ -315,110 +337,67 @@ function transferAssetTerm(assetId: string, to: string, amountUnits: number): st
   }`
 }
 
-async function submitSigned(wallet: RholoxWallet, term: string, phloLimit: number): Promise<string> {
-  const status = await getJson<NodeStatus>('/api/status')
-  const data: DeployData = {
-    term,
-    timestamp: Date.now(),
-    phloPrice: Math.max(1, status.minPhloPrice ?? 1),
-    phloLimit,
-    validAfterBlockNumber: status.latestBlockNumber ?? 0,
-    shardId: status.shardId ?? '/root',
+export const submitSigned = submitSignedTerm
+const waitForProcessed = (deployId: string) => waitForProcessedDeploy(deployId, 'Asset deploy')
+const deployTuple = decodeDeployTuple
+
+function explore<T>(term: string, parse: (expr: unknown) => T | undefined): Promise<AssetObservation<T>> {
+  return exploreTerm(term, parse, 'Asset state is not visible from the finalized read path.')
+}
+
+export async function readAssetInfo(reference: string): Promise<AssetObservation<AssetInfo>> {
+  const locator = reference.trim().toLowerCase()
+  if (REGISTRY_URI.test(locator)) {
+    return explore(readRegisteredAssetTerm(locator, 'info'), (expr) => {
+      const tuple = decodeExpr(expr)
+      if (!Array.isArray(tuple) || tuple[0] !== 'rholox-asset-v2') return undefined
+      const [, assetId, name, symbol, decimals, supplyUnits, issuerAddress, model] = tuple
+      if (
+        typeof assetId !== 'string' || !ASSET_ID.test(assetId) ||
+        typeof name !== 'string' || typeof symbol !== 'string' ||
+        typeof decimals !== 'number' || typeof supplyUnits !== 'number' ||
+        typeof issuerAddress !== 'string' || model !== 'MakeMint fixed-supply purse asset'
+      ) return undefined
+      return { assetId, locator, name, symbol, decimals, supplyUnits, issuerAddress, model, runtimeVersion: 2 }
+    })
   }
-  const response = await fetchWithTimeout(`${RCHAIN_API}/api/deploy`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(signDeploy(data, wallet)),
-  })
-  const text = await response.text()
-  if (!response.ok) throw new Error(text || `Deploy returned ${response.status}`)
-  let result = text
-  try {
-    const parsed = JSON.parse(text)
-    if (typeof parsed === 'string') result = parsed
-  } catch { /* plain text is valid */ }
-  const match = result.match(/DeployId is: ([0-9a-fA-F]+)/)
-  if (!match) throw new Error(result || 'Node accepted no deploy id.')
-  return match[1]
-}
 
-async function waitForProcessed(deployId: string): Promise<Processed> {
-  let unknown = 0
-  for (let i = 0; i < 40; i += 1) {
-    const status = await getJson<DeployExecStatus>(`/api/v1/deploy-status/${deployId}`)
-    if ('ProcessedWithSuccess' in status) return status.ProcessedWithSuccess
-    if ('ProcessedWithError' in status) throw new Error(status.ProcessedWithError.deployError || 'Asset deploy failed.')
-    unknown = status.NotProcessed.status === 'Unknown' ? unknown + 1 : 0
-    if (unknown >= 5) throw new Error('The node has no record of this asset deploy after five polls.')
-    await sleep(3000)
-  }
-  throw new Error('Timed out waiting for asset deploy inclusion.')
-}
-
-function decodeExpr(expr: unknown): unknown {
-  if (!expr || typeof expr !== 'object') return undefined
-  const node = expr as Expr
-  const str = node.ExprString as { data?: string } | string | undefined
-  if (typeof str === 'string') return str
-  if (str && typeof str === 'object') return str.data
-  const uri = node.ExprUri as { data?: string } | string | undefined
-  if (typeof uri === 'string') return uri
-  if (uri && typeof uri === 'object') return uri.data
-  const int = node.ExprInt as { data?: number } | number | undefined
-  if (typeof int === 'number') return int
-  if (int && typeof int === 'object') return int.data
-  const bool = node.ExprBool as { data?: boolean } | boolean | undefined
-  if (typeof bool === 'boolean') return bool
-  if (bool && typeof bool === 'object') return bool.data
-  const tuple = node.ExprTuple as { data?: unknown[] } | undefined
-  if (tuple?.data) return tuple.data.map(decodeExpr)
-  return undefined
-}
-
-function deployTuple(result: unknown[]): unknown[] | undefined {
-  const decoded = decodeExpr(result[0])
-  return Array.isArray(decoded) ? decoded : undefined
-}
-
-async function explore<T>(term: string, parse: (expr: unknown) => T | undefined): Promise<AssetObservation<T>> {
-  const response = await fetchWithTimeout(`${RCHAIN_API}/api/explore-deploy`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(term),
-  })
-  const text = await response.text()
-  if (!response.ok) throw new Error(text || `Asset read returned ${response.status}`)
-  const parsed = JSON.parse(text) as { expr?: unknown[]; block?: AssetBlock }
-  const value = parse(parsed.expr?.[0])
-  if (value === undefined) throw new Error('Asset state is not visible from the finalized read path.')
-  return { value, block: parsed.block }
-}
-
-export async function readAssetInfo(assetId: string): Promise<AssetObservation<AssetInfo>> {
-  const id = assetId.trim().toLowerCase()
-  const channel = assetChannel(id)
-  return explore(readAssetTerm(id, 'info'), (expr) => {
+  if (!ASSET_ID.test(locator)) throw new Error('Enter a 64-hex legacy Asset ID or a rho:id: registry URI.')
+  const channel = assetChannel(locator)
+  return explore(readLegacyAssetTerm(channel, 'info'), (expr) => {
     const tuple = decodeExpr(expr)
     if (!Array.isArray(tuple) || tuple[0] !== 'rholox-asset-v1') return undefined
     const [, name, symbol, decimals, supplyUnits, issuerAddress, model] = tuple
     if (typeof name !== 'string' || typeof symbol !== 'string' || typeof decimals !== 'number' || typeof supplyUnits !== 'number' || typeof issuerAddress !== 'string' || model !== 'MakeMint fixed-supply purse asset') return undefined
-    return { assetId: id, channel, name, symbol, decimals, supplyUnits, issuerAddress, model }
+    return { assetId: locator, locator: channel, name, symbol, decimals, supplyUnits, issuerAddress, model, runtimeVersion: 1 }
   })
 }
 
-export async function readAssetBalance(assetId: string, holder: string): Promise<AssetObservation<number>> {
+async function resolveAsset(assetOrReference: AssetInfo | string): Promise<AssetInfo> {
+  return typeof assetOrReference === 'string' ? (await readAssetInfo(assetOrReference)).value : assetOrReference
+}
+
+function assetReadTerm(asset: AssetInfo, verb: 'balanceOf' | 'verifyBrand', holder: string): string {
+  return asset.runtimeVersion === 2
+    ? readRegisteredAssetTerm(asset.locator, verb, holder)
+    : readLegacyAssetTerm(asset.locator, verb, holder)
+}
+
+export async function readAssetBalance(assetOrReference: AssetInfo | string, holder: string): Promise<AssetObservation<number>> {
+  const asset = await resolveAsset(assetOrReference)
   const address = holder.trim()
   if (!isValidRevAddress(address)) throw new Error('Holder is not a valid REV address.')
-  return explore(readAssetTerm(assetId, 'balanceOf', address), (expr) => {
+  return explore(assetReadTerm(asset, 'balanceOf', address), (expr) => {
     const value = decodeExpr(expr)
     return typeof value === 'number' ? value : undefined
   })
 }
 
-export async function verifyAssetBrand(assetId: string, holder: string): Promise<AssetObservation<boolean>> {
+export async function verifyAssetBrand(assetOrReference: AssetInfo | string, holder: string): Promise<AssetObservation<boolean>> {
+  const asset = await resolveAsset(assetOrReference)
   const address = holder.trim()
   if (!isValidRevAddress(address)) throw new Error('Holder is not a valid REV address.')
-  return explore(readAssetTerm(assetId, 'verifyBrand', address), (expr) => {
+  return explore(assetReadTerm(asset, 'verifyBrand', address), (expr) => {
     const value = decodeExpr(expr)
     return typeof value === 'boolean' ? value : undefined
   })
@@ -436,10 +415,22 @@ export async function createAsset(
   const deployId = await submitSigned(wallet, installAssetTerm(assetId, name, symbol, decimals, supplyUnits), 1_500_000)
   const processed = await waitForProcessed(deployId)
   const tuple = deployTuple(processed.deployResult)
-  if (!tuple || tuple[0] !== true || tuple[1] !== 'asset-created' || tuple[2] !== assetId || tuple[3] !== assetChannel(assetId) || tuple[4] !== wallet.revAddress) {
-    throw new Error('Asset install returned an unexpected receipt.')
+  const locator = tuple && typeof tuple[3] === 'string' ? tuple[3].toLowerCase() : ''
+  if (!tuple || tuple[0] !== true || tuple[1] !== 'asset-created' || tuple[2] !== assetId || !REGISTRY_URI.test(locator) || tuple[4] !== wallet.revAddress) {
+    throw new Error('Asset install returned an unexpected registry receipt.')
   }
 
+  const fallback: AssetInfo = {
+    assetId,
+    locator,
+    name,
+    symbol,
+    decimals,
+    supplyUnits,
+    issuerAddress: wallet.revAddress,
+    model: 'MakeMint fixed-supply purse asset',
+    runtimeVersion: 2,
+  }
   let info: AssetInfo | undefined
   let issuerBalanceUnits: number | undefined
   let brandVerified = false
@@ -447,15 +438,20 @@ export async function createAsset(
   for (let i = 0; i < 24; i += 1) {
     try {
       const [infoObs, balanceObs, brandObs] = await Promise.all([
-        readAssetInfo(assetId),
-        readAssetBalance(assetId, wallet.revAddress),
-        verifyAssetBrand(assetId, wallet.revAddress),
+        readAssetInfo(locator),
+        readAssetBalance(fallback, wallet.revAddress),
+        verifyAssetBrand(fallback, wallet.revAddress),
       ])
       info = infoObs.value
       issuerBalanceUnits = balanceObs.value
       brandVerified = brandObs.value
       const block = infoObs.block ?? balanceObs.block ?? brandObs.block
-      if (issuerBalanceUnits === supplyUnits && brandVerified && block && block.blockNumber >= processed.block.blockNumber) {
+      if (
+        info.assetId === assetId &&
+        issuerBalanceUnits === supplyUnits &&
+        brandVerified &&
+        block && block.blockNumber >= processed.block.blockNumber
+      ) {
         finalizedBlock = block
         break
       }
@@ -463,7 +459,6 @@ export async function createAsset(
     await sleep(3000)
   }
 
-  const fallback: AssetInfo = { assetId, channel: assetChannel(assetId), name, symbol, decimals, supplyUnits, issuerAddress: wallet.revAddress, model: 'MakeMint fixed-supply purse asset' }
   return {
     asset: info ?? fallback,
     deployId,
@@ -486,12 +481,12 @@ export async function sendAsset(
   if (to === wallet.revAddress) throw new Error('Recipient cannot be this wallet itself.')
   const amountUnits = parseAssetUnits(amountInput, asset.decimals)
   const [senderBeforeObs, recipientBeforeObs] = await Promise.all([
-    readAssetBalance(asset.assetId, wallet.revAddress),
-    readAssetBalance(asset.assetId, to),
+    readAssetBalance(asset, wallet.revAddress),
+    readAssetBalance(asset, to),
   ])
   if (senderBeforeObs.value < amountUnits) throw new Error(`Insufficient ${asset.symbol} balance.`)
 
-  const deployId = await submitSigned(wallet, transferAssetTerm(asset.assetId, to, amountUnits), 900_000)
+  const deployId = await submitSigned(wallet, transferAssetTerm(asset, to, amountUnits), 900_000)
   const processed = await waitForProcessed(deployId)
   const tuple = deployTuple(processed.deployResult)
   if (!tuple || tuple[0] !== true || tuple[1] !== 'asset-transfer') {
@@ -506,9 +501,9 @@ export async function sendAsset(
   for (let i = 0; i < 24; i += 1) {
     try {
       const [sender, recipient, brand] = await Promise.all([
-        readAssetBalance(asset.assetId, wallet.revAddress),
-        readAssetBalance(asset.assetId, to),
-        verifyAssetBrand(asset.assetId, to),
+        readAssetBalance(asset, wallet.revAddress),
+        readAssetBalance(asset, to),
+        verifyAssetBrand(asset, to),
       ])
       senderBalanceAfter = sender.value
       recipientBalanceAfter = recipient.value

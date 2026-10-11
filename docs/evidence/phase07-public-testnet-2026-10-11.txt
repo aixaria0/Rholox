@@ -1,0 +1,93 @@
+RHOLOX PHASE 07 — PUBLIC TESTNET EXCHANGE EVIDENCE
+Date: 2026-10-11
+Branch under test: feat/exchange-mechanics-v1
+Surface: public testnet only
+
+PURPOSE
+Prove the current source path end to end: Asset Lab v2 capability assets -> pool creation -> custody verification -> liquidity -> stale-state refusal -> swap -> full withdrawal -> finalized zero-custody roundtrip.
+
+THROWAWAY SESSION
+REV address: 1111bb9g7DBeSEWfqBV3DYJNQcmwKbs2Y5FEhdwH6JHhVzVHEsDeK
+Faucet finalized balance observed: 30,000,000 drops
+Private key intentionally not recorded.
+
+ASSET A
+id:            9206f59350833e862e9c2911cab85ae677936f2f04727f162d5338e39e47a2b8
+symbol:        REA
+initial:       1000 raw units
+inclusion:     #325
+final read:    #328
+runtime:       v2
+
+ASSET B
+id:            f215d53cb0be00c398af204e6d4461bee45fdfc849715b858da81cad7e4da5c1
+symbol:        REB
+initial:       1000 raw units
+inclusion:     #333
+final read:    #334
+runtime:       v2
+
+POOL CREATE
+id:            bc1f115383b72115d4ab4ca9dc44958b085a9dfa8798d05ef1f857e1cf604191
+inclusion:     #338
+final read:    #340
+creator:       1111bb9g7DBeSEWfqBV3DYJNQcmwKbs2Y5FEhdwH6JHhVzVHEsDeK
+creator source: rho:rchain:deployerId -> rho:rev:address inside the install deploy
+recorded:      0 / 0
+actual custody:0 / 0
+custody:       verified
+
+INITIAL LIQUIDITY
+input:         100 REA / 200 REB
+LP shares:     300
+inclusion:     #348
+final read:    #351
+recorded:      100 / 200
+custody:       verified
+
+STALE-STATE NEGATIVE CONTROL
+Two add-liquidity calls were launched concurrently from the same observed state, each asking for +10 / +20 and 30 LP shares.
+result:        exactly 1 finalized winner, exactly 1 rejection
+rejection:     "stale pool state"
+post-state:    reserves 110 / 220; total shares 330; custody verified
+meaning:       a quote/state snapshot that loses the race cannot silently execute against newer reserves
+
+SWAP
+route:         A_TO_B
+input:         10 REA
+output:        18 REB
+inclusion:     #368
+final read:    #371
+reserves:      120 / 202
+k:             24,200 -> 24,240
+custody:       verified
+
+REMOVE ALL LIQUIDITY
+LP burned:     330
+output:        120 REA / 202 REB
+inclusion:     #375
+final read:    #377
+reserves:      0 / 0
+total shares:  0
+position:      0
+actual custody:0 / 0
+custody:       verified
+
+FINAL HOLDER STATE
+REA:           1000
+REB:           1000
+
+OBSERVED ASSERTIONS
+- pool creator metadata was derived from the signed deployer on-chain, not accepted from browser text
+- both reserve purses stayed private to the pool contract
+- recorded reserves equaled actual purse balances at every finalized checkpoint
+- stale expected state was refused before value movement
+- accepted swap did not decrease the integer constant product
+- full LP withdrawal restored both original asset balances exactly
+- no mainnet, TVL, APR, volume, oracle, routing, or production-custody claim is established by this run
+
+NOTE
+Public testnet state can reset. Block heights and IDs above are historical observation evidence, not stable fixtures.
+
+POST-RUN FINALIZED RECHECK
+At finalized read block #381, the pool still reports recorded reserves 0/0, actual custody 0/0, total shares 0, custody=true, and creator equal to the signed deployer-derived REV address. Both Asset Lab v2 holder balances independently read back as 1000 at block #381.

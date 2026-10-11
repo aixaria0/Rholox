@@ -1,8 +1,8 @@
-# Rholox 
+# Rholox
 
-Rholox is an evidence-first public-testnet interface for observing network state and exercising a small set of signed DApp primitives without pretending the system is more mature than it is.
+Rholox is an evidence-first public-testnet interface for observing network state and exercising signed DApp primitives without presenting the system as more mature than the evidence supports.
 
-The current vertical slice is intentionally narrow and reviewable. It covers observation, local session keys, test-value funding, signed proof anchoring, block/deploy inspection, finalized test REV transfer verification, and fixed-supply MakeMint test assets.
+The current vertical slice covers observation, session-only signing, test-value funding, proof anchoring, block/deploy inspection, finalized REV transfer verification, fixed-supply MakeMint assets, and a capability-custodied testnet exchange core.
 
 ## Current surface
 
@@ -10,19 +10,38 @@ The current vertical slice is intentionally narrow and reviewable. It covers obs
 2. **Wallet + Test REV** — session-only secp256k1 key generation/import, REV address derivation, faucet funding, and finalized balance reads.
 3. **Rholox Proof** — local SHA-256 hashing, locally signed deploy submission, inclusion polling, and finalized-state visibility checks.
 4. **Explorer** — recent blocks, block-by-hash detail, recent-height lookup, deploy-status lookup, justifications, bonds, deploys, and rejected deploys.
-5. **REV Transfer** — local signing, REV-address validation, signed test transfer, inclusion polling, and recipient balance verification from finalized state.
-6. **Asset Lab** — fixed-supply MakeMint asset creation, finalized metadata/balance reads, purse-brand verification, and signed test-asset transfer.
+5. **REV Transfer** — local signing, REV-address validation, signed test transfer, inclusion polling, and finalized recipient-balance verification.
+6. **Asset Lab** — fixed-supply MakeMint asset creation, finalized metadata/balance reads, purse-brand verification, signed asset transfer, and an exchange capability bridge in runtime v2.
+7. **Exchange Core** — two-asset capability custody, integer constant-product quotes, LP accounting, add/remove liquidity, swaps, compensation on partial two-asset failure, and finalized reserve/custody verification.
 
 ## Security and scope boundary
 
-- **Public testnet only.** Test REV has no monetary value and the network may reset.
-- **No custody.** Private keys are generated/imported in the browser and are not uploaded or persisted by Rholox.
+- **Public testnet only.** Test REV and test assets have no monetary value and the network may reset.
+- **No key custody.** Private keys are generated/imported in the browser and are not uploaded or persisted by Rholox.
+- **No production-custody claim.** Exchange reserve authority is held by private purse capabilities inside the pool contract; Phase 07 is testnet evidence, not an audited financial protocol.
 - **No mainnet claim.** The UI does not present production/mainnet status or synthetic production metrics.
 - **No admin surface.** The client uses the public node HTTP surface only.
-- **No hidden finality claim.** Proofs and transfers distinguish inclusion from finalized-state verification.
-- **No fabricated telemetry.** Network values shown by the interface come from the connected public-testnet node.
-- **Fixed-supply Asset Lab only.** Asset creation makes one initial MakeMint purse supply; v1 exposes no post-creation mint method, DEX, liquidity, or mainnet token claim.
-- **Public-testnet asset namespace.** Asset IDs are 256-bit random identifiers used to derive public contract channels; they are not presented as an unforgeable registry identity or production token standard.
+- **No hidden finality claim.** Submission, execution, inclusion, and finalized-state read-back remain distinct.
+- **No fabricated market telemetry.** The exchange UI does not invent TVL, volume, APR, yield, price feeds, or activity.
+- **Fixed-supply assets.** Asset runtime v2 adds empty-purse/deposit/withdraw capability plumbing for pools but does not add post-creation minting.
+- **Public-testnet namespaces.** Asset IDs and pool IDs are random 256-bit identifiers used to derive public contract channels; they are not presented as production registry identities.
+- **Fail closed on custody mismatch.** A pool mutation refuses to proceed when recorded reserves differ from actual private-purse balances.
+
+## Exchange v1 model
+
+Phase 07 deliberately uses a small reviewable model:
+
+```text
+fee                         0 bps
+reserve cap                 10,000,000 raw units / side
+initial LP shares           amountA + amountB
+subsequent liquidity        exact reserve ratio only
+swap                        dy = floor(dx * y / (x + dx))
+slippage guard              caller-provided minOut / minimum outputs
+custody evidence            recorded reserve == private purse balance
+```
+
+A compensation failure is surfaced as `pool-fatal`; it is not described as atomic rollback. The restored state then disagrees with custody and later mutations fail closed on the custody check.
 
 ## Architecture
 
@@ -32,7 +51,8 @@ Browser
   ├─ network observation
   ├─ proof hashing + signed deploy
   ├─ REV transfer + finalized balance verification
-  ├─ MakeMint fixed-supply asset creation / transfer
+  ├─ Asset Lab v1/v2
+  ├─ Exchange Core pool math + capability-custodied Rholang pool
   └─ block/deploy explorer
           │
           ▼
@@ -42,15 +62,23 @@ https://testnet.rhobot.net
 Core implementation boundaries:
 
 ```text
-src/lib/wallet.ts    key generation/import + REV address derivation
-src/lib/rchain.ts    public-testnet reads, faucet, block/deploy API access
-src/lib/proof.ts     SHA-256 proof deploy + inclusion/finality verification
-src/lib/transfer.ts  signed REV transfer + finalized recipient verification
-src/lib/asset.ts     MakeMint fixed-supply asset runtime + finalized brand/balance verification
-src/AssetLabPanel.tsx Asset Lab create/inspect/transfer UI
-src/main.tsx         product state + presentation wiring
-src/styles.css       presentation only
+src/lib/wallet.ts       key generation/import + REV address derivation
+src/lib/rchain.ts       public-testnet reads, faucet, block/deploy API access
+src/lib/deploy.ts       shared signed-deploy submission / processing / explore helpers
+src/lib/proof.ts        SHA-256 proof deploy + inclusion/finality verification
+src/lib/transfer.ts     signed REV transfer + finalized recipient verification
+src/lib/asset.ts        MakeMint fixed-supply runtime + v2 purse capability bridge
+src/lib/amm.ts          deterministic integer pool arithmetic + invariant guards
+src/lib/exchange.ts     Rholang pool runtime + finalized client verification
+src/AssetLabPanel.tsx   asset create/inspect/transfer surface
+src/ExchangePanel.tsx   pool inspect/create/liquidity/swap surface
+src/main.tsx            product state + presentation wiring
+src/styles.css          presentation only
 ```
+
+## Project record
+
+Phase 07 is tracked in GitHub issue **#6 — Phase 07: evidence-first exchange mechanics on public testnet**. The architecture, arithmetic, negative controls, live testnet evidence, claims, and non-claims are recorded in [`docs/EXCHANGE-MECHANICS.md`](docs/EXCHANGE-MECHANICS.md).
 
 ## Local verification
 
@@ -58,9 +86,10 @@ src/styles.css       presentation only
 npm ci
 npm run verify
 npm audit --audit-level=high
+git diff --check
 ```
 
-`npm run verify` runs the source-level product guard and a production TypeScript/Vite build.
+`npm run verify` runs the source-level invariant guard, deterministic AMM regression/property sweep, strict TypeScript compilation, and production Vite build.
 
 ## Run locally
 
@@ -79,4 +108,4 @@ Static output is written to `dist/`.
 
 ## Review evidence
 
-See [`docs/REVIEW.md`](docs/REVIEW.md) for the current vertical-slice review matrix, invariants, and manual testnet checks.
+See [`docs/REVIEW.md`](docs/REVIEW.md) for the current review matrix and [`docs/EXCHANGE-MECHANICS.md`](docs/EXCHANGE-MECHANICS.md) for Phase 07 evidence.

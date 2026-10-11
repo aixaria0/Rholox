@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './styles.css'
 import rholoxLogo from './assets/rholox-logo.svg'
 import AssetLabPanel from './AssetLabPanel'
+import ExchangePanel from './ExchangePanel'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
 import { sendRev, type TransferReceipt } from './lib/transfer'
@@ -198,6 +199,7 @@ function WalletPanel() {
         {error && <div className="error" role="alert">{error}</div>}
       </section>
       <AssetLabPanel wallet={null} revBalance={null} />
+      <ExchangePanel wallet={null} />
       </div>
     )
   }
@@ -253,6 +255,7 @@ function WalletPanel() {
       <TransferPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
     </div>
     <AssetLabPanel wallet={wallet} revBalance={balance} onRevBalance={() => updateBalance(wallet)} />
+    <ExchangePanel wallet={wallet} onRevBalance={() => updateBalance(wallet)} />
     </div>
   )
 }
@@ -564,6 +567,8 @@ function App() {
           <button type="button" onClick={() => scrollToSection('proof')}>Proof</button>
           <button type="button" onClick={() => scrollToSection('explorer')}>Explorer</button>
           <button type="button" onClick={() => scrollToSection('transfer')}>Transfer</button>
+          <button type="button" onClick={() => scrollToSection('asset-lab')}>Assets</button>
+          <button type="button" onClick={() => scrollToSection('exchange')}>Exchange</button>
         </nav>
         <div className="top-actions">
           <span className={`environment-pill ${online ? 'environment-pill--online' : statusError ? 'environment-pill--offline' : 'environment-pill--pending'}`}><span className="dot" />PUBLIC TESTNET</span>
@@ -601,6 +606,7 @@ function App() {
         <ModuleCard index="04" title="Explorer" detail="Blocks, deploys, evidence" target="explorer" />
         <ModuleCard index="05" title="REV Transfer" detail="Signed test transfers" target="transfer" />
         <ModuleCard index="06" title="Asset Lab" detail="MakeMint fixed-supply assets" target="asset-lab" />
+        <ModuleCard index="07" title="Exchange Core" detail="Capability-custodied test pools" target="exchange" />
       </section>
 
       <section className="network-surface" id="network">
@@ -650,7 +656,7 @@ function App() {
       <WalletPanel />
       <ExplorerPanel />
 
-      <section className="roadmap" id="asset-lab">
+      <section className="roadmap" id="roadmap">
         <div><div className="eyebrow">VERIFIED SURFACE</div><h2>Implemented before expanded.</h2><p>Each capability stays explicit about what is observed, signed, included, and finalized.</p></div>
         <ol>
           <li className="done"><span>01</span><div><strong>Network console</strong><small>Live status, capabilities, validators and finality.</small></div></li>
@@ -659,6 +665,7 @@ function App() {
           <li className="done"><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
           <li className="done"><span>05</span><div><strong>REV transfer</strong><small>Signed value transfer → inclusion → finalized balance verification.</small></div></li>
           <li className="done"><span>06</span><div><strong>Asset Lab</strong><small>Fixed-supply MakeMint assets, brand verification and signed transfers.</small></div></li>
+          <li className="done"><span>07</span><div><strong>Exchange Core</strong><small>Capability custody, constant-product swaps and finalized reserve verification.</small></div></li>
         </ol>
       </section>
 
