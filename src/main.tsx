@@ -46,8 +46,16 @@ async function copyText(value: string) {
   await navigator.clipboard.writeText(value)
 }
 
+function motionBehavior(): ScrollBehavior {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+}
+
 function scrollToSection(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  document.getElementById(id)?.scrollIntoView({ behavior: motionBehavior(), block: 'start' })
+}
+
+function observedBoolean(value: boolean | undefined, yes: string, no: string) {
+  return value === undefined ? 'UNKNOWN' : value ? yes : no
 }
 
 function ModuleCard({ index, title, detail, target, next = false }: { index: string; title: string; detail: string; target?: string; next?: boolean }) {
@@ -178,13 +186,14 @@ function WalletPanel() {
               value={importKey}
               onChange={(event) => setImportKey(event.target.value)}
               placeholder="64-character secp256k1 private key"
+              aria-label="Private key"
               autoComplete="off"
               spellCheck={false}
             />
             <button className="ghost" onClick={importWallet}>IMPORT</button>
           </div>
         )}
-        {error && <div className="error">{error}</div>}
+        {error && <div className="error" role="alert">{error}</div>}
       </section>
     )
   }
@@ -233,7 +242,7 @@ function WalletPanel() {
           <span>{dropsToRev(faucetResult.amount)} REV</span>
         </div>
       )}
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
     </section>
     <div className="signed-actions-grid">
       <ProofPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
@@ -274,8 +283,8 @@ function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; b
       </div>
       <p className="proof-copy">The transfer is signed locally with this session key. Rholox waits for inclusion, then confirms the recipient balance from finalized state.</p>
       <div className="transfer-grid">
-        <input value={recipient} onChange={(event) => setRecipient(event.target.value)} placeholder="Recipient REV address" spellCheck={false} autoComplete="off" />
-        <input value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Amount in REV" inputMode="decimal" />
+        <input value={recipient} onChange={(event) => setRecipient(event.target.value)} placeholder="Recipient REV address" aria-label="Recipient REV address" spellCheck={false} autoComplete="off" />
+        <input value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Amount in REV" aria-label="Amount in REV" inputMode="decimal" />
       </div>
       <div className="wallet-controls">
         <button className="primary" onClick={transfer} disabled={busy || !recipient.trim() || !amount.trim()}>{busy ? 'SIGNING / VERIFYING…' : 'SEND TEST REV'}</button>
@@ -291,7 +300,7 @@ function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; b
           <div><span>RECIPIENT</span><code>{receipt.recipientBalanceAfter === undefined ? '—' : `${dropsToRev(receipt.recipientBalanceAfter)} REV`}</code></div>
         </div>
       )}
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
     </section>
   )
 }
@@ -329,7 +338,7 @@ function ProofPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; bala
         <span className="badge">SIGNED DEPLOY</span>
       </div>
       <p className="proof-copy">The payload stays in your browser. Rholox hashes it locally, signs a Rholang deploy with this session key, then waits for inclusion and verifies the proof against finalized state.</p>
-      <textarea value={payload} onChange={(event) => setPayload(event.target.value)} maxLength={500} spellCheck={false} />
+      <textarea value={payload} onChange={(event) => setPayload(event.target.value)} aria-label="Proof payload" maxLength={500} spellCheck={false} />
       <div className="wallet-controls">
         <button className="primary" onClick={anchor} disabled={busy || !payload.trim()}>{busy ? 'SIGNING / VERIFYING…' : 'SIGN + ANCHOR PROOF'}</button>
       </div>
@@ -341,7 +350,7 @@ function ProofPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; bala
           <div><span>FINALITY</span><strong className={receipt.finalized ? 'receipt-good' : 'receipt-warn'}>{receipt.finalized ? `VERIFIED @ #${receipt.finalizedBlock?.blockNumber}` : 'PENDING — inclusion verified'}</strong></div>
         </div>
       )}
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
     </section>
   )
 }
@@ -353,13 +362,20 @@ function ExplorerPanel() {
   const [deployStatus, setDeployStatus] = useState<Record<string, unknown> | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [recentLoading, setRecentLoading] = useState(true)
+  const [recentLoaded, setRecentLoaded] = useState(false)
+  const [recentError, setRecentError] = useState<string | null>(null)
 
   async function loadRecent() {
+    setRecentLoading(true)
     try {
       setRecent(await getRecentBlocks())
-      setError(null)
+      setRecentLoaded(true)
+      setRecentError(null)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Unable to read recent blocks.')
+      setRecentError(cause instanceof Error ? cause.message : 'Unable to read recent blocks.')
+    } finally {
+      setRecentLoading(false)
     }
   }
 
@@ -413,14 +429,19 @@ function ExplorerPanel() {
     <section className="explorer-card" id="explorer">
       <div className="panel-head">
         <div><div className="eyebrow">EXPLORER</div><h2>Inspect blocks and deploy evidence.</h2></div>
-        <button className="ghost" onClick={loadRecent}>REFRESH BLOCKS</button>
+        <button className="ghost" onClick={loadRecent} disabled={recentLoading}>{recentLoading ? 'LOADING…' : 'REFRESH BLOCKS'}</button>
       </div>
       <div className="explorer-search">
-        <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void lookup() }} placeholder="Block hash, recent height, or deploy ID" spellCheck={false} />
+        <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void lookup() }} placeholder="Block hash, recent height, or deploy ID" aria-label="Explorer lookup" spellCheck={false} />
         <button className="primary" onClick={lookup} disabled={busy || !query.trim()}>{busy ? 'LOOKING…' : 'LOOK UP'}</button>
       </div>
 
-      <div className="recent-blocks">
+      {recentLoading && !recentLoaded && <div className="empty-state" role="status">Loading recent blocks…</div>}
+      {!recentLoading && recentLoaded && recent.length === 0 && <div className="empty-state" role="status">No recent blocks were returned by the connected node.</div>}
+      {recentError && <div className="error" role="alert">{recentError}{recent.length ? ' Showing the last successful observation.' : ''}</div>}
+      {recentError && recent.length > 0 && <div className="stale-note" role="status">Recent block list may be stale.</div>}
+
+      <div className="recent-blocks" aria-busy={recentLoading}>
         {recent.map((item) => (
           <button key={item.blockHash} className="block-row" onClick={() => openBlock(item.blockHash)}>
             <span className="block-height">#{item.blockNumber}</span>
@@ -457,7 +478,7 @@ function ExplorerPanel() {
           {'NotProcessed' in deployStatus && <div><span>STATE</span><code>{JSON.stringify(deployStatus.NotProcessed)}</code></div>}
         </div>
       )}
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error" role="alert">{error}</div>}
     </section>
   )
 }
@@ -466,28 +487,46 @@ function App() {
   const [status, setStatus] = useState<NodeStatus | null>(null)
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null)
   const [finalized, setFinalized] = useState<Finalized | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [statusError, setStatusError] = useState<string | null>(null)
+  const [capabilitiesError, setCapabilitiesError] = useState<string | null>(null)
+  const [finalizedError, setFinalizedError] = useState<string | null>(null)
+  const [statusReachable, setStatusReachable] = useState(false)
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
   async function refresh() {
     setRefreshing(true)
-    try {
-      const [nextStatus, nextCapabilities, nextFinalized] = await Promise.all([
-        getJson<NodeStatus>('/api/status'),
-        getJson<Capabilities>('/api/v1/capabilities'),
-        getJson<Finalized>('/api/last-finalized-block'),
-      ])
-      setStatus(nextStatus)
-      setCapabilities(nextCapabilities)
-      setFinalized(nextFinalized)
+    const [statusResult, capabilitiesResult, finalizedResult] = await Promise.allSettled([
+      getJson<NodeStatus>('/api/status'),
+      getJson<Capabilities>('/api/v1/capabilities'),
+      getJson<Finalized>('/api/last-finalized-block'),
+    ])
+
+    if (statusResult.status === 'fulfilled') {
+      setStatus(statusResult.value)
+      setStatusReachable(true)
+      setStatusError(null)
       setUpdatedAt(new Date())
-      setError(null)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Unable to reach the public testnet')
-    } finally {
-      setRefreshing(false)
+    } else {
+      setStatusReachable(false)
+      setStatusError(statusResult.reason instanceof Error ? statusResult.reason.message : 'Unable to reach the public testnet.')
     }
+
+    if (capabilitiesResult.status === 'fulfilled') {
+      setCapabilities(capabilitiesResult.value)
+      setCapabilitiesError(null)
+    } else {
+      setCapabilitiesError(capabilitiesResult.reason instanceof Error ? capabilitiesResult.reason.message : 'Unable to observe node capabilities.')
+    }
+
+    if (finalizedResult.status === 'fulfilled') {
+      setFinalized(finalizedResult.value)
+      setFinalizedError(null)
+    } else {
+      setFinalizedError(finalizedResult.reason instanceof Error ? finalizedResult.reason.message : 'Unable to observe finalized state.')
+    }
+
+    setRefreshing(false)
   }
 
   useEffect(() => {
@@ -501,12 +540,16 @@ function App() {
   const latest = status?.latestBlockNumber
   const finalBlock = finalized?.blockInfo?.blockNumber
   const finalityGap = typeof latest === 'number' && typeof finalBlock === 'number' ? latest - finalBlock : null
-  const online = Boolean(status && !error)
+  const online = Boolean(status && statusReachable)
+  const statusObservation = statusError ? (status ? 'STALE' : 'UNAVAILABLE') : status ? 'OBSERVED' : 'AWAITING'
+  const finalizedObservation = finalizedError ? (finalized ? 'STALE' : 'UNAVAILABLE') : finalized ? 'OBSERVED' : 'AWAITING'
+  const capabilitiesObservation = capabilitiesError ? (capabilities ? 'STALE' : 'UNAVAILABLE') : capabilities ? 'OBSERVED' : 'AWAITING'
+  const nodeStateLabel = online ? 'NODE REACHABLE' : statusError ? 'NODE UNREACHABLE' : 'OBSERVING NODE'
 
   return (
     <main className="app-shell">
       <header className="topbar">
-        <button className="brand" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Rholox home">
+        <button className="brand" type="button" onClick={() => window.scrollTo({ top: 0, behavior: motionBehavior() })} aria-label="Rholox home">
           <img src={rholoxLogo} alt="" />
           <span>RHOLOX</span>
         </button>
@@ -518,7 +561,7 @@ function App() {
           <button type="button" onClick={() => scrollToSection('transfer')}>Transfer</button>
         </nav>
         <div className="top-actions">
-          <span className={`environment-pill ${online ? 'environment-pill--online' : 'environment-pill--offline'}`}><span className="dot" />PUBLIC TESTNET</span>
+          <span className={`environment-pill ${online ? 'environment-pill--online' : statusError ? 'environment-pill--offline' : 'environment-pill--pending'}`}><span className="dot" />PUBLIC TESTNET</span>
           <button className="ghost compact" onClick={refresh} disabled={refreshing}>{refreshing ? 'SYNCING…' : 'REFRESH'}</button>
         </div>
       </header>
@@ -533,11 +576,11 @@ function App() {
             <button className="secondary" type="button" onClick={() => scrollToSection('network')}>INSPECT NETWORK</button>
           </div>
           <div className="hero-state" role="status">
-            <span className={`dot ${online ? 'live' : 'dead'}`} />
-            <strong>{online ? 'NODE REACHABLE' : 'NODE UNREACHABLE'}</strong>
+            <span className={`dot ${online ? 'live' : statusError ? 'dead' : ''}`} />
+            <strong>{nodeStateLabel}</strong>
             <span>{updatedAt ? `observed ${updatedAt.toLocaleTimeString()}` : 'awaiting first observation'}</span>
           </div>
-          {error && <div className="error">{error}</div>}
+          {statusError && <div className="error" role="alert">{statusError}</div>}
         </div>
         <div className="hero-visual">
           <TopologyMark />
@@ -561,17 +604,17 @@ function App() {
           <span className="observation-note">No synthetic metrics · values come from the connected node</span>
         </div>
         <div className="grid status-grid">
-          <Metric label="NETWORK" value={status?.networkId ?? '—'} sub={status?.version?.node} />
+          <Metric label="NETWORK" value={status?.networkId ?? '—'} sub={statusObservation === 'STALE' ? 'stale observation' : status?.version?.api ? `API ${status.version.api} · connected node` : statusObservation.toLowerCase()} />
           <Metric label="SHARD" value={status?.shardId ?? finalized?.blockInfo?.shardId ?? '—'} />
-          <Metric label="LATEST BLOCK" value={latest ?? '—'} sub="latest observed block" />
-          <Metric label="FINALIZED BLOCK" value={finalBlock ?? '—'} sub={finalityGap === null ? undefined : `${finalityGap} block gap`} />
-          <Metric label="VALIDATORS" value={bonds.length || '—'} sub={bonds.length ? `${totalStake} observed stake` : undefined} />
+          <Metric label="LATEST BLOCK" value={latest ?? '—'} sub={statusObservation === 'STALE' ? 'stale observation' : 'latest observed block'} />
+          <Metric label="FINALIZED BLOCK" value={finalBlock ?? '—'} sub={finalizedObservation === 'STALE' ? 'stale observation' : finalityGap === null ? finalizedObservation.toLowerCase() : `${finalityGap} block gap`} />
+          <Metric label="VALIDATORS" value={bonds.length || '—'} sub={finalizedObservation === 'STALE' ? 'stale observation' : bonds.length ? `${totalStake} observed stake` : finalizedObservation.toLowerCase()} />
           <Metric label="PEERS" value={status?.peers ?? '—'} sub={status?.nodes !== undefined ? `${status.nodes} reported nodes` : undefined} />
         </div>
 
         <div className="panel-row evidence-row">
           <article className="panel evidence-panel">
-            <div className="panel-head"><div><div className="eyebrow">FINALIZED EVIDENCE</div><h2>Latest finalized block</h2></div><span className="badge badge--verified">OBSERVED</span></div>
+            <div className="panel-head"><div><div className="eyebrow">FINALIZED EVIDENCE</div><h2>Latest finalized block</h2></div><span className={finalizedObservation === 'OBSERVED' ? 'badge badge--verified' : 'badge'}>{finalizedObservation}</span></div>
             <dl>
               <div><dt>Block</dt><dd>#{finalBlock ?? '—'}</dd></div>
               <div><dt>Hash</dt><dd title={finalized?.blockInfo?.blockHash}>{short(finalized?.blockInfo?.blockHash, 12, 10)}</dd></div>
@@ -580,15 +623,17 @@ function App() {
             </dl>
           </article>
           <article className="panel evidence-panel">
-            <div className="panel-head"><div><div className="eyebrow">NODE CAPABILITIES</div><h2>Execution surface</h2></div><span className="badge">PUBLIC TESTNET</span></div>
+            <div className="panel-head"><div><div className="eyebrow">NODE CAPABILITIES</div><h2>Execution surface</h2></div><span className="badge">{capabilitiesObservation}</span></div>
             <dl>
-              <div><dt>Propose on deploy</dt><dd>{capabilities?.proposeOnDeploy ? 'YES' : 'NO'}</dd></div>
-              <div><dt>Faucet</dt><dd>{capabilities?.faucet ? 'AVAILABLE' : 'UNAVAILABLE'}</dd></div>
-              <div><dt>Dev mode</dt><dd>{capabilities?.devMode ? 'ON' : 'OFF'}</dd></div>
-              <div><dt>Admin exposed</dt><dd>{capabilities?.adminHttp ? 'YES' : 'NO'}</dd></div>
+              <div><dt>Propose on deploy</dt><dd>{observedBoolean(capabilities?.proposeOnDeploy, 'YES', 'NO')}</dd></div>
+              <div><dt>Faucet</dt><dd>{observedBoolean(capabilities?.faucet, 'AVAILABLE', 'UNAVAILABLE')}</dd></div>
+              <div><dt>Dev mode</dt><dd>{observedBoolean(capabilities?.devMode, 'ON', 'OFF')}</dd></div>
+              <div><dt>Admin exposed</dt><dd>{observedBoolean(capabilities?.adminHttp, 'YES', 'NO')}</dd></div>
             </dl>
+            {capabilitiesError && <div className="error compact-error" role="alert">{capabilitiesError}{capabilities ? ' Showing the last successful observation.' : ''}</div>}
           </article>
         </div>
+        {finalizedError && <div className="error compact-error" role="alert">{finalizedError}{finalized ? ' Finalized evidence shown above may be stale.' : ''}</div>}
       </section>
 
       <section className="concept-strip" aria-label="Design principles">
