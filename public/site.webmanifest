@@ -1,0 +1,16 @@
+{
+  "name": "Rholox",
+  "short_name": "Rholox",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070c",
+  "theme_color": "#071017",
+  "icons": [
+    {
+      "src": "/rholox-blue-v2.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
