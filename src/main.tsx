@@ -16,6 +16,7 @@ import {
   RCHAIN_API,
   dropsToRev,
   getJson,
+  getObserverObservation,
   getRecentBlocks,
   getBlockByHash,
   readBalance,
@@ -25,6 +26,7 @@ import {
   type FaucetResponse,
   type Finalized,
   type NodeStatus,
+  type ObserverReport,
   type LightBlock,
   type BlockDetails,
 } from './lib/rchain'
@@ -63,6 +65,22 @@ function scrollToSection(id: string) {
 
 function observedBoolean(value: boolean | undefined, yes: string, no: string) {
   return value === undefined ? 'UNKNOWN' : value ? yes : no
+}
+
+function observerHeightRange(min?: number | null, max?: number | null) {
+  if (typeof min !== 'number' || typeof max !== 'number') return '—'
+  return min === max ? String(max) : `${min}–${max}`
+}
+
+function observerVerdictLabel(report: ObserverReport | null) {
+  if (!report) return 'AWAITING'
+  switch (report.verdict.class) {
+    case 'agreement': return `${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} AGREE`
+    case 'height_skew': return 'HEIGHT SKEW'
+    case 'majority': return `${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} MAJORITY`
+    case 'divergence': return 'DIVERGENCE'
+    default: return 'UNAVAILABLE'
+  }
 }
 
 function ModuleCard({ index, title, detail, target, next = false }: { index: string; title: string; detail: string; target?: string; next?: boolean }) {
@@ -500,19 +518,22 @@ function App() {
   const [status, setStatus] = useState<NodeStatus | null>(null)
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null)
   const [finalized, setFinalized] = useState<Finalized | null>(null)
+  const [observer, setObserver] = useState<ObserverReport | null>(null)
   const [statusError, setStatusError] = useState<string | null>(null)
   const [capabilitiesError, setCapabilitiesError] = useState<string | null>(null)
   const [finalizedError, setFinalizedError] = useState<string | null>(null)
+  const [observerError, setObserverError] = useState<string | null>(null)
   const [statusReachable, setStatusReachable] = useState(false)
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
   async function refresh() {
     setRefreshing(true)
-    const [statusResult, capabilitiesResult, finalizedResult] = await Promise.allSettled([
+    const [statusResult, capabilitiesResult, finalizedResult, observerResult] = await Promise.allSettled([
       getJson<NodeStatus>('/api/status'),
       getJson<Capabilities>('/api/v1/capabilities'),
       getJson<Finalized>('/api/last-finalized-block'),
+      getObserverObservation(),
     ])
 
     if (statusResult.status === 'fulfilled') {
@@ -539,6 +560,13 @@ function App() {
       setFinalizedError(finalizedResult.reason instanceof Error ? finalizedResult.reason.message : 'Unable to observe finalized state.')
     }
 
+    if (observerResult.status === 'fulfilled') {
+      setObserver(observerResult.value)
+      setObserverError(null)
+    } else {
+      setObserverError(observerResult.reason instanceof Error ? observerResult.reason.message : 'Unable to reach the multi-node observer.')
+    }
+
     setRefreshing(false)
   }
 
@@ -557,7 +585,16 @@ function App() {
   const statusObservation = statusError ? (status ? 'STALE' : 'UNAVAILABLE') : status ? 'OBSERVED' : 'AWAITING'
   const finalizedObservation = finalizedError ? (finalized ? 'STALE' : 'UNAVAILABLE') : finalized ? 'OBSERVED' : 'AWAITING'
   const capabilitiesObservation = capabilitiesError ? (capabilities ? 'STALE' : 'UNAVAILABLE') : capabilities ? 'OBSERVED' : 'AWAITING'
-  const nodeStateLabel = online ? 'NODE REACHABLE' : statusError ? 'NODE UNREACHABLE' : 'OBSERVING NODE'
+  const observerObservation = observerError ? (observer ? 'STALE' : 'UNAVAILABLE') : observer ? 'OBSERVED' : 'AWAITING'
+  const observerAgreement = observer?.verdict.class === 'agreement'
+  const observerReference = observer?.verdict.reference
+  const observerBadge = observerAgreement ? 'badge badge--verified' : observer?.verdict.class === 'divergence' ? 'badge badge--danger' : 'badge'
+  const observerStateLabel = observer
+    ? observerAgreement
+      ? `${observer.verdict.agreeing_nodes}/${observer.verdict.comparable_nodes} FINALIZED SNAPSHOT AGREEMENT`
+      : `MULTI-NODE ${observer.verdict.class.replace('_', ' ').toUpperCase()}`
+    : null
+  const nodeStateLabel = observerStateLabel ?? (online ? 'NODE REACHABLE' : statusError ? 'NODE UNREACHABLE' : 'OBSERVING NODE')
 
   return (
     <main className="app-shell">
@@ -605,7 +642,7 @@ function App() {
       </section>
 
       <section className="module-grid" aria-label="Rholox modules">
-        <ModuleCard index="01" title="Network Console" detail="Live node, shard, height, finality" target="network" />
+        <ModuleCard index="01" title="Network Console" detail="4-node finality evidence + execution state" target="network" />
         <ModuleCard index="02" title="Wallet + Test REV" detail="Session keys, faucet, balance" target="wallet" />
         <ModuleCard index="03" title="Proof" detail="SHA-256 anchor + finalized receipt" target="proof" />
         <ModuleCard index="04" title="Explorer" detail="Blocks, deploys, evidence" target="explorer" />
@@ -617,18 +654,47 @@ function App() {
       <section className="network-surface" id="network">
         <div className="section-heading">
           <div><div className="eyebrow">LIVE OBSERVATION</div><h2>Network state</h2></div>
-          <span className="observation-note">No synthetic metrics · values come from the connected node</span>
+          <span className="observation-note">Direct execution node · independent 4-node finality cross-check</span>
         </div>
         <div className="grid status-grid">
-          <Metric label="NETWORK" value={status?.networkId ?? '—'} sub={statusObservation === 'STALE' ? 'stale observation' : status?.version?.api ? `API ${status.version.api} · connected node` : statusObservation.toLowerCase()} />
-          <Metric label="SHARD" value={status?.shardId ?? finalized?.blockInfo?.shardId ?? '—'} />
-          <Metric label="LATEST BLOCK" value={latest ?? '—'} sub={statusObservation === 'STALE' ? 'stale observation' : 'latest observed block'} />
-          <Metric label="FINALIZED BLOCK" value={finalBlock ?? '—'} sub={finalizedObservation === 'STALE' ? 'stale observation' : finalityGap === null ? finalizedObservation.toLowerCase() : `${finalityGap} block gap`} />
+          <Metric label="NETWORK" value={observerReference?.network_id ?? status?.networkId ?? '—'} sub={observer ? `${observer.heights.reachable_nodes}/${observer.verdict.observed_nodes} observer nodes reachable` : statusObservation === 'STALE' ? 'stale observation' : status?.version?.api ? `API ${status.version.api} · execution node` : statusObservation.toLowerCase()} />
+          <Metric label="SHARD" value={observerReference?.shard_id ?? status?.shardId ?? finalized?.blockInfo?.shardId ?? '—'} />
+          <Metric label="LATEST BLOCK" value={observer ? observerHeightRange(observer.heights.latest_min, observer.heights.latest_max) : latest ?? '—'} sub={observer ? 'range across reachable nodes' : statusObservation === 'STALE' ? 'stale observation' : 'latest observed block'} />
+          <Metric label="FINALIZED BLOCK" value={observer ? observerHeightRange(observer.heights.finalized_min, observer.heights.finalized_max) : finalBlock ?? '—'} sub={observer ? observerVerdictLabel(observer) : finalizedObservation === 'STALE' ? 'stale observation' : finalityGap === null ? finalizedObservation.toLowerCase() : `${finalityGap} block gap`} />
           <Metric label="VALIDATORS" value={bonds.length || '—'} sub={finalizedObservation === 'STALE' ? 'stale observation' : bonds.length ? `${totalStake} observed stake` : finalizedObservation.toLowerCase()} />
-          <Metric label="PEERS" value={status?.peers ?? '—'} sub={status?.nodes !== undefined ? `${status.nodes} reported nodes` : undefined} />
+          <Metric label="NODE A PEERS" value={status?.peers ?? '—'} sub={status?.nodes !== undefined ? `${status.nodes} reported nodes` : 'execution-node view'} />
         </div>
 
         <div className="panel-row evidence-row">
+          <article className="panel observer-panel">
+            <div className="panel-head">
+              <div><div className="eyebrow">MULTI-NODE EVIDENCE</div><h2>Finalized snapshot cross-check</h2></div>
+              <span className={observerBadge}>{observerError && observer ? 'STALE · ' : ''}{observerVerdictLabel(observer)}</span>
+            </div>
+            {observer ? (
+              <>
+                <dl className="observer-summary">
+                  <div><dt>Reachability</dt><dd>{observer.heights.reachable_nodes}/{observer.verdict.observed_nodes} nodes</dd></div>
+                  <div><dt>Latest range</dt><dd>{observerHeightRange(observer.heights.latest_min, observer.heights.latest_max)}</dd></div>
+                  <div><dt>Finalized range</dt><dd>{observerHeightRange(observer.heights.finalized_min, observer.heights.finalized_max)}</dd></div>
+                  <div><dt>Reference hash</dt><dd title={observerReference?.block_hash}>{short(observerReference?.block_hash, 12, 10)}</dd></div>
+                </dl>
+                <div className="observer-node-grid" aria-label="Observed testnet nodes">
+                  {observer.observations.map((node) => (
+                    <div className={`observer-node ${node.reachable ? 'observer-node--online' : 'observer-node--offline'}`} key={node.node}>
+                      <span>{node.node}</span>
+                      <strong>{node.reachable ? 'REACHABLE' : 'UNREACHABLE'}</strong>
+                      <code>tip {node.latest_block ?? '—'} · final {node.finalized_block ?? '—'}</code>
+                    </div>
+                  ))}
+                </div>
+                <p className="observer-verdict-copy">{observer.verdict.summary}. Exact snapshot agreement is reported separately from height skew; ancestry-aware comparison is not claimed here.</p>
+              </>
+            ) : (
+              <p className="observer-verdict-copy">{observerObservation === 'UNAVAILABLE' ? 'Multi-node evidence is currently unavailable.' : 'Waiting for the first multi-node snapshot.'}</p>
+            )}
+            {observerError && <div className="error compact-error" role="alert">{observerError}{observer ? ' Showing the last successful multi-node snapshot.' : ''}</div>}
+          </article>
           <article className="panel evidence-panel">
             <div className="panel-head"><div><div className="eyebrow">FINALIZED EVIDENCE</div><h2>Latest finalized block</h2></div><span className={finalizedObservation === 'OBSERVED' ? 'badge badge--verified' : 'badge'}>{finalizedObservation}</span></div>
             <dl>
@@ -664,7 +730,7 @@ function App() {
       <section className="roadmap" id="roadmap">
         <div><div className="eyebrow">VERIFIED SURFACE</div><h2>Implemented before expanded.</h2><p>Each capability stays explicit about what is observed, signed, included, and finalized.</p></div>
         <ol>
-          <li className="done"><span>01</span><div><strong>Network console</strong><small>Live status, capabilities, validators and finality.</small></div></li>
+          <li className="done"><span>01</span><div><strong>Network console</strong><small>Execution-node state plus independent A/D/B/C finalized-snapshot evidence.</small></div></li>
           <li className="done"><span>02</span><div><strong>Wallet + test REV</strong><small>Session-only keys, faucet funding and balance reads.</small></div></li>
           <li className="done"><span>03</span><div><strong>Rholox Proof</strong><small>Signed deploy → inclusion → finalized receipt.</small></div></li>
           <li className="done"><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
@@ -674,7 +740,7 @@ function App() {
         </ol>
       </section>
 
-      <footer><span>Rholox v0.7 · public testnet · test value only</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
+      <footer><span>Rholox v0.7 · public testnet · test value only</span><div className="footer-links"><a href={`${RCHAIN_API}/observer/v1/observation`} target="_blank" rel="noreferrer">MULTI-NODE EVIDENCE ↗</a><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></div></footer>
     </main>
   )
 }

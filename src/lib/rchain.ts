@@ -1,4 +1,5 @@
 export const RCHAIN_API = 'https://testnet.rhobot.net'
+export const OBSERVER_API = `${RCHAIN_API}/observer`
 export const DROPS_PER_REV = 100_000_000
 
 export type NodeStatus = {
@@ -38,6 +39,44 @@ export type Finalized = {
     bonds?: Array<{ validator: string; stake: number }>
     deployCount?: number
     timestamp?: number
+  }
+}
+
+export type ObserverVerdictClass = 'agreement' | 'height_skew' | 'majority' | 'divergence' | 'unavailable'
+
+export type ObserverNode = {
+  node: string
+  reachable: boolean
+  network_id?: string | null
+  shard_id?: string | null
+  latest_block?: number | null
+  finalized_block?: number | null
+  finalized_hash?: string | null
+  error?: string | null
+}
+
+export type ObserverReport = {
+  observed_at_ms: number
+  heights: {
+    reachable_nodes: number
+    latest_min?: number | null
+    latest_max?: number | null
+    finalized_min?: number | null
+    finalized_max?: number | null
+  }
+  observations: ObserverNode[]
+  verdict: {
+    class: ObserverVerdictClass
+    observed_nodes: number
+    comparable_nodes: number
+    agreeing_nodes: number
+    summary: string
+    reference?: {
+      network_id: string
+      shard_id: string
+      block_number: number
+      block_hash: string
+    } | null
   }
 }
 
@@ -105,6 +144,12 @@ export async function getJson<T>(path: string): Promise<T> {
   const response = await fetchWithTimeout(`${RCHAIN_API}${path}`, { cache: 'no-store' })
   if (!response.ok) throw new Error(`${path} returned ${response.status}`)
   return response.json() as Promise<T>
+}
+
+export async function getObserverObservation(): Promise<ObserverReport> {
+  const response = await fetchWithTimeout(`${OBSERVER_API}/v1/observation`, { cache: 'no-store' }, 6_000)
+  if (!response.ok) throw new Error(`Observer returned ${response.status}`)
+  return response.json() as Promise<ObserverReport>
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
