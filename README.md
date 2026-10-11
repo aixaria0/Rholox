@@ -21,6 +21,7 @@ The current vertical slice covers observation, session-only signing, test-value 
 - **No production-custody claim.** Exchange reserve authority is held by private purse capabilities inside the pool contract; Phase 07 is testnet evidence, not an audited financial protocol.
 - **No mainnet claim.** The UI does not present production/mainnet status or synthetic production metrics.
 - **No admin surface.** The client uses the public node HTTP surface only.
+- **Independent observation path.** Signed writes still go to the public execution gateway; network/finality evidence is cross-checked by the read-only `rchain-observer` service across the four live testnet validators.
 - **No hidden finality claim.** Submission, execution, inclusion, and finalized-state read-back remain distinct.
 - **No fabricated market telemetry.** The exchange UI does not invent TVL, volume, APR, yield, price feeds, or activity.
 - **Fixed-supply assets.** Asset runtime v2 adds empty-purse/deposit/withdraw capability plumbing for pools but does not add post-creation minting.
@@ -48,16 +49,29 @@ A compensation failure is surfaced as `pool-fatal`; it is not described as atomi
 ```text
 Browser
   ├─ session wallet / secp256k1 signing
-  ├─ network observation
-  ├─ proof hashing + signed deploy
-  ├─ REV transfer + finalized balance verification
-  ├─ Asset Lab v1/v2
-  ├─ Exchange Core pool math + capability-custodied Rholang pool
-  └─ block/deploy explorer
+  ├─ proof / transfer / assets / exchange writes
+  │       │
+  │       ▼
+  │   https://testnet.rhobot.net
+  │       └─ public execution gateway → validator A
+  │
+  └─ network + finality evidence
           │
           ▼
-https://testnet.rhobot.net
+      /observer/v1/observation
+          │
+          ▼
+      rchain-observer
+          ├─ validator A
+          ├─ validator D
+          ├─ validator B
+          └─ validator C
+               │
+               ▼
+       exact agreement / height skew / hash conflict
 ```
+
+The observer is intentionally not a write proxy. It polls the four live validators on a bounded interval and serves a cached read-only snapshot to Rholox, so page traffic does not fan out into fresh validator requests. Exact finalized-snapshot agreement is distinguished from height skew; ancestry-aware equivalence is not claimed by the current verdict layer. The service source and deployment boundary live in [`rchain-community/rchain-observer`](https://github.com/rchain-community/rchain-observer).
 
 Core implementation boundaries:
 

@@ -590,3 +590,36 @@ footer a { color: #5db7ea; }
   .exchange-inspect-row, .exchange-two-inputs, .exchange-three-inputs { grid-template-columns: 1fr; }
   .exchange-facts { grid-template-columns: 1fr; }
 }
+
+/* Multi-node evidence stays visually secondary to Rholo blue identity. */
+.observer-panel { grid-column: 1 / -1; background: linear-gradient(145deg, rgba(9,16,23,.94), rgba(6,28,23,.22)); border-color: rgba(46,132,178,.20); }
+.observer-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 20px; border: 1px solid rgba(78,122,154,.12); border-radius: 10px; overflow: hidden; }
+.observer-summary div { min-width: 0; display: grid; gap: 7px; align-content: start; padding: 13px 14px; border-top: 0; border-right: 1px solid rgba(78,122,154,.12); }
+.observer-summary div:last-child { border-right: 0; }
+.observer-summary dt { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.observer-summary dd { text-align: left; font-size: 10px; }
+.observer-node-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.observer-node { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; padding: 12px; border: 1px solid rgba(78,122,154,.14); border-radius: 10px; background: rgba(4,8,13,.56); }
+.observer-node > span { color: #77c7f2; font: 600 12px var(--font-display); }
+.observer-node > strong { justify-self: end; color: #777f86; font: 500 8px var(--font-data); letter-spacing: .08em; }
+.observer-node code { grid-column: 1 / -1; color: #817d88; font-size: 9px; }
+.observer-node--online { border-color: rgba(25,197,138,.16); box-shadow: inset 0 1px 0 rgba(25,197,138,.035); }
+.observer-node--online > strong { color: #72c9a6; }
+.observer-node--offline > strong { color: #c98a8a; }
+.observer-verdict-copy { margin: 13px 0 0; color: #777482; font-size: 10px; line-height: 1.55; }
+.badge--danger { border-color: rgba(201,94,94,.30); color: #e09a9a; background: rgba(70,20,24,.24); }
+.footer-links { display: flex; gap: 16px; align-items: center; }
+
+@media (max-width: 980px) {
+  .observer-summary { grid-template-columns: 1fr 1fr; }
+  .observer-summary div:nth-child(2) { border-right: 0; }
+  .observer-summary div:nth-child(n+3) { border-top: 1px solid rgba(78,122,154,.12); }
+  .observer-node-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 620px) {
+  .observer-summary, .observer-node-grid { grid-template-columns: 1fr; }
+  .observer-summary div { border-right: 0; border-top: 1px solid rgba(78,122,154,.12); }
+  .observer-summary div:first-child { border-top: 0; }
+  .footer-links { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
