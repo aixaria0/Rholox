@@ -59,15 +59,15 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
     try {
       const infoObs = await readAssetInfo(targetId)
       const next = infoObs.value
-      const issuerBrandObs = await verifyAssetBrand(next.assetId, next.issuerAddress)
+      const issuerBrandObs = await verifyAssetBrand(next, next.issuerAddress)
       setAsset(next)
       setAssetIdInput(next.assetId)
       setAssetObservedBlock(infoObs.block?.blockNumber ?? issuerBrandObs.block?.blockNumber ?? null)
       setIssuerBrand(issuerBrandObs.value)
       if (wallet) {
         const [balanceObs, brandObs] = await Promise.all([
-          readAssetBalance(next.assetId, wallet.revAddress),
-          verifyAssetBrand(next.assetId, wallet.revAddress),
+          readAssetBalance(next, wallet.revAddress),
+          verifyAssetBrand(next, wallet.revAddress),
         ])
         setWalletAssetBalance(balanceObs.value)
         setWalletBrand(brandObs.value)
@@ -102,7 +102,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
       })
       setCreateReceipt(receipt)
       setAsset(receipt.asset)
-      setAssetIdInput(receipt.asset.assetId)
+      setAssetIdInput(receipt.asset.locator)
       setIssuerBrand(receipt.brandVerified)
       setWalletAssetBalance(receipt.issuerBalanceUnits ?? null)
       setWalletBrand(receipt.brandVerified)
@@ -151,7 +151,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
 
       <p className="proof-copy">
         Asset Lab uses the chain&apos;s MakeMint purse model. Creation makes one fixed initial supply;
-        transfers move units between same-brand purses. No mainnet value, custody, DEX, or post-creation mint claim is made here.
+        transfers move units between same-brand purses. Runtime v2 adds the capability bridge used by Exchange Core, without adding post-creation minting or a production-custody claim.
       </p>
 
       <div className="asset-boundary" role="note">
@@ -165,7 +165,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
           value={assetIdInput}
           onChange={(event) => setAssetIdInput(event.target.value.trim().toLowerCase())}
           placeholder="64-character asset ID"
-          aria-label="Asset ID"
+          aria-label="Asset reference"
           spellCheck={false}
           autoComplete="off"
         />
@@ -184,19 +184,21 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
             <span className={ready ? 'badge badge--verified' : 'badge'}>{ready ? 'FINALIZED · VERIFIED' : 'PENDING / UNVERIFIED'}</span>
           </div>
           <div className="asset-id-line">
-            <span>ASSET ID</span><code>{asset.assetId}</code>
-            <button className="mini" type="button" onClick={() => copyText(asset.assetId)}>COPY</button>
+            <span>{asset.runtimeVersion === 2 ? 'REGISTRY URI' : 'ASSET ID'}</span><code>{asset.runtimeVersion === 2 ? asset.locator : asset.assetId}</code>
+            <button className="mini" type="button" onClick={() => copyText(asset.runtimeVersion === 2 ? asset.locator : asset.assetId)}>COPY</button>
           </div>
           <dl className="asset-facts">
             <div><dt>Issuer</dt><dd title={asset.issuerAddress}>{short(asset.issuerAddress, 14, 10)}</dd></div>
             <div><dt>Initial supply</dt><dd>{formatAssetUnits(asset.supplyUnits, asset.decimals)} {asset.symbol}</dd></div>
             <div><dt>Decimals</dt><dd>{asset.decimals}</dd></div>
+            <div><dt>Runtime</dt><dd>v{asset.runtimeVersion}{asset.runtimeVersion === 2 ? ' · EXCHANGE-CAPABLE TESTNET' : ' · LEGACY TRANSFER'}</dd></div>
+            {asset.runtimeVersion === 2 && <div><dt>Asset ID</dt><dd>{short(asset.assetId, 10, 8)}</dd></div>}
             <div><dt>Issuer brand</dt><dd>{issuerBrand === null ? 'UNKNOWN' : issuerBrand ? 'VERIFIED' : 'FAILED'}</dd></div>
             <div><dt>Observed block</dt><dd>{assetObservedBlock ? `#${assetObservedBlock}` : '—'}</dd></div>
             <div><dt>Your balance</dt><dd>{wallet ? walletBalanceDisplay : 'CONNECT SESSION WALLET'}</dd></div>
           </dl>
           {!ready && (
-            <button className="ghost" type="button" onClick={() => observeAsset(asset.assetId)} disabled={busy !== null}>
+            <button className="ghost" type="button" onClick={() => observeAsset(asset.runtimeVersion === 2 ? asset.locator : asset.assetId)} disabled={busy !== null}>
               VERIFY FINALIZED STATE
             </button>
           )}
@@ -206,7 +208,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
       {!wallet ? (
         <div className="asset-locked" role="status">
           <strong>Creation and transfer require a session wallet.</strong>
-          <span>You can still inspect a known Asset ID above. Create or import a testnet wallet to sign Asset Lab deploys.</span>
+          <span>You can still inspect a v2 registry URI or legacy Asset ID above. Create or import a testnet wallet to sign Asset Lab deploys.</span>
         </div>
       ) : (
         <div className="asset-work-grid">
@@ -249,7 +251,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
         <div className="proof-receipt asset-receipt">
           <div><span>CREATE DEPLOY</span><code>{createReceipt.deployId}</code></div>
           <div><span>INCLUSION</span><code>#{createReceipt.inclusionBlock.blockNumber} · {short(createReceipt.inclusionBlock.blockHash)}</code></div>
-          <div><span>FINALITY</span><strong className={createReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{createReceipt.finalized ? `VERIFIED @ #${createReceipt.finalizedBlock?.blockNumber}` : 'PENDING — recheck Asset ID'}</strong></div>
+          <div><span>FINALITY</span><strong className={createReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{createReceipt.finalized ? `VERIFIED @ #${createReceipt.finalizedBlock?.blockNumber}` : 'PENDING — finalized state absent; refresh before retry'}</strong></div>
         </div>
       )}
 
@@ -259,7 +261,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
           <div><span>TO</span><code>{transferReceipt.to}</code></div>
           <div><span>DEPLOY</span><code>{transferReceipt.deployId}</code></div>
           <div><span>INCLUSION</span><code>#{transferReceipt.inclusionBlock.blockNumber} · {short(transferReceipt.inclusionBlock.blockHash)}</code></div>
-          <div><span>FINALITY</span><strong className={transferReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{transferReceipt.finalized ? `VERIFIED @ #${transferReceipt.finalizedBlock?.blockNumber}` : 'PENDING — inclusion verified'}</strong></div>
+          <div><span>FINALITY</span><strong className={transferReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{transferReceipt.finalized ? `VERIFIED @ #${transferReceipt.finalizedBlock?.blockNumber}` : 'PENDING — not finalized; refresh before retry'}</strong></div>
           <div><span>RECIPIENT BRAND</span><strong className={transferReceipt.recipientBrandVerified ? 'receipt-good' : 'receipt-warn'}>{transferReceipt.recipientBrandVerified ? 'VERIFIED' : 'PENDING'}</strong></div>
         </div>
       )}

@@ -1,0 +1,222 @@
+{
+  "generatedAt": "2026-10-11T16:02:49.941Z",
+  "api": "https://testnet.rhobot.net",
+  "mode": "explore-deploy (non-persistent)",
+  "scenarios": [
+    {
+      "name": "add-compensated",
+      "receipt": [
+        "pool-error",
+        "second asset deposit failed; first deposit rolled back"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        10,
+        20
+      ],
+      "custodyMatches": true,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "add-fatal",
+      "receipt": [
+        "pool-fatal",
+        "second asset deposit failed and rollback failed"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        11,
+        20
+      ],
+      "custodyMatches": false,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "remove-compensated",
+      "receipt": [
+        "pool-error",
+        "second asset withdrawal failed; first withdrawal rolled back"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        10,
+        20
+      ],
+      "custodyMatches": true,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "remove-fatal",
+      "receipt": [
+        "pool-fatal",
+        "second asset withdrawal failed and rollback failed"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        9,
+        20
+      ],
+      "custodyMatches": false,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "swap-a-b-compensated",
+      "receipt": [
+        "pool-error",
+        "swap output withdrawal failed; input rolled back"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        10,
+        20
+      ],
+      "custodyMatches": true,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "swap-a-b-fatal",
+      "receipt": [
+        "pool-fatal",
+        "swap output withdrawal failed and input rollback failed"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        11,
+        20
+      ],
+      "custodyMatches": false,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "swap-b-a-compensated",
+      "receipt": [
+        "pool-error",
+        "swap output withdrawal failed; input rolled back"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        10,
+        20
+      ],
+      "custodyMatches": true,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "swap-b-a-fatal",
+      "receipt": [
+        "pool-fatal",
+        "swap output withdrawal failed and input rollback failed"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        10,
+        21
+      ],
+      "custodyMatches": false,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "addLiquidity-custody-guard",
+      "receipt": [
+        "pool-error",
+        "custody balance mismatch"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        11,
+        20
+      ],
+      "custodyMatches": false,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "removeLiquidity-custody-guard",
+      "receipt": [
+        "pool-error",
+        "custody balance mismatch"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        11,
+        20
+      ],
+      "custodyMatches": false,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "swap-custody-guard",
+      "receipt": [
+        "pool-error",
+        "custody balance mismatch"
+      ],
+      "recorded": [
+        10,
+        20,
+        30
+      ],
+      "actualCustody": [
+        11,
+        20
+      ],
+      "custodyMatches": false,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    },
+    {
+      "name": "fresh-private-name-rejected-as-deployerId",
+      "result": true,
+      "blockNumber": 441,
+      "blockHash": "ec76733f727f6752b3eb635b4e23e414869ac9ce1a8009b4531934aaed1293eb"
+    }
+  ]
+}
