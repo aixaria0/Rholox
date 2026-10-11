@@ -285,3 +285,9 @@ Phase 07 v1 does **not** claim:
 - atomic rollback if a compensation operation itself fails.
 
 The implemented claim is narrower: a public-testnet, capability-custodied two-asset pool whose arithmetic and finalized state can be independently inspected and whose failure boundaries remain explicit.
+
+## Phase 07 merge gate — adversarial follow-up (2026-10-11)
+
+The reproducible CI command `npm run test:amm:actors` now tests a two-holder LP accounting **off-chain transition model**: Alice initial liquidity, Bob proportional liquidity, Bob's excess-withdrawal refusal, Bob's partial withdrawal, a swap, Bob's remaining exit, Alice's full exit, and zeroed reserves and LP shares. It also rejects zero-rounded swaps, reserve-cap overflow, excessive `minOut`, and zero-rounded LP withdrawal.
+
+**Evidence boundary:** These tests validate the TypeScript quote/state model only. They do not execute the generated Rholang contract, verify that `rho:rchain:deployerId` cannot be forged, or force a failure in either leg of an on-chain two-asset operation. A stale-state mismatch is asserted in the model, not executed as a fresh on-chain race here; the historical on-chain race is documented separately in the evidence file. The following remain release blockers: live two-actor contract execution, adversarial capability/identity review, forced second-leg failure and compensation-failure recovery observations, and automated isolated-node contract tests. No mainnet release claim follows from passing this suite.
