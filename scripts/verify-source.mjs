@@ -11,8 +11,15 @@ const exchange = readFileSync(new URL('../src/ExchangePanel.tsx', import.meta.ur
 const exchangeCore = readFileSync(new URL('../src/lib/exchange.ts', import.meta.url), 'utf8')
 const amm = readFileSync(new URL('../src/lib/amm.ts', import.meta.url), 'utf8')
 const deploy = readFileSync(new URL('../src/lib/deploy.ts', import.meta.url), 'utf8')
+const wallet = readFileSync(new URL('../src/lib/wallet.ts', import.meta.url), 'utf8')
 
 const failures = []
+
+const privateStateSources = [main, wallet, proof, transfer, deploy, asset, exchangeCore]
+for (const forbidden of ['localStorage', 'sessionStorage', 'indexedDB']) {
+  if (privateStateSources.some((source) => source.includes(forbidden))) failures.push(`browser persistence forbidden for signing/custody state: ${forbidden}`)
+}
+
 
 for (const forbidden of ['Mainnet Live', 'RChain Testnet', 'RChain, observable.']) {
   if (main.includes(forbidden) || html.includes(forbidden) || assetLab.includes(forbidden) || exchange.includes(forbidden)) {
@@ -108,6 +115,12 @@ if (!exchangeCore.includes("feeBps: 0")) failures.push('exchange v1 fee must rem
 
 if (!exchangeCore.includes("stale pool state")) failures.push('pool mutations must refuse stale quoted state')
 if (!exchangeCore.includes('rho:rchain:deployerId') || !exchangeCore.includes('creatorCh') || !exchangeCore.includes('revAddr!("fromDeployerId", *deployerId, *creatorCh)')) failures.push('pool creator must be derived from deployerId on-chain')
+const poolIdentityCalls = exchangeCore.match(/revAddr!\(\"fromDeployerId\", \*_id, \*holderCh\)/g) ?? []
+if (poolIdentityCalls.length !== 3) failures.push(`all three pool mutations must derive holder identity from a deployerId capability (found ${poolIdentityCalls.length})`)
+const assetIdentityCalls = asset.match(/revAddr!\(\"fromDeployerId\", \*_id, \*fromCh\)/g) ?? []
+if (assetIdentityCalls.length !== 2) failures.push(`asset deposit/transfer must derive sender identity from a deployerId capability (found ${assetIdentityCalls.length})`)
+if (!asset.includes('contract assetService(@"withdrawFrom", sourcePurse')) failures.push('asset withdrawal authority must remain source-purse capability based')
+
 if (!exchangeCore.includes('@expectedA') || !exchangeCore.includes('@expectedB') || !exchangeCore.includes('@expectedShares')) failures.push('pool mutations must carry the quoted reserve/share state')
 if (!exchangeCore.includes('poolAfter.custodyVerified')) failures.push('pool mutation finality must verify custody equality')
 if (!exchange.includes('no TVL · APR · volume · mainnet')) failures.push('exchange non-claims must remain visible')

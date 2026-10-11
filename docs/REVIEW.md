@@ -205,3 +205,7 @@ The purpose is narrower: provide a reproducible public-testnet execution surface
 The exact recovery-core and public custody-guard Rholang blocks are now exercised through non-persistent `explore-deploy` fault injection. Twelve scenarios cover compensated and `pool-fatal` second-leg failures for add/remove/both swap directions, fail-closed custody mismatch on all public mutation entrypoints, and rejection of a fresh private name as a `deployerId`. See `docs/evidence/phase07-rholang-recovery-explore-2026-10-11.json`.
 
 This closes the previous **Rholang semantics** gap for those branches, but not the stronger isolated-node deployment gate. The evidence does not claim mainnet safety or an independent security audit.
+
+### Authority regression gates
+
+`npm run verify:source` now fails if signing/custody source introduces browser persistence (`localStorage`, `sessionStorage`, or `indexedDB`), if any of the three pool mutation entrypoints stops deriving its holder from a `deployerId` capability, if Asset Lab deposit/transfer stops deriving its sender the same way, or if asset withdrawal stops being source-purse-capability based. These are source regression gates; the recorded Rholang negative control independently shows that a fresh private name is not accepted by `rho:rev:address("fromDeployerId", ...)`.
