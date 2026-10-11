@@ -209,3 +209,7 @@ This closes the previous **Rholang semantics** gap for those branches, but not t
 ### Authority regression gates
 
 `npm run verify:source` now fails if signing/custody source introduces browser persistence (`localStorage`, `sessionStorage`, or `indexedDB`), if any of the three pool mutation entrypoints stops deriving its holder from a `deployerId` capability, if Asset Lab deposit/transfer stops deriving its sender the same way, or if asset withdrawal stops being source-purse-capability based. These are source regression gates; the recorded Rholang negative control independently shows that a fresh private name is not accepted by `rho:rev:address("fromDeployerId", ...)`.
+
+### Inclusion/orphan negative control
+
+Two live asset-create attempts returned successful inclusion blocks but never became visible through finalized registry reads; both locators were still absent at finalized context block `#711`. The observations are recorded in `docs/evidence/phase07-orphaned-inclusion-controls-2026-10-11.md`. This validates the existing rule that inclusion is not finality. Pending receipts now explicitly tell the user to refresh finalized state before retrying rather than implying that an included operation is durable.

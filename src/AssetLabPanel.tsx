@@ -251,7 +251,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
         <div className="proof-receipt asset-receipt">
           <div><span>CREATE DEPLOY</span><code>{createReceipt.deployId}</code></div>
           <div><span>INCLUSION</span><code>#{createReceipt.inclusionBlock.blockNumber} · {short(createReceipt.inclusionBlock.blockHash)}</code></div>
-          <div><span>FINALITY</span><strong className={createReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{createReceipt.finalized ? `VERIFIED @ #${createReceipt.finalizedBlock?.blockNumber}` : 'PENDING — recheck Asset registry URI'}</strong></div>
+          <div><span>FINALITY</span><strong className={createReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{createReceipt.finalized ? `VERIFIED @ #${createReceipt.finalizedBlock?.blockNumber}` : 'PENDING — finalized state absent; refresh before retry'}</strong></div>
         </div>
       )}
 
@@ -261,7 +261,7 @@ export default function AssetLabPanel({ wallet, revBalance, onRevBalance }: Prop
           <div><span>TO</span><code>{transferReceipt.to}</code></div>
           <div><span>DEPLOY</span><code>{transferReceipt.deployId}</code></div>
           <div><span>INCLUSION</span><code>#{transferReceipt.inclusionBlock.blockNumber} · {short(transferReceipt.inclusionBlock.blockHash)}</code></div>
-          <div><span>FINALITY</span><strong className={transferReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{transferReceipt.finalized ? `VERIFIED @ #${transferReceipt.finalizedBlock?.blockNumber}` : 'PENDING — inclusion verified'}</strong></div>
+          <div><span>FINALITY</span><strong className={transferReceipt.finalized ? 'receipt-good' : 'receipt-warn'}>{transferReceipt.finalized ? `VERIFIED @ #${transferReceipt.finalizedBlock?.blockNumber}` : 'PENDING — not finalized; refresh before retry'}</strong></div>
           <div><span>RECIPIENT BRAND</span><strong className={transferReceipt.recipientBrandVerified ? 'receipt-good' : 'receipt-warn'}>{transferReceipt.recipientBrandVerified ? 'VERIFIED' : 'PENDING'}</strong></div>
         </div>
       )}
