@@ -2,7 +2,7 @@
 
 Rholox is an evidence-first public-testnet interface for observing network state and exercising a small set of signed DApp primitives without pretending the system is more mature than it is.
 
-The current vertical slice is intentionally narrow and reviewable. It covers observation, local session keys, test-value funding, signed proof anchoring, block/deploy inspection, and finalized test REV transfer verification.
+The current vertical slice is intentionally narrow and reviewable. It covers observation, local session keys, test-value funding, signed proof anchoring, block/deploy inspection, finalized test REV transfer verification, and fixed-supply MakeMint test assets.
 
 ## Current surface
 
@@ -11,7 +11,7 @@ The current vertical slice is intentionally narrow and reviewable. It covers obs
 3. **Rholox Proof** — local SHA-256 hashing, locally signed deploy submission, inclusion polling, and finalized-state visibility checks.
 4. **Explorer** — recent blocks, block-by-hash detail, recent-height lookup, deploy-status lookup, justifications, bonds, deploys, and rejected deploys.
 5. **REV Transfer** — local signing, REV-address validation, signed test transfer, inclusion polling, and recipient balance verification from finalized state.
-6. **Asset Lab** — explicitly not implemented yet; it remains the next phase.
+6. **Asset Lab** — fixed-supply MakeMint asset creation, finalized metadata/balance reads, purse-brand verification, and signed test-asset transfer.
 
 ## Security and scope boundary
 
@@ -21,6 +21,8 @@ The current vertical slice is intentionally narrow and reviewable. It covers obs
 - **No admin surface.** The client uses the public node HTTP surface only.
 - **No hidden finality claim.** Proofs and transfers distinguish inclusion from finalized-state verification.
 - **No fabricated telemetry.** Network values shown by the interface come from the connected public-testnet node.
+- **Fixed-supply Asset Lab only.** Asset creation makes one initial MakeMint purse supply; v1 exposes no post-creation mint method, DEX, liquidity, or mainnet token claim.
+- **Public-testnet asset namespace.** Asset IDs are 256-bit random identifiers used to derive public contract channels; they are not presented as an unforgeable registry identity or production token standard.
 
 ## Architecture
 
@@ -30,6 +32,7 @@ Browser
   ├─ network observation
   ├─ proof hashing + signed deploy
   ├─ REV transfer + finalized balance verification
+  ├─ MakeMint fixed-supply asset creation / transfer
   └─ block/deploy explorer
           │
           ▼
@@ -43,6 +46,8 @@ src/lib/wallet.ts    key generation/import + REV address derivation
 src/lib/rchain.ts    public-testnet reads, faucet, block/deploy API access
 src/lib/proof.ts     SHA-256 proof deploy + inclusion/finality verification
 src/lib/transfer.ts  signed REV transfer + finalized recipient verification
+src/lib/asset.ts     MakeMint fixed-supply asset runtime + finalized brand/balance verification
+src/AssetLabPanel.tsx Asset Lab create/inspect/transfer UI
 src/main.tsx         product state + presentation wiring
 src/styles.css       presentation only
 ```

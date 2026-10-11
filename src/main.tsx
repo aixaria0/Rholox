@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
 import rholoxLogo from './assets/rholox-logo.svg'
+import AssetLabPanel from './AssetLabPanel'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
 import { sendRev, type TransferReceipt } from './lib/transfer'
@@ -167,6 +168,7 @@ function WalletPanel() {
 
   if (!wallet) {
     return (
+      <div className="wallet-workspace">
       <section className="wallet-card" id="wallet">
         <div className="wallet-intro">
           <div>
@@ -195,6 +197,8 @@ function WalletPanel() {
         )}
         {error && <div className="error" role="alert">{error}</div>}
       </section>
+      <AssetLabPanel wallet={null} revBalance={null} />
+      </div>
     )
   }
 
@@ -248,6 +252,7 @@ function WalletPanel() {
       <ProofPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
       <TransferPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
     </div>
+    <AssetLabPanel wallet={wallet} revBalance={balance} onRevBalance={() => updateBalance(wallet)} />
     </div>
   )
 }
@@ -595,7 +600,7 @@ function App() {
         <ModuleCard index="03" title="Proof" detail="SHA-256 anchor + finalized receipt" target="proof" />
         <ModuleCard index="04" title="Explorer" detail="Blocks, deploys, evidence" target="explorer" />
         <ModuleCard index="05" title="REV Transfer" detail="Signed test transfers" target="transfer" />
-        <ModuleCard index="06" title="Asset Lab" detail="Next phase" next />
+        <ModuleCard index="06" title="Asset Lab" detail="MakeMint fixed-supply assets" target="asset-lab" />
       </section>
 
       <section className="network-surface" id="network">
@@ -653,11 +658,11 @@ function App() {
           <li className="done"><span>03</span><div><strong>Rholox Proof</strong><small>Signed deploy → inclusion → finalized receipt.</small></div></li>
           <li className="done"><span>04</span><div><strong>Explorer</strong><small>Block details and evidence-backed verification.</small></div></li>
           <li className="done"><span>05</span><div><strong>REV transfer</strong><small>Signed value transfer → inclusion → finalized balance verification.</small></div></li>
-          <li className="active"><span>06</span><div><strong>Asset Lab</strong><small>Next phase; not presented as implemented.</small></div></li>
+          <li className="done"><span>06</span><div><strong>Asset Lab</strong><small>Fixed-supply MakeMint assets, brand verification and signed transfers.</small></div></li>
         </ol>
       </section>
 
-      <footer><span>Rholox v0.6 · public testnet · test value only</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
+      <footer><span>Rholox v0.7 · public testnet · test value only</span><a href={`${RCHAIN_API}/api/status`} target="_blank" rel="noreferrer">RAW NODE STATUS ↗</a></footer>
     </main>
   )
 }
