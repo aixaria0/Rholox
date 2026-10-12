@@ -76,7 +76,9 @@ function observerVerdictLabel(report: ObserverReport | null) {
   if (!report) return 'AWAITING'
   switch (report.verdict.class) {
     case 'agreement': return `${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} AGREE`
+    case 'proven_lag': return 'PROVEN LAG'
     case 'height_skew': return 'HEIGHT SKEW'
+    case 'conflicting_finalized_history': return 'CONFLICTING HISTORY'
     case 'majority': return `${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} MAJORITY`
     case 'divergence': return 'DIVERGENCE'
     default: return 'UNAVAILABLE'
@@ -587,12 +589,16 @@ function App() {
   const capabilitiesObservation = capabilitiesError ? (capabilities ? 'STALE' : 'UNAVAILABLE') : capabilities ? 'OBSERVED' : 'AWAITING'
   const observerObservation = observerError ? (observer ? 'STALE' : 'UNAVAILABLE') : observer ? 'OBSERVED' : 'AWAITING'
   const observerAgreement = observer?.verdict.class === 'agreement'
+  const observerCompatible = observer?.verdict.class === 'proven_lag'
+  const observerConflict = observer?.verdict.class === 'divergence' || observer?.verdict.class === 'majority' || observer?.verdict.class === 'conflicting_finalized_history'
   const observerReference = observer?.verdict.reference
-  const observerBadge = observerAgreement ? 'badge badge--verified' : observer?.verdict.class === 'divergence' ? 'badge badge--danger' : 'badge'
+  const observerBadge = observerAgreement || observerCompatible ? 'badge badge--verified' : observerConflict ? 'badge badge--danger' : 'badge'
   const observerStateLabel = observer
     ? observerAgreement
       ? `${observer.verdict.agreeing_nodes}/${observer.verdict.comparable_nodes} FINALIZED SNAPSHOT AGREEMENT`
-      : `MULTI-NODE ${observer.verdict.class.replace('_', ' ').toUpperCase()}`
+      : observerCompatible
+        ? 'FINALIZED ANCESTRY COMPATIBLE · PROVEN LAG'
+        : `MULTI-NODE ${observer.verdict.class.replaceAll('_', ' ').toUpperCase()}`
     : null
   const nodeStateLabel = observerStateLabel ?? (online ? 'NODE REACHABLE' : statusError ? 'NODE UNREACHABLE' : 'OBSERVING NODE')
 
@@ -688,7 +694,17 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <p className="observer-verdict-copy">{observer.verdict.summary}. Exact snapshot agreement is reported separately from height skew; ancestry-aware comparison is not claimed here.</p>
+                {observer.ancestry_checks?.length > 0 && (
+                  <div className="observer-ancestry-grid" aria-label="Finality ancestry evidence">
+                    {observer.ancestry_checks.map((check) => (
+                      <div className={`observer-ancestry observer-ancestry--${check.class}`} key={`${check.lower.block_hash}:${check.higher.block_hash}`}>
+                        <span>{check.class.replaceAll('_', ' ').toUpperCase()}</span>
+                        <code>#{check.lower.block_number} → #{check.higher.block_number} · {check.examined_blocks} blocks · witness {check.witness_node ?? '—'}</code>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="observer-verdict-copy">{observer.verdict.summary}. Different finalized heights are only called proven lag after an explicit justification-DAG ancestry path is found.</p>
               </>
             ) : (
               <p className="observer-verdict-copy">{observerObservation === 'UNAVAILABLE' ? 'Multi-node evidence is currently unavailable.' : 'Waiting for the first multi-node snapshot.'}</p>
