@@ -71,7 +71,7 @@ Browser
        exact agreement / proven lag / unresolved skew / conflict
 ```
 
-The observer is intentionally not a write proxy. It polls the four live validators on a bounded interval and serves a cached read-only snapshot to Rholox, so page traffic does not fan out into fresh validator requests. Exact finalized-snapshot agreement is separated from different-height observations; when heights differ, the observer now walks the node-reported justification DAG before classifying the condition as `proven_lag`, `conflicting_finalized_history`, or unresolved `height_skew`. The service source and deployment boundary live in [`rchain-community/rchain-observer`](https://github.com/rchain-community/rchain-observer).
+The observer is intentionally not a write proxy. It polls the four live validators on a bounded interval and serves a cached read-only snapshot to Rholox, so page traffic does not fan out into fresh validator requests. Exact finalized-snapshot agreement is separated from different-height observations; when heights differ, the observer walks the justification DAG using raw block preimages. Each traversed block must reproduce its BLAKE2b-256 content address and pass proposer-signature verification before its ancestry fields are accepted, after which the condition can become `proven_lag`, `conflicting_finalized_history`, or unresolved `height_skew`. The service source and deployment boundary live in [`rchain-community/rchain-observer`](https://github.com/rchain-community/rchain-observer).
 
 Core implementation boundaries:
 

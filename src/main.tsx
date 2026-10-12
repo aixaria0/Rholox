@@ -699,12 +699,12 @@ function App() {
                     {observer.ancestry_checks.map((check) => (
                       <div className={`observer-ancestry observer-ancestry--${check.class}`} key={`${check.lower.block_hash}:${check.higher.block_hash}`}>
                         <span>{check.class.replaceAll('_', ' ').toUpperCase()}</span>
-                        <code>#{check.lower.block_number} → #{check.higher.block_number} · {check.examined_blocks} blocks · witness {check.witness_node ?? '—'}</code>
+                        <code>#{check.lower.block_number} → #{check.higher.block_number} · {check.cryptographically_verified_blocks}/{check.examined_blocks} crypto-verified · witness {check.witness_node ?? '—'}</code>
                       </div>
                     ))}
                   </div>
                 )}
-                <p className="observer-verdict-copy">{observer.verdict.summary}. Different finalized heights are only called proven lag after an explicit justification-DAG ancestry path is found.</p>
+                <p className="observer-verdict-copy">{observer.verdict.summary}. Ancestry fields are accepted only from raw block preimages whose BLAKE2b-256 content address and detached proposer signature both verify.</p>
               </>
             ) : (
               <p className="observer-verdict-copy">{observerObservation === 'UNAVAILABLE' ? 'Multi-node evidence is currently unavailable.' : 'Waiting for the first multi-node snapshot.'}</p>

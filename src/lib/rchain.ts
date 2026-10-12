@@ -60,6 +60,7 @@ export type ObserverAncestryCheck = {
   higher: ObserverFinalizedIdentity
   witness_node?: string | null
   examined_blocks: number
+  cryptographically_verified_blocks: number
   path: string[]
   reason: string
 }
