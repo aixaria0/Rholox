@@ -42,7 +42,27 @@ export type Finalized = {
   }
 }
 
-export type ObserverVerdictClass = 'agreement' | 'height_skew' | 'majority' | 'divergence' | 'unavailable'
+export type ObserverVerdictClass = 'agreement' | 'proven_lag' | 'height_skew' | 'majority' | 'conflicting_finalized_history' | 'divergence' | 'unavailable'
+
+
+export type ObserverAncestryClass = 'proven_lag' | 'conflicting_finalized_history' | 'unresolved_height_skew'
+
+export type ObserverFinalizedIdentity = {
+  network_id: string
+  shard_id: string
+  block_number: number
+  block_hash: string
+}
+
+export type ObserverAncestryCheck = {
+  class: ObserverAncestryClass
+  lower: ObserverFinalizedIdentity
+  higher: ObserverFinalizedIdentity
+  witness_node?: string | null
+  examined_blocks: number
+  path: string[]
+  reason: string
+}
 
 export type ObserverNode = {
   node: string
@@ -65,18 +85,14 @@ export type ObserverReport = {
     finalized_max?: number | null
   }
   observations: ObserverNode[]
+  ancestry_checks: ObserverAncestryCheck[]
   verdict: {
     class: ObserverVerdictClass
     observed_nodes: number
     comparable_nodes: number
     agreeing_nodes: number
     summary: string
-    reference?: {
-      network_id: string
-      shard_id: string
-      block_number: number
-      block_hash: string
-    } | null
+    reference?: ObserverFinalizedIdentity | null
   }
 }
 

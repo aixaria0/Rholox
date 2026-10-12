@@ -606,6 +606,17 @@ footer a { color: #5db7ea; }
 .observer-node--online { border-color: rgba(25,197,138,.16); box-shadow: inset 0 1px 0 rgba(25,197,138,.035); }
 .observer-node--online > strong { color: #72c9a6; }
 .observer-node--offline > strong { color: #c98a8a; }
+
+.observer-ancestry-grid { display: grid; gap: 8px; margin-top: 12px; }
+.observer-ancestry { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: 7px 12px; align-items: center; padding: 10px 12px; border: 1px solid rgba(78,122,154,.14); border-radius: 9px; background: rgba(4,8,13,.48); }
+.observer-ancestry > span { color: #9bc9e7; font: 500 9px var(--font-data); letter-spacing: .07em; }
+.observer-ancestry code { justify-self: end; color: #817d88; font-size: 9px; }
+.observer-ancestry--proven_lag { border-color: rgba(25,197,138,.18); }
+.observer-ancestry--proven_lag > span { color: #72c9a6; }
+.observer-ancestry--conflicting_finalized_history { border-color: rgba(201,94,94,.24); }
+.observer-ancestry--conflicting_finalized_history > span { color: #e09a9a; }
+.observer-ancestry--unresolved_height_skew > span { color: #c6b48c; }
+
 .observer-verdict-copy { margin: 13px 0 0; color: #777482; font-size: 10px; line-height: 1.55; }
 .badge--danger { border-color: rgba(201,94,94,.30); color: #e09a9a; background: rgba(70,20,24,.24); }
 .footer-links { display: flex; gap: 16px; align-items: center; }
@@ -619,6 +630,8 @@ footer a { color: #5db7ea; }
 
 @media (max-width: 620px) {
   .observer-summary, .observer-node-grid { grid-template-columns: 1fr; }
+  .observer-ancestry { grid-template-columns: 1fr; }
+  .observer-ancestry code { justify-self: start; }
   .observer-summary div { border-right: 0; border-top: 1px solid rgba(78,122,154,.12); }
   .observer-summary div:first-child { border-top: 0; }
   .footer-links { align-items: flex-start; flex-direction: column; gap: 8px; }
