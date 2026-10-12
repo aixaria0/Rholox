@@ -74,14 +74,17 @@ function observerHeightRange(min?: number | null, max?: number | null) {
 
 function observerVerdictLabel(report: ObserverReport | null) {
   if (!report) return 'AWAITING'
+  const reachable = report.heights.reachable_nodes
+  const observed = report.verdict.observed_nodes
+  const reachability = reachable < observed ? `${reachable}/${observed} REACHABLE · ` : ''
   switch (report.verdict.class) {
-    case 'agreement': return `${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} AGREE`
-    case 'proven_lag': return 'PROVEN LAG'
-    case 'height_skew': return 'HEIGHT SKEW'
-    case 'conflicting_finalized_history': return 'CONFLICTING HISTORY'
-    case 'majority': return `${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} MAJORITY`
-    case 'divergence': return 'DIVERGENCE'
-    default: return 'UNAVAILABLE'
+    case 'agreement': return `${reachability}${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} AGREE`
+    case 'proven_lag': return `${reachability}PROVEN LAG`
+    case 'height_skew': return `${reachability}HEIGHT SKEW`
+    case 'conflicting_finalized_history': return `${reachability}CONFLICTING HISTORY`
+    case 'majority': return `${reachability}${report.verdict.agreeing_nodes}/${report.verdict.comparable_nodes} MAJORITY`
+    case 'divergence': return `${reachability}DIVERGENCE`
+    default: return `${reachability}UNAVAILABLE`
   }
 }
 
@@ -592,15 +595,25 @@ function App() {
   const observerCompatible = observer?.verdict.class === 'proven_lag'
   const observerConflict = observer?.verdict.class === 'divergence' || observer?.verdict.class === 'majority' || observer?.verdict.class === 'conflicting_finalized_history'
   const observerReference = observer?.verdict.reference
+  const observerReachable = Boolean(observer && observer.heights.reachable_nodes > 0)
+  const observerDegraded = Boolean(observer && observer.heights.reachable_nodes < observer.verdict.observed_nodes)
+  const testnetObserved = online || observerReachable
   const observerBadge = observerAgreement || observerCompatible ? 'badge badge--verified' : observerConflict ? 'badge badge--danger' : 'badge'
   const observerStateLabel = observer
     ? observerAgreement
-      ? `${observer.verdict.agreeing_nodes}/${observer.verdict.comparable_nodes} FINALIZED SNAPSHOT AGREEMENT`
+      ? observerDegraded
+        ? `DEGRADED · ${observer.heights.reachable_nodes}/${observer.verdict.observed_nodes} REACHABLE · ${observer.verdict.agreeing_nodes}/${observer.verdict.comparable_nodes} COMPARABLE AGREE`
+        : `${observer.verdict.agreeing_nodes}/${observer.verdict.comparable_nodes} FINALIZED SNAPSHOT AGREEMENT`
       : observerCompatible
-        ? 'FINALIZED ANCESTRY COMPATIBLE · PROVEN LAG'
-        : `MULTI-NODE ${observer.verdict.class.replaceAll('_', ' ').toUpperCase()}`
+        ? `${observerDegraded ? 'DEGRADED · ' : ''}FINALIZED ANCESTRY COMPATIBLE · PROVEN LAG`
+        : `${observerDegraded ? 'DEGRADED · ' : ''}MULTI-NODE ${observer.verdict.class.replaceAll('_', ' ').toUpperCase()}`
     : null
   const nodeStateLabel = observerStateLabel ?? (online ? 'NODE REACHABLE' : statusError ? 'NODE UNREACHABLE' : 'OBSERVING NODE')
+  const executionGatewayMessage = statusError
+    ? observerReachable
+      ? `EXECUTION GATEWAY UNAVAILABLE · multi-node evidence remains active (${observer!.heights.reachable_nodes}/${observer!.verdict.observed_nodes} nodes reachable).`
+      : 'PUBLIC TESTNET EXECUTION GATEWAY UNAVAILABLE.'
+    : null
 
   return (
     <main className="app-shell">
@@ -619,7 +632,7 @@ function App() {
           <button type="button" onClick={() => scrollToSection('exchange')}>Exchange</button>
         </nav>
         <div className="top-actions">
-          <span className={`environment-pill ${online ? 'environment-pill--online' : statusError ? 'environment-pill--offline' : 'environment-pill--pending'}`}><span className="dot" />PUBLIC TESTNET</span>
+          <span className={`environment-pill ${observerDegraded ? 'environment-pill--degraded' : testnetObserved ? 'environment-pill--online' : statusError ? 'environment-pill--offline' : 'environment-pill--pending'}`}><span className="dot" />PUBLIC TESTNET</span>
           <button className="ghost compact" onClick={refresh} disabled={refreshing}>{refreshing ? 'SYNCING…' : 'REFRESH'}</button>
         </div>
       </header>
@@ -634,11 +647,11 @@ function App() {
             <button className="secondary" type="button" onClick={() => scrollToSection('network')}>INSPECT NETWORK</button>
           </div>
           <div className="hero-state" role="status">
-            <span className={`dot ${online ? 'live' : statusError ? 'dead' : ''}`} />
+            <span className={`dot ${observerDegraded ? 'degraded' : testnetObserved ? 'live' : statusError ? 'dead' : ''}`} />
             <strong>{nodeStateLabel}</strong>
             <span>{updatedAt ? `observed ${updatedAt.toLocaleTimeString()}` : 'awaiting first observation'}</span>
           </div>
-          {statusError && <div className="error" role="alert">{statusError}</div>}
+          {executionGatewayMessage && <div className={`error ${observerReachable ? 'degraded-error' : ''}`} role="alert">{executionGatewayMessage}</div>}
         </div>
         <div className="hero-visual">
           <TopologyMark />
