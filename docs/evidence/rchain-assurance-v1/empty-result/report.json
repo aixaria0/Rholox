@@ -1,0 +1,99 @@
+{
+  "mode": "SYNTHETIC_EMPTY_RESULT",
+  "revisions": {
+    "Rholox": "5720c3307bd5d0179622c3ccdf2343a9439ac7ef",
+    "Sentinel": "b275b0ef0e6e7e06359d27390e6e1f26e8f9b39a",
+    "Compiler": "9f31dd1a4254796ce81a43005d5fdeed013bd23b"
+  },
+  "deploy_id": "3044022073e3b1149a750f53e92562514a160586e17de483c8937e7d94df7ffadf14682c022036a684a5ec25dbcc5c6bdf7920596274dfe0b09d611d6bf5e1276d2f7cdfff91",
+  "submission_observed_at": 1792094860435,
+  "inclusion": {
+    "block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "block_height": 10,
+    "observed_at": 1792094860504,
+    "status": "OBSERVED"
+  },
+  "execution": {
+    "block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "block_height": 10,
+    "observed_at": 1792094860504,
+    "status": "UNKNOWN"
+  },
+  "finalized_state": {
+    "reason": "Finalized transfer read-back not observed",
+    "status": "UNAVAILABLE"
+  },
+  "observers": [
+    {
+      "observer_id": "http://127.0.0.1:45567",
+      "node_identity": "one",
+      "finalized_height": 10,
+      "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "observation_digest": "c11240b3f87beaabb08390ec532af8094040e9f1a4caee4ede9303636c816a0e",
+      "status": "OBSERVED"
+    },
+    {
+      "observer_id": "http://127.0.0.1:42755",
+      "node_identity": "two",
+      "finalized_height": 10,
+      "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "observation_digest": "2c1817bf1803da96325fba07dabd4593924c9c6faa8c206aad8fd307c8d4391f",
+      "status": "OBSERVED"
+    }
+  ],
+  "assurance_package_digest": "f7d7fbf3a9c9b1eb10265ae613a1ff9d5572bb586ad56a6eb6240914f9340e96",
+  "rendered_html_digest": "f1c69ab2975e98bc28eeca26c520518b2b03feb0130620549c88c009b60087c4",
+  "verdict": "BLOCKED",
+  "negative_control": "PASS",
+  "transfer_error": null,
+  "client_receipt": {
+    "deployId": "3044022073e3b1149a750f53e92562514a160586e17de483c8937e7d94df7ffadf14682c022036a684a5ec25dbcc5c6bdf7920596274dfe0b09d611d6bf5e1276d2f7cdfff91",
+    "amountDrops": 100,
+    "amountRev": "0.000001",
+    "to": "1111wEQNLYNWWZhj3piTTurNdUCpKq9nmZmRg5oYtt2u9tKxhWMSN",
+    "inclusionBlock": {
+      "blockHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "blockNumber": 10,
+      "shardId": "root",
+      "sender": "synthetic-validator",
+      "seqNum": 10,
+      "preStateHash": "pre",
+      "postStateHash": "post",
+      "justifications": [],
+      "bonds": [
+        {
+          "validator": "synthetic-validator",
+          "stake": 100
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "synthetic-block-signature",
+      "parents": []
+    },
+    "finalizedBlock": {
+      "blockHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "blockNumber": 10,
+      "shardId": "root",
+      "sender": "synthetic-validator",
+      "seqNum": 10,
+      "preStateHash": "pre",
+      "postStateHash": "post",
+      "justifications": [],
+      "bonds": [
+        {
+          "validator": "synthetic-validator",
+          "stake": 100
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "synthetic-block-signature",
+      "parents": []
+    },
+    "senderBalanceBefore": 1000000000,
+    "senderBalanceAfter": 1000000000,
+    "recipientBalanceBefore": 1000,
+    "recipientBalanceAfter": 1100,
+    "finalized": true
+  },
+  "blocker": null
+}

@@ -1,0 +1,39 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "BLOCKED",
+  "reasons": [
+    "execution evidence unavailable",
+    "Finalized transfer read-back unavailable or insufficient"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "external_policy": "PASS",
+    "task_binding": "PASS",
+    "claim_binding": "PASS",
+    "network_identity": "PASS",
+    "producer_binding": "PASS",
+    "payload_integrity": "PASS",
+    "freshness": "PASS",
+    "deterministic_reproduction": "PASS",
+    "observation_integrity": "PASS",
+    "observer_policy": "PASS",
+    "raw_integrity": "PASS",
+    "source_binding": "PASS",
+    "observer_identity": "PASS",
+    "canonical_consistency": "PASS",
+    "signed_action_binding": "PASS",
+    "cross_node_agreement": "PASS",
+    "inclusion": "PASS",
+    "execution": "BLOCKED",
+    "finalized_state_observation": "BLOCKED"
+  },
+  "package_digest": "f7d7fbf3a9c9b1eb10265ae613a1ff9d5572bb586ad56a6eb6240914f9340e96",
+  "policy_digest": "58217c9e09ed4177407fcb91959197fc1904013f4d73dfa3d8af9ae250aba13f",
+  "agreement": "EXACT_AGREEMENT",
+  "stages": {
+    "inclusion": true,
+    "execution": false,
+    "finalized_state": false,
+    "corroborated": true
+  }
+}

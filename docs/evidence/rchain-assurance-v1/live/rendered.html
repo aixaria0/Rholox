@@ -1,0 +1,38 @@
+<section class="assurance-panel" aria-label="RChain Assurance" aria-busy="false"><div class="panel-head"><div><div class="eyebrow">RCHAIN ASSURANCE</div><strong>BLOCKED · OBSERVATION AVAILABLE</strong></div><button type="button" class="ghost">REFRESH EVIDENCE</button></div><p class="muted">DEPLOY <code>304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385</code></p><div class="assurance-stages"><div><span>SIGNED</span><strong class="receipt-warn">OBSERVED LOCALLY</strong><small>2026-10-15T20:07:57.146Z · 049f4668da8d11b6a2bf596cc5f3c68bbf169312bd3a497493a37b16e4e427ae03bd217b16524a6bb93062f0909b197bff4aaef8e83356bff1acc993e4f8edca8f · session signer</small></div><div><span>SUBMITTED</span><strong class="receipt-warn">SUBMITTED</strong><small>2026-10-15T20:07:57.434Z · https://testnet.rhobot.net/api/deploy</small></div><div><span>EXECUTED</span><strong class="receipt-warn">UNKNOWN</strong><small>2026-10-15T20:08:12.695Z · #765 · d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57 · rchain-sentinel</small></div><div><span>INCLUDED</span><strong class="receipt-warn">OBSERVED · UNVERIFIED</strong><small>2026-10-15T20:08:12.695Z · #765 · d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57 · rchain-sentinel</small></div><div><span>FINALIZED STATE OBSERVED</span><strong class="receipt-warn">UNAVAILABLE</strong><small>Timestamp unknown · Finalized transfer read-back not observed</small></div><div><span>OBSERVER AGREEMENT</span><strong class="receipt-warn">INSUFFICIENT_EVIDENCE</strong><small>2026-10-15T20:08:13.564Z · 1 configured observations · rchain-sentinel. Node observations do not prove stake-weighted Casper finality.</small></div><div><span>ASSURANCE VERDICT</span><strong class="receipt-warn">BLOCKED</strong><small>2026-10-15T20:08:13.602Z · External observer/revision/digest trust pins are incomplete</small></div></div><div class="assurance-why" role="status"><strong>WHY THIS ACTION?</strong><p>The transfer was submitted, but required finalized-state assurance evidence is not available. Assurance remains BLOCKED. External observer/revision/digest trust pins are incomplete</p></div><details><summary>WHAT WAS SIGNED?</summary><pre>{
+  &quot;data&quot;: {
+    &quot;term&quot;: &quot;new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\n    revVault!(\&quot;transfer\&quot;, *deployerId, \&quot;11112YEic2AYT5vR8tMs2tQnJQdisyAMPCeQzrjHze9SuCPQKqYDm4\&quot;, 100, *resultCh) |\n    for (@result &lt;- resultCh) { return!(result) | deployId!(result) }\n  }&quot;,
+    &quot;timestamp&quot;: 1792094877128,
+    &quot;phloPrice&quot;: 1,
+    &quot;phloLimit&quot;: 500000,
+    &quot;validAfterBlockNumber&quot;: 765,
+    &quot;shardId&quot;: &quot;/root&quot;
+  },
+  &quot;deployer&quot;: &quot;049f4668da8d11b6a2bf596cc5f3c68bbf169312bd3a497493a37b16e4e427ae03bd217b16524a6bb93062f0909b197bff4aaef8e83356bff1acc993e4f8edca8f&quot;,
+  &quot;signature&quot;: &quot;304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385&quot;,
+  &quot;sigAlgorithm&quot;: &quot;secp256k1&quot;
+}</pre></details><details><summary>OBSERVATION SOURCES &amp; DIGESTS</summary><pre>{
+  &quot;observers&quot;: [
+    {
+      &quot;observer_id&quot;: &quot;https://testnet.rhobot.net&quot;,
+      &quot;node_identity&quot;: &quot;6b70152e0dfe887101428710a5c5a14c9933a3d6&quot;,
+      &quot;source&quot;: &quot;https://testnet.rhobot.net&quot;,
+      &quot;status&quot;: &quot;OBSERVED&quot;,
+      &quot;observed_at&quot;: 1792094893561,
+      &quot;finalized_height&quot;: 769,
+      &quot;finalized_hash&quot;: &quot;c63d3f08be1b74f5327775e55542160c2df2e4b40187ebb52ca53078d78a0dd9&quot;,
+      &quot;observation_digest&quot;: &quot;ed2c6160ce1b7dc5de0c13128f0e49840d78c4a1f40b6555eec95eed0547151b&quot;,
+      &quot;reason&quot;: null
+    }
+  ],
+  &quot;provenance&quot;: {
+    &quot;generated_at&quot;: 1792094893564,
+    &quot;payload_digest&quot;: &quot;1a029ebd84d1842ad610e013a6dc7ac512f0cdb2a1f119d138776487567883bb&quot;,
+    &quot;producer&quot;: &quot;rchain-sentinel&quot;,
+    &quot;source_revision&quot;: &quot;b275b0ef0e6e7e06359d27390e6e1f26e8f9b39a&quot;
+  },
+  &quot;checks&quot;: {
+    &quot;schema&quot;: &quot;PASS&quot;,
+    &quot;payload_integrity&quot;: &quot;PASS&quot;,
+    &quot;external_policy&quot;: &quot;BLOCKED&quot;
+  }
+}</pre><button class="ghost">DOWNLOAD EVIDENCE + POLICY</button></details></section>

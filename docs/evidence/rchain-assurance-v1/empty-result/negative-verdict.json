@@ -1,0 +1,44 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "FAIL",
+  "reasons": [
+    "Payload digest mismatch",
+    "Observation digest mismatch",
+    "Exact observation bytes/digest mismatch",
+    "Observer reports wrong network/shard",
+    "Raw node identity does not match observer pin",
+    "execution evidence unavailable",
+    "Finalized transfer read-back unavailable or insufficient"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "external_policy": "PASS",
+    "task_binding": "PASS",
+    "claim_binding": "PASS",
+    "network_identity": "BLOCKED",
+    "producer_binding": "PASS",
+    "payload_integrity": "FAIL",
+    "freshness": "PASS",
+    "deterministic_reproduction": "PASS",
+    "observation_integrity": "FAIL",
+    "observer_policy": "PASS",
+    "raw_integrity": "FAIL",
+    "source_binding": "PASS",
+    "observer_identity": "BLOCKED",
+    "canonical_consistency": "PASS",
+    "signed_action_binding": "PASS",
+    "cross_node_agreement": "PASS",
+    "inclusion": "PASS",
+    "execution": "BLOCKED",
+    "finalized_state_observation": "BLOCKED"
+  },
+  "package_digest": "e4da75c65c0cd1a424de36a13f36b9d4723dcb138479e3ab89632ea49dbe1b85",
+  "policy_digest": "58217c9e09ed4177407fcb91959197fc1904013f4d73dfa3d8af9ae250aba13f",
+  "agreement": "EXACT_AGREEMENT",
+  "stages": {
+    "inclusion": true,
+    "execution": false,
+    "finalized_state": false,
+    "corroborated": true
+  }
+}
