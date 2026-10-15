@@ -795,7 +795,7 @@ function Root() {
     return () => window.removeEventListener('hashchange', syncSurface)
   }, [])
 
-  return surface === '#assurance' ? <AssuranceSite /> : <App />
+  return surface.startsWith('#assurance') ? <AssuranceSite /> : <App />
 }
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><Root /></React.StrictMode>)
