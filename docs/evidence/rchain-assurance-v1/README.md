@@ -21,6 +21,12 @@ The three directories contain exact inputs, external policies, verifier results,
 
 The exact retry/resume commands are in ../../RCHAIN_ASSURANCE_V1.md. Use `--live --resume docs/evidence/rchain-assurance-v1/live/signed-action.json` to observe this same deploy without resubmitting or creating keys. Configure approved Sentinel/observer pins first; after the node exposes the missing result, a new current package can be evaluated under those external pins.
 
+## Read-only live resume
+
+The same signed deploy was observed again with Sentinel `5ecc4a185f20fb5e5964831057305869acb65dc2`; no keys, faucet request or transfer submission were created. Exact evidence is in [live-resume-20261015](live-resume-20261015). Inclusion remains height 765. The observer reported finalized height 771, hash `8f3fb55fe7341f4cb72dbc8e88192f20a6517e59601b438a241e32ee3f4d7ffb`, with observation digest `9d908a9c962e2b23931288a3e4a8be5146332e5dfd4e81fb955917444fa82e3c`.
+
+The new package commitment is `a281346a659f3aab7c60c6db363e7294d931255cecb2f3d55e3db08492fc4788`. The canonical verifier returned BLOCKED and its tampered-package negative control passed. The same external receipt/independent-observer evidence gap remains. All original evidence files and historical verification results are unchanged. [RECOVERY.json](RECOVERY.json) records recovered revisions and final source validation.
+
 ## Dependency review
 
 Compiler's original high-severity findings were brace-expansion (development lint/parser dependency) and source-map-js (PostCSS/@tailwindcss/node, present in the repository production dependency graph). Compatible lockfile fixes resolved both. The exported standalone verifier has no runtime npm dependencies. Repository-wide and production-only audits report zero findings. Rholox's audit also reports zero findings. No broad dependency modernization was performed.

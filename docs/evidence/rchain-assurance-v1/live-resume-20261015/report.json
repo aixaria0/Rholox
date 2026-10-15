@@ -1,0 +1,43 @@
+{
+  "mode": "LIVE_TESTNET",
+  "revisions": {
+    "Rholox": "c0a3f621a704350c55d5fd80ac50c91fed7d0b88",
+    "Sentinel": "5ecc4a185f20fb5e5964831057305869acb65dc2",
+    "Compiler": "b61642c6443eefd4c6867a2fec617bac212c9370"
+  },
+  "deploy_id": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+  "submission_observed_at": 1792094877434,
+  "inclusion": {
+    "block_hash": "d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57",
+    "block_height": 765,
+    "observed_at": 1792100297885,
+    "status": "OBSERVED"
+  },
+  "execution": {
+    "block_hash": "d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57",
+    "block_height": 765,
+    "observed_at": 1792100297885,
+    "status": "UNKNOWN"
+  },
+  "finalized_state": {
+    "reason": "Finalized transfer read-back not observed",
+    "status": "UNAVAILABLE"
+  },
+  "observers": [
+    {
+      "observer_id": "https://testnet.rhobot.net",
+      "node_identity": "6b70152e0dfe887101428710a5c5a14c9933a3d6",
+      "finalized_height": 771,
+      "finalized_hash": "8f3fb55fe7341f4cb72dbc8e88192f20a6517e59601b438a241e32ee3f4d7ffb",
+      "observation_digest": "9d908a9c962e2b23931288a3e4a8be5146332e5dfd4e81fb955917444fa82e3c",
+      "status": "OBSERVED"
+    }
+  ],
+  "assurance_package_digest": "a281346a659f3aab7c60c6db363e7294d931255cecb2f3d55e3db08492fc4788",
+  "rendered_html_digest": "ebb261be1bcc90e8c2cd3c65c11fe32007e3dcb0e1c3a4f5d31698d05f34202d",
+  "verdict": "BLOCKED",
+  "negative_control": "PASS",
+  "transfer_error": null,
+  "client_receipt": null,
+  "blocker": "EXTERNAL LIVE BLOCKER: authorized testnet evidence is incomplete: no operator-approved second independently addressable observer endpoint/identity pin; node deploy-status omits a successful contract result (deployResult is empty or unknown); required finalized transfer read-back is unavailable."
+}

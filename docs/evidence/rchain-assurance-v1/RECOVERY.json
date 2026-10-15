@@ -1,0 +1,88 @@
+{
+  "recovered_at": "2026-10-15T21:39:33.463983+00:00",
+  "baseline_heads": {
+    "Rholox": "c0a3f621a704350c55d5fd80ac50c91fed7d0b88",
+    "Sentinel": "b275b0ef0e6e7e06359d27390e6e1f26e8f9b39a",
+    "Compiler": "b61642c6443eefd4c6867a2fec617bac212c9370"
+  },
+  "source_validation": {
+    "Rholox": {
+      "revision": "c0a3f621a704350c55d5fd80ac50c91fed7d0b88",
+      "checks": [
+        "npm run verify",
+        "npm audit --audit-level=high",
+        "git diff --check"
+      ],
+      "result": "PASS",
+      "audit_findings": 0
+    },
+    "Compiler": {
+      "revision": "b61642c6443eefd4c6867a2fec617bac212c9370",
+      "checks": [
+        "npm run test:rchain-assurance (28 tests)",
+        "npm run typecheck:assurance",
+        "npm run lint:assurance",
+        "npm audit --audit-level=high",
+        "git diff --check"
+      ],
+      "result": "PASS",
+      "audit_findings": 0
+    },
+    "Sentinel": {
+      "Sentinel": "5ecc4a185f20fb5e5964831057305869acb65dc2",
+      "checks": [
+        {
+          "command": "cargo check --locked --offline",
+          "exit": 0,
+          "seconds": 1.53
+        },
+        {
+          "command": "cargo test --locked --offline",
+          "exit": 0,
+          "seconds": 1.49
+        },
+        {
+          "command": "cargo build --locked --offline",
+          "exit": 0,
+          "seconds": 1.34
+        }
+      ],
+      "pushed": true,
+      "live_resume_exit": 0
+    }
+  },
+  "lockfile_fix": "Preserved and committed the existing Cargo.lock resolution matching the shipped Sentinel manifest; locked check, tests and build pass. Existing build artifacts retained.",
+  "live_resume": {
+    "directory": "live-resume-20261015",
+    "deploy_id": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+    "package_digest": "a281346a659f3aab7c60c6db363e7294d931255cecb2f3d55e3db08492fc4788",
+    "verdict": "BLOCKED",
+    "negative_control": "PASS",
+    "mutation": "NONE: observed the existing signed deploy only",
+    "blocker": "EXTERNAL LIVE BLOCKER: authorized testnet evidence is incomplete: no operator-approved second independently addressable observer endpoint/identity pin; node deploy-status omits a successful contract result (deployResult is empty or unknown); required finalized transfer read-back is unavailable."
+  },
+  "original_evidence_sha256": {
+    "docs/evidence/rchain-assurance-v1/synthetic/negative-verdict.json": "63b23b2fb9a84e050a06d703a63ced3dbfd6e349b0a9290593c2072cb3cf8605",
+    "docs/evidence/rchain-assurance-v1/synthetic/package.json": "ff3412e29cca6070ee8177e1447a572c11f6d8aae4734c6459add2c8e17cb6cb",
+    "docs/evidence/rchain-assurance-v1/synthetic/policy.json": "06f6f0f2493d30f9f49edb5db1a9cb1dbbabe5dca3e6070a61cec27be3077ea6",
+    "docs/evidence/rchain-assurance-v1/synthetic/rendered.html": "b8e68e1e10e0c7033c258ceb2947d325525b2d9604e4934f4a6caee099cfa6cf",
+    "docs/evidence/rchain-assurance-v1/synthetic/report.json": "69a8da9aef53ccfce2be58861ceabfe37bb74581a0661fd5f801e1e401f49c2b",
+    "docs/evidence/rchain-assurance-v1/synthetic/signed-action.json": "4c59ed234d2905177edfadcad285075fb916383a16084573aa8bff0f45f60f4a",
+    "docs/evidence/rchain-assurance-v1/synthetic/verdict.json": "d770173605d0349afe6d1de84795d8e837eb923fef79a2c64a197fd9bac87a33",
+    "docs/evidence/rchain-assurance-v1/empty-result/negative-verdict.json": "93ce5387769c78215937d175c211706c324b27df3e319888c51dcfb457860224",
+    "docs/evidence/rchain-assurance-v1/empty-result/package.json": "ebbb363ff8dacccee992055ba35975c7effafc9a7e239daea54cb88c07e1c5ca",
+    "docs/evidence/rchain-assurance-v1/empty-result/policy.json": "3934dded0bfe59d0ea4ba34c2af1f8f3508acee905a1928ea614d81aa6b1375e",
+    "docs/evidence/rchain-assurance-v1/empty-result/rendered.html": "f1c69ab2975e98bc28eeca26c520518b2b03feb0130620549c88c009b60087c4",
+    "docs/evidence/rchain-assurance-v1/empty-result/report.json": "93a1008ef15923f52120913dd183e76b2c240eb8a608b9779e24a9c258d06692",
+    "docs/evidence/rchain-assurance-v1/empty-result/signed-action.json": "8e5cd2330cffb26a7e85d7cc357a02ad85bbbb15768fb32d211546631ff344be",
+    "docs/evidence/rchain-assurance-v1/empty-result/verdict.json": "42b8269c6197ca270cf566fb946f8a5247132dbbdf120b10ee603f25ec1e0f1d",
+    "docs/evidence/rchain-assurance-v1/live/negative-verdict.json": "7100e6d62195a0e06e2208a97f634ae3822cf4557d525f0c896c9abd366ef980",
+    "docs/evidence/rchain-assurance-v1/live/package.json": "6196887b6ab30a81a39809866ce8ef93071b0899b88a840df10dedcbc1d7baf5",
+    "docs/evidence/rchain-assurance-v1/live/policy.json": "45ce0e7fe8acb1bc5890910d6a76b8936aed8bcae89804d0f41c681ca68c272c",
+    "docs/evidence/rchain-assurance-v1/live/rendered.html": "e257b35e8a68769699488fd616d1a82a75e7211cef49abc2dc30085a54f9072c",
+    "docs/evidence/rchain-assurance-v1/live/report.json": "6072f36cc2732b42b45a510c52a9dee89ba0fd05219b66ba3168acbbae9dc4cc",
+    "docs/evidence/rchain-assurance-v1/live/signed-action.json": "320a275041b040930d45a324ee4d692396cb362f33d25c53ac5106ce6e54f25c",
+    "docs/evidence/rchain-assurance-v1/live/verdict.json": "7c0933387681d795a14ec033334d2b42078b83b761773dcfd060644e7c5985f6"
+  },
+  "scope": "Only the Sentinel lockfile and Rholox documentation/evidence changed after recovery; implementation source and Compiler export are unchanged. Existing CI was inspected once per recovered HEAD. Workflow-write unavailability remains non-blocking."
+}

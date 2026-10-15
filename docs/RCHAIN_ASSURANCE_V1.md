@@ -31,7 +31,7 @@ Build the authorized Sentinel checkout:
 
 ```sh
 cd ../rchain-sentinel/backend
-cargo build
+cargo build --locked
 cd ../../Rholox
 SENTINEL_BIN=../rchain-sentinel/backend/target/debug/rchain-sentinel node scripts/test-assurance-e2e.mjs
 ```
@@ -54,6 +54,7 @@ An omitted contract result does not erase inclusion or disable observation of an
 Refresh an already signed live action without requesting faucet funds, creating keys, or resubmitting:
 
 ```sh
+ASSURANCE_OUTPUT=/tmp/rchain-assurance-live-resume \
 ASSURANCE_SENTINEL_URL=http://127.0.0.1:18181 \
 ASSURANCE_SENTINEL_REVISION=$(git -C ../rchain-sentinel rev-parse HEAD) \
 ASSURANCE_LIVE_POLICY=public/rchain-assurance-policy.json \
@@ -61,3 +62,17 @@ node scripts/test-assurance-e2e.mjs --live --resume docs/evidence/rchain-assuran
 ```
 
 The producer explicitly requests the observed finalized hash for balance read-back. The node response is compared to that exact canonical block even when the node ignores the query parameter; a different returned block leaves the state unavailable.
+
+To repeat only the retained one-observer observation with the currently approved public test endpoint, start Sentinel in a separate terminal:
+
+```sh
+cd ../rchain-sentinel/backend
+PORT=18181 \
+RCHAIN_RNODE_URL=https://testnet.rhobot.net \
+RCHAIN_RNODE_URLS=https://testnet.rhobot.net \
+RCHAIN_ASSURANCE_FAILURE_DOMAINS=public-testnet-gateway \
+RCHAIN_SENTINEL_REVISION=$(git rev-parse HEAD) \
+cargo run --locked
+```
+
+From Rholox, run the resume command above with `ASSURANCE_LIVE_POLICY=docs/evidence/rchain-assurance-v1/live/policy.json`. That historical policy independently retains the approved observer identity; the command overrides its producer revision and uses a current freshness time. This observation remains BLOCKED until the authorized environment supplies a usable transfer-result receipt and the operator configures a second approved independent observer. Save the new output outside the retained original evidence directory.

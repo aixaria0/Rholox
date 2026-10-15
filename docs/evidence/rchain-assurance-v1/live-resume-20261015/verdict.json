@@ -1,0 +1,21 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "BLOCKED",
+  "reasons": [
+    "External observer/revision/digest trust pins are incomplete"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "payload_integrity": "PASS",
+    "external_policy": "BLOCKED"
+  },
+  "package_digest": "a281346a659f3aab7c60c6db363e7294d931255cecb2f3d55e3db08492fc4788",
+  "policy_digest": null,
+  "agreement": "INSUFFICIENT_EVIDENCE",
+  "stages": {
+    "execution": false,
+    "inclusion": false,
+    "finalized_state": false,
+    "corroborated": false
+  }
+}

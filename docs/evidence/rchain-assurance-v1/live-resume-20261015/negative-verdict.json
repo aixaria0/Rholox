@@ -1,0 +1,22 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "FAIL",
+  "reasons": [
+    "Payload digest mismatch",
+    "External observer/revision/digest trust pins are incomplete"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "payload_integrity": "FAIL",
+    "external_policy": "BLOCKED"
+  },
+  "package_digest": "efef0dde43ad1e3f1c8d356120679df0c89499422e978f74c001dc09a692df75",
+  "policy_digest": null,
+  "agreement": "INSUFFICIENT_EVIDENCE",
+  "stages": {
+    "execution": false,
+    "inclusion": false,
+    "finalized_state": false,
+    "corroborated": false
+  }
+}
