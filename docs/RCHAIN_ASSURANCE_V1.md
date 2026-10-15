@@ -59,3 +59,5 @@ ASSURANCE_SENTINEL_REVISION=$(git -C ../rchain-sentinel rev-parse HEAD) \
 ASSURANCE_LIVE_POLICY=public/rchain-assurance-policy.json \
 node scripts/test-assurance-e2e.mjs --live --resume docs/evidence/rchain-assurance-v1/live/signed-action.json
 ```
+
+The producer explicitly requests the observed finalized hash for balance read-back. The node response is compared to that exact canonical block even when the node ignores the query parameter; a different returned block leaves the state unavailable.

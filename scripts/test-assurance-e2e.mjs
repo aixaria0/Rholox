@@ -38,7 +38,7 @@ async function mockNode(id) {
     else if(req.url==='/api/last-finalized-block')data={blockInfo:baseBlock}
     else if(req.url.startsWith('/api/block/'))data=canonical
     else if(req.url.startsWith('/api/is-finalized/'))data={finalized:true}
-    else if(req.url==='/api/explore-deploy')data={expr:[{ExprInt:{data:body.includes(`"${mockRecipient}"`)?1000+(mockSigned?100:0):1000000000}}],block:baseBlock}
+    else if(req.url.startsWith('/api/explore-deploy'))data={expr:[{ExprInt:{data:body.includes(`"${mockRecipient}"`)?1000+(mockSigned?100:0):1000000000}}],block:baseBlock}
     else {res.writeHead(404);res.end('not found');return}
     res.setHeader('content-type','application/json');res.end(JSON.stringify(data))
   })

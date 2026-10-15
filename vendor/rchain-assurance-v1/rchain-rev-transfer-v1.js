@@ -26,10 +26,18 @@ const protocolFields = [
     "sig",
 ];
 function compareBlock(a, b) {
-    return protocolFields.every((key) => Object.hasOwn(info(a) ?? {}, key) &&
-        Object.hasOwn(info(b) ?? {}, key) &&
-        canonicalAssurance(info(a)[key]) === canonicalAssurance(info(b)[key]));
+    let missing = false;
+    for (const key of protocolFields) {
+        if (!Object.hasOwn(info(a) ?? {}, key) || !Object.hasOwn(info(b) ?? {}, key)) {
+            missing = true;
+            continue;
+        }
+        if (canonicalAssurance(info(a)[key]) !== canonicalAssurance(info(b)[key]))
+            return false;
+    }
+    return missing ? undefined : true;
 }
+const canonicalClass = (match) => match === undefined ? "BLOCKED" : match ? "PASS" : "FAIL";
 function trueResult(results) {
     const bool = results?.[0]?.ExprTuple?.ps?.[0]?.ExprBool ?? results?.[0]?.ExprBool;
     return typeof bool === "boolean" ? bool : typeof bool?.data === "boolean" ? bool.data : undefined;
@@ -210,7 +218,7 @@ export async function verifyRevTransferAssurance(input, policy) {
                 finalized: "/api/last-finalized-block",
                 finalized_block: `/api/block/${blockHash(raw.finalized)}`,
                 is_finalized: `/api/is-finalized/${blockHash(raw.deploy?.ProcessedWithSuccess?.block ?? raw.deploy?.ProcessedWithError?.block)}`,
-                balance: "/api/explore-deploy",
+                balance: `/api/explore-deploy?blockHash=${encodeURIComponent(blockHash(raw.finalized) ?? "")}`,
             };
             for (const [key, path] of Object.entries(paths))
                 if (observer.evidence[key])
@@ -222,22 +230,36 @@ export async function verifyRevTransferAssurance(input, policy) {
                         : "FAIL", "Observation request differs from selected action");
             const identity = raw.status?.node?.id ?? raw.status?.address;
             if (raw.status) {
-                check("network_identity", raw.status.networkId === policy.network_id && raw.status.shardId === policy.shard_id
-                    ? "PASS"
-                    : "FAIL", "Observer reports wrong network/shard");
-                check("observer_identity", identity === pin.node_identity && identity === observer.node_identity ? "PASS" : "FAIL", "Raw node identity does not match observer pin");
+                check("network_identity", raw.status.networkId == null || raw.status.shardId == null
+                    ? "BLOCKED"
+                    : raw.status.networkId === policy.network_id && raw.status.shardId === policy.shard_id
+                        ? "PASS"
+                        : "FAIL", "Observer reports wrong network/shard");
+                check("observer_identity", identity == null
+                    ? "BLOCKED"
+                    : identity === pin.node_identity && identity === observer.node_identity
+                        ? "PASS"
+                        : "FAIL", "Raw node identity does not match observer pin");
             }
             const hash = blockHash(raw.finalized), height = blockHeight(raw.finalized);
             if (raw.finalized)
-                check("canonical_consistency", hash === observer.finalized_hash && height === observer.finalized_height
+                check("canonical_consistency", (hash ?? null) === observer.finalized_hash &&
+                    (height ?? null) === observer.finalized_height
                     ? "PASS"
                     : "FAIL", "Finalized summary differs from raw evidence");
             for (const b of [raw.block, raw.finalized, raw.finalized_block, ...raw.ancestry].filter(Boolean))
-                check("network_identity", info(b)?.shardId === policy.shard_id ? "PASS" : "FAIL", "Block shard does not match expected shard");
+                check("network_identity", info(b)?.shardId == null
+                    ? "BLOCKED"
+                    : info(b).shardId === policy.shard_id
+                        ? "PASS"
+                        : "FAIL", "Block shard does not match expected shard");
             const processed = raw.deploy?.ProcessedWithSuccess;
             const includedBlock = processed?.block ?? raw.deploy?.ProcessedWithError?.block;
             const entry = raw.block?.deploys?.find((d) => d.sig === policy.deploy_id);
-            const included = !!entry && !!includedBlock;
+            const included = !!entry &&
+                !!includedBlock &&
+                !!blockHash(includedBlock) &&
+                Number.isSafeInteger(blockHeight(includedBlock));
             if (entry)
                 check("signed_action_binding", entry.term === policy.term &&
                     entry.deployer === policy.signer &&
@@ -245,15 +267,18 @@ export async function verifyRevTransferAssurance(input, policy) {
                     ? "PASS"
                     : "FAIL", "Canonical deploy does not match signed transfer");
             if (raw.block && includedBlock)
-                check("canonical_consistency", compareBlock(includedBlock, raw.block) ? "PASS" : "FAIL", "Included/canonical representation mismatch");
+                check("canonical_consistency", canonicalClass(compareBlock(includedBlock, raw.block)), "Included/canonical representation mismatch");
             if (raw.finalized && raw.finalized_block)
-                check("canonical_consistency", compareBlock(raw.finalized, raw.finalized_block) ? "PASS" : "FAIL", "Finalized/canonical representation mismatch");
+                check("canonical_consistency", canonicalClass(compareBlock(raw.finalized, raw.finalized_block)), "Finalized/canonical representation mismatch");
             const returned = trueResult(processed?.deployResult);
             if (raw.deploy?.ProcessedWithError || returned === false || entry?.errored === true)
                 check("execution", "FAIL", "Transfer execution or contract result failed");
             const executed = included && returned === true && entry.errored === false;
             if (raw.is_finalized && finality(raw.is_finalized) === false)
                 check("finalized_state_observation", "BLOCKED", "Node has not finalized the included action");
+            if (raw.balance?.block && raw.finalized_block && blockHash(raw.balance.block) === hash) {
+                check("canonical_consistency", canonicalClass(compareBlock(raw.balance.block, raw.finalized_block)), "Finalized read-back block metadata differs from canonical block");
+            }
             const balance = balanceValue(raw.balance);
             const readback = executed &&
                 finality(raw.is_finalized) === true &&
