@@ -1,0 +1,12 @@
+{
+  "sentinel_url": null,
+  "producer": "rchain-sentinel",
+  "source_revision": null,
+  "network_id": "testnet",
+  "shard_id": "/root",
+  "observers": [],
+  "min_observers": 2,
+  "min_failure_domains": 2,
+  "max_age_ms": 60000,
+  "max_future_skew_ms": 5000
+}

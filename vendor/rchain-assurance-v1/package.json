@@ -1,0 +1,16 @@
+{
+  "name": "@aixaria/rchain-assurance-v1",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./rchain-rev-transfer-v1.d.ts",
+      "import": "./rchain-rev-transfer-v1.js"
+    },
+    "./integrity": {
+      "types": "./rchain-assurance-validation.d.ts",
+      "import": "./rchain-assurance-validation.js"
+    }
+  }
+}
