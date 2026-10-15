@@ -1,0 +1,41 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "BLOCKED",
+  "reasons": [
+    "Independent reviewer/operator package pin not supplied"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "payload_integrity": "PASS",
+    "received_payload_integrity": "PASS",
+    "external_payload_pin": "BLOCKED",
+    "external_policy": "PASS",
+    "task_binding": "PASS",
+    "claim_binding": "PASS",
+    "network_identity": "PASS",
+    "producer_binding": "PASS",
+    "freshness": "PASS",
+    "deterministic_reproduction": "PASS",
+    "observation_integrity": "PASS",
+    "observer_policy": "PASS",
+    "raw_integrity": "PASS",
+    "source_binding": "PASS",
+    "observer_identity": "PASS",
+    "canonical_consistency": "PASS",
+    "signed_action_binding": "PASS",
+    "cross_node_agreement": "PASS",
+    "inclusion": "PASS",
+    "execution": "PASS",
+    "finalized_state_observation": "PASS"
+  },
+  "package_digest": "c5c7bb6e16bf1be5e4e6149fe7eb2e4c296b25470adf35ae2c3776089f7285e6",
+  "policy_digest": "cf2fa6d3c5be6dddb499485b218b0299897fa08e1527580b816ae46c2debcd6a",
+  "payload_trust": "UNPINNED",
+  "agreement": "EXACT_AGREEMENT",
+  "stages": {
+    "inclusion": true,
+    "execution": true,
+    "finalized_state": true,
+    "corroborated": true
+  }
+}

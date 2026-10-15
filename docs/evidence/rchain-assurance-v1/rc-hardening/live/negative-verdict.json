@@ -1,0 +1,27 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "FAIL",
+  "reasons": [
+    "Internal payload digest mismatch",
+    "Received-package digest missing or mismatched (receipt bookkeeping only)",
+    "Independent reviewer/operator package pin not supplied",
+    "External observer/revision policy or received-package digest is incomplete"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "payload_integrity": "FAIL",
+    "received_payload_integrity": "FAIL",
+    "external_payload_pin": "BLOCKED",
+    "external_policy": "BLOCKED"
+  },
+  "package_digest": "22dabe3355c59452c0a38dff315b351fcea2ec80d05ff902a60536575e188039",
+  "policy_digest": null,
+  "payload_trust": "UNPINNED",
+  "agreement": "INSUFFICIENT_EVIDENCE",
+  "stages": {
+    "execution": false,
+    "inclusion": false,
+    "finalized_state": false,
+    "corroborated": false
+  }
+}
