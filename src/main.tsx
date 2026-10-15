@@ -10,6 +10,7 @@ import rholoxLogo from './assets/rholox-logo.svg'
 import AssetLabPanel from './AssetLabPanel'
 import ExchangePanel from './ExchangePanel'
 import AssurancePanel from './AssurancePanel'
+import AssuranceSite from './AssuranceSite'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
 import { sendRev, type TransferReceipt, type TransferAction } from './lib/transfer'
@@ -633,6 +634,7 @@ function App() {
           <span>RHOLOX</span>
         </button>
         <nav className="primary-nav" aria-label="Primary navigation">
+          <button type="button" onClick={() => { window.location.hash = 'assurance' }}>Assurance</button>
           <button type="button" onClick={() => scrollToSection('network')}>Network</button>
           <button type="button" onClick={() => scrollToSection('wallet')}>Wallet</button>
           <button type="button" onClick={() => scrollToSection('proof')}>Proof</button>
@@ -784,4 +786,16 @@ function App() {
   )
 }
 
-createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)
+function Root() {
+  const [surface, setSurface] = useState(window.location.hash)
+
+  useEffect(() => {
+    const syncSurface = () => setSurface(window.location.hash)
+    window.addEventListener('hashchange', syncSurface)
+    return () => window.removeEventListener('hashchange', syncSurface)
+  }, [])
+
+  return surface.startsWith('#assurance') ? <AssuranceSite /> : <App />
+}
+
+createRoot(document.getElementById('root')!).render(<React.StrictMode><Root /></React.StrictMode>)
