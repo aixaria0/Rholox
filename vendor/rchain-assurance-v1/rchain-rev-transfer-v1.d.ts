@@ -23,7 +23,10 @@ export interface RevTransferPolicy {
     }[];
     producer: string;
     source_revision: string;
-    expected_payload_digest: string;
+    /** Local receipt bookkeeping; never an independent trust root. */
+    received_payload_digest: string;
+    /** Independently selected reviewer/operator commitment to this exact snapshot. */
+    external_payload_digest?: string | null;
 }
 export type AssuranceClass = "PASS" | "BLOCKED" | "FAIL";
 export interface RevTransferVerdict {
@@ -33,6 +36,7 @@ export interface RevTransferVerdict {
     checks: Record<string, AssuranceClass>;
     package_digest: string | null;
     policy_digest: string | null;
+    payload_trust: "UNPINNED" | "EXTERNALLY_PINNED" | "PIN_MISMATCH";
     agreement: string;
     stages: {
         execution: boolean;

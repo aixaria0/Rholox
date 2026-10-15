@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { moduleUrl } from './load-ts-for-test.mjs'
+import { assurancePayloadDigest, assuranceDigest, rawAssuranceDigest, assuranceReproductionDigest } from '@aixaria/rchain-assurance-v1/integrity'
 const rchain = moduleUrl('../src/lib/rchain.ts')
 const assuranceUrl = moduleUrl('../src/lib/assurance.ts', { './rchain': rchain })
 const assurance = await import(assuranceUrl)
@@ -17,16 +18,18 @@ const read = name => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, 
 const pkg = read('pass')
 const term = JSON.parse(pkg.observers[0].evidence.block.body).deploys[0].term
 const action = { deployId: pkg.subject.deploy_id, signer: 'synthetic-signer', signedAt: NOW-1000, submittedAt: NOW-900, submissionSource: 'synthetic gateway', to: '1111syntheticRecipient', amountDrops: 100, recipientBalanceBefore: 1000, signed: { data: { term }, deployer: 'synthetic-signer', signature: pkg.subject.deploy_id } }
-const config = { sentinel_url: 'http://127.0.0.1:18181', producer: 'rchain-sentinel', source_revision: 'synthetic-fixture-v1', network_id: 'synthetic-testnet', shard_id: 'root', observers: pkg.observers.map(o=>({ observer_id:o.observer_id,source:o.source,node_identity:o.node_identity,failure_domain:o.failure_domain })), min_observers:2,min_failure_domains:2,max_age_ms:60000,max_future_skew_ms:1000 }
+const config = { external_payload_digests: { [action.deployId]: pkg.provenance.payload_digest }, sentinel_url: 'http://127.0.0.1:18181', producer: 'rchain-sentinel', source_revision: 'synthetic-fixture-v1', network_id: 'synthetic-testnet', shard_id: 'root', observers: pkg.observers.map(o=>({ observer_id:o.observer_id,source:o.source,node_identity:o.node_identity,failure_domain:o.failure_domain })), min_observers:2,min_failure_domains:2,max_age_ms:60000,max_future_skew_ms:1000 }
 function respond(body) { globalThis.fetch = async () => new Response(JSON.stringify(body),{status:200}) }
 try {
   respond(pkg)
   const pass = await assurance.observeTransferAssurance(action.deployId,action,config)
   assert.equal(pass.verdict.status,'PASS')
+  assert.equal(pass.verdict.payload_trust,'EXTERNALLY_PINNED')
   assert.equal(assurance.assurancePresentation(pass,action).verdict,'PASS')
   assert.match(assurance.assurancePresentation(pass,action).why,/required checks.*PASS/)
-  respond(read('blocked'))
-  const blocked = await assurance.observeTransferAssurance(action.deployId,action,config)
+  const blockedPackage = read('blocked')
+  respond(blockedPackage)
+  const blocked = await assurance.observeTransferAssurance(action.deployId,action,{...config,external_payload_digests:{[action.deployId]:blockedPackage.provenance.payload_digest}})
   assert.equal(blocked.verdict.status,'BLOCKED')
   assert.match(assurance.assurancePresentation(blocked,action).why,/submitted and included.*BLOCKED/)
   assert.equal(assurance.assurancePresentation(pass,action,true).capability,'DEGRADED')
@@ -37,6 +40,23 @@ try {
   respond(read('conflict'))
   const conflict=await assurance.observeTransferAssurance(action.deployId,action,config)
   assert.equal(conflict.verdict.status,'FAIL'); assert.equal(conflict.verdict.agreement,'CONFLICT')
+  const substitute = structuredClone(pkg)
+  const statusEvidence = substitute.observers[0].evidence.status
+  statusEvidence.body = JSON.stringify({...JSON.parse(statusEvidence.body),version:{node:'coherent-substitution'}})
+  statusEvidence.digest = await rawAssuranceDigest(statusEvidence.body)
+  for (const observer of substitute.observers) { const {observation_digest,...data}=observer; observer.observation_digest=await assuranceDigest(data) }
+  substitute.reproduction_digest = await assuranceReproductionDigest(substitute)
+  substitute.provenance.payload_digest = await assurancePayloadDigest(substitute)
+  respond(substitute)
+  const unpinned = await assurance.observeTransferAssurance(action.deployId,action,{...config,external_payload_digests:{}})
+  assert.equal(unpinned.verdict.status,'BLOCKED')
+  assert.equal(unpinned.verdict.payload_trust,'UNPINNED')
+  assert.equal(unpinned.verdict.checks.payload_integrity,'PASS')
+  assert.equal(unpinned.policy.external_payload_digest,null)
+  assert.ok(render(unpinned,action).includes('UNPINNED'))
+  const substituted = await assurance.observeTransferAssurance(action.deployId,action,config)
+  assert.equal(substituted.verdict.status,'FAIL')
+  assert.equal(substituted.verdict.payload_trust,'PIN_MISMATCH')
   respond({...pkg, reproduction_digest:'0'.repeat(64)})
   assert.equal((await assurance.observeTransferAssurance(action.deployId,action,config)).verdict.status,'FAIL')
   const waiting=await assurance.observeTransferAssurance(action.deployId,action,{...config,sentinel_url:null})
@@ -49,5 +69,5 @@ try {
   assert.equal(assurance.assurancePresentation(unseen).verdict,'BLOCKED')
   respond({version:'rchain-assurance/v1'})
   assert.equal((await assurance.observeTransferAssurance(action.deployId,action,config)).state,'REJECTED')
-  console.log('Assurance UI integration: seven required states + missing signed context + truncated evidence PASS')
+  console.log('Assurance UI integration: seven required states + independent-pin substitution + missing signed context + truncated evidence PASS')
 } finally { Date.now=originalNow;globalThis.fetch=originalFetch }

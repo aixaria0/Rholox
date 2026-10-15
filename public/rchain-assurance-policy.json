@@ -1,4 +1,5 @@
 {
+  "external_payload_digests": {},
   "sentinel_url": null,
   "producer": "rchain-sentinel",
   "source_revision": null,

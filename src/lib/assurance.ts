@@ -4,6 +4,8 @@ import { fetchWithTimeout } from './rchain'
 import type { TransferAction } from './transfer'
 
 export type AssuranceConfig = {
+  /** Exact snapshot commitments supplied independently by the reviewer/operator, keyed by deploy. */
+  external_payload_digests?: Record<string, string>
   sentinel_url: string | null
   producer: string
   source_revision: string | null
@@ -42,14 +44,15 @@ export async function observeTransferAssurance(deployId: string, action?: Transf
     const errors = validateRevTransferPackage(pkg)
     if (errors.length) return { state: 'REJECTED', reason: `Verifier rejected evidence contract: ${errors.join('; ')}` }
     if (!action || action.deployId !== deployId) return { state: 'OBSERVED', package: pkg, reason: 'Observation received. Assurance is BLOCKED: this session has no independently selected signed transfer and pre-transfer balance.' }
-    // This commitment is selected from the operator-pinned transport response, never pkg.provenance.payload_digest.
+    // The received digest is bookkeeping. Only operator configuration supplies an independent pin.
     const policy: RevTransferPolicy = {
       verifier: 'rchain-rev-transfer-assurance/v1', action_id: action.deployId, deploy_id: action.deployId, claim_id: `rev-transfer:${action.deployId}`,
       network_id: config.network_id, shard_id: config.shard_id, signer: action.signer, term: action.signed.data.term,
       recipient: action.to, amount_drops: action.amountDrops, recipient_balance_before: action.recipientBalanceBefore,
       now_ms: Date.now(), max_age_ms: config.max_age_ms, max_future_skew_ms: config.max_future_skew_ms,
       min_observers: config.min_observers, min_failure_domains: config.min_failure_domains, observers: config.observers,
-      producer: config.producer, source_revision: config.source_revision, expected_payload_digest: await assurancePayloadDigest(pkg),
+      producer: config.producer, source_revision: config.source_revision, received_payload_digest: await assurancePayloadDigest(pkg),
+      external_payload_digest: config.external_payload_digests?.[deployId] ?? null,
     }
     const verdict = await verifyRevTransferAssurance(pkg, policy)
     return { state: verdict.status === 'FAIL' ? 'REJECTED' : 'OBSERVED', package: pkg, verdict, policy, reason: verdict.reasons.join(' ') || 'All required bounded checks reproduced.' }

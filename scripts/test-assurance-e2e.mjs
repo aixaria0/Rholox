@@ -77,9 +77,12 @@ try {
   try{if(!resumeAction)receipt=await sendRev(sender,recipient.revAddress,'0.000001',next=>{action=next;console.log(`${live?'LIVE':'SYNTHETIC'} ${next.submittedAt?'SUBMITTED':'SIGNED'} ${next.deployId}`)})}catch(error){transferError=error.message;if(!action)throw error;console.log(`Action retained: ${transferError}`)}
   if(!action)throw new Error('No signed deploy identity retained')
   const pkg=await json(`${sentinelUrl}/api/assurance/action/${action.deployId}`)
-  const policy={verifier:'rchain-rev-transfer-assurance/v1',action_id:action.deployId,deploy_id:action.deployId,claim_id:`rev-transfer:${action.deployId}`,network_id:live?'testnet':'synthetic-testnet',shard_id:live?'/root':'root',signer:action.signer,term:action.signed.data.term,recipient:action.to,amount_drops:action.amountDrops,recipient_balance_before:action.recipientBalanceBefore,now_ms:Date.now(),max_age_ms:60000,max_future_skew_ms:5000,min_observers:2,min_failure_domains:2,observers:pins,producer:'rchain-sentinel',source_revision:producerRevision??'',expected_payload_digest:await assurancePayloadDigest(pkg)}
+  const policy={verifier:'rchain-rev-transfer-assurance/v1',action_id:action.deployId,deploy_id:action.deployId,claim_id:`rev-transfer:${action.deployId}`,network_id:live?'testnet':'synthetic-testnet',shard_id:live?'/root':'root',signer:action.signer,term:action.signed.data.term,recipient:action.to,amount_drops:action.amountDrops,recipient_balance_before:action.recipientBalanceBefore,now_ms:Date.now(),max_age_ms:60000,max_future_skew_ms:5000,min_observers:2,min_failure_domains:2,observers:pins,producer:'rchain-sentinel',source_revision:producerRevision??'',received_payload_digest:await assurancePayloadDigest(pkg),external_payload_digest:livePolicy?.external_payload_digests?.[action.deployId]??process.env.ASSURANCE_EXTERNAL_PAYLOAD_DIGEST??null}
   const verdict=await verifyRevTransferAssurance(pkg,policy)
-  if(!live)assert.equal(verdict.status,process.env.ASSURANCE_MOCK_EMPTY_RESULT?'BLOCKED':'PASS',JSON.stringify(verdict))
+  if(!live){
+    assert.equal(verdict.status,process.env.ASSURANCE_MOCK_EMPTY_RESULT||!policy.external_payload_digest?'BLOCKED':'PASS',JSON.stringify(verdict))
+    if(!process.env.ASSURANCE_MOCK_EMPTY_RESULT)assert.ok(Object.entries(verdict.checks).every(([name,status])=>name==='external_payload_pin'||status==='PASS'),JSON.stringify(verdict))
+  }
   const assuranceUrl=moduleUrl('../src/lib/assurance.ts',{'./rchain':rchainUrl})
   const {AssuranceEvidence}=await import(moduleUrl('../src/AssurancePanel.tsx',{'./lib/assurance':assuranceUrl}))
   const observation={state:verdict.status==='FAIL'?'REJECTED':'OBSERVED',package:pkg,verdict,policy,reason:verdict.reasons.join(' ')||'All bounded checks reproduced.'}
@@ -91,11 +94,12 @@ try {
   assert.equal(negative.status,'FAIL')
   const vendor=JSON.parse(readFileSync(new URL('../vendor/rchain-assurance-v1/SOURCE.json',import.meta.url),'utf8'))
   const missing=[]
+  if(!policy.external_payload_digest)missing.push('independent reviewer/operator package pin not supplied')
   if(live&&pins.length<2)missing.push('no operator-approved second independently addressable observer endpoint/identity pin')
   if(live&&pkg.execution.status!=='OBSERVED')missing.push('node deploy-status omits a successful contract result (deployResult is empty or unknown)')
   if(live&&pkg.finalized_state.status!=='OBSERVED')missing.push('required finalized transfer read-back is unavailable')
   const blocker=live&&verdict.status!=='PASS'?`EXTERNAL LIVE BLOCKER: authorized testnet evidence is incomplete: ${missing.join('; ') || verdict.reasons.join('; ')}.`:null
-  const report={mode:live?'LIVE_TESTNET':process.env.ASSURANCE_MOCK_EMPTY_RESULT?'SYNTHETIC_EMPTY_RESULT':'SYNTHETIC_INTEGRATION',revisions:{Rholox:revision(),Sentinel:producerRevision,Compiler:vendor.revision},deploy_id:action.deployId,submission_observed_at:action.submittedAt??null,inclusion:pkg.inclusion,execution:pkg.execution,finalized_state:pkg.finalized_state,observers:pkg.observers.map(o=>({observer_id:o.observer_id,node_identity:o.node_identity,finalized_height:o.finalized_height,finalized_hash:o.finalized_hash,observation_digest:o.observation_digest,status:o.status})),assurance_package_digest:pkg.provenance.payload_digest,rendered_html_digest:await rawAssuranceDigest(html),verdict:verdict.status,negative_control:negative.status==='FAIL'?'PASS':'FAIL',transfer_error:transferError??null,client_receipt:receipt??null,blocker}
+  const report={mode:live?'LIVE_TESTNET':process.env.ASSURANCE_MOCK_EMPTY_RESULT?'SYNTHETIC_EMPTY_RESULT':'SYNTHETIC_INTEGRATION',revisions:{Rholox:revision(),Sentinel:producerRevision,Compiler:vendor.revision},deploy_id:action.deployId,submission_observed_at:action.submittedAt??null,inclusion:pkg.inclusion,execution:pkg.execution,finalized_state:pkg.finalized_state,observers:pkg.observers.map(o=>({observer_id:o.observer_id,node_identity:o.node_identity,finalized_height:o.finalized_height,finalized_hash:o.finalized_hash,observation_digest:o.observation_digest,status:o.status})),assurance_package_digest:pkg.provenance.payload_digest,rendered_html_digest:await rawAssuranceDigest(html),verdict:verdict.status,payload_trust:verdict.payload_trust,negative_control:negative.status==='FAIL'?'PASS':'FAIL',transfer_error:transferError??null,client_receipt:receipt??null,blocker}
   mkdirSync(output,{recursive:true})
   for(const [name,value] of Object.entries({package:pkg,policy,verdict,report,'signed-action':action,'negative-verdict':negative}))writeFileSync(resolve(output,`${name}.json`),JSON.stringify(value,null,2)+'\n')
   writeFileSync(resolve(output,'rendered.html'),html)

@@ -4,7 +4,7 @@ REV Transfer retains the exact public signed deploy and submission acknowledgmen
 
 The existing Network, Wallet, Proof, Explorer, REV Transfer, Asset Lab and Exchange surfaces remain available. An unavailable write gateway can coexist with a live observation plane (DEGRADED). An unavailable assurance plane does not disable transfer signing/submission. No policy configuration means WAITING/BLOCKED, never PASS. No observer count establishes independent stake-weighted Casper finality.
 
-The former REV term replaced every Vault response with true. The canonical v1 term now forwards the actual Vault result to both the first private return channel and the deploy identity channel. A read-only test established that consuming the first private reply leaves the node result empty; retaining it makes the actual result observable. The client no longer labels height-only balance read-back as verified finality; the matching finalized hash and explicit inclusion-block finality assertion are required. Those observations still require the separate assurance verifier and external trust policy.
+The former REV term replaced every Vault response with true. The canonical v1 term now forwards the actual Vault result to both the first private return channel and the deploy identity channel. RC investigation corrected the earlier explanation: the reported live node build returns Nil from its classic native transfer arm, and API expression conversion omits Nil. Forwarding that value still yields an empty result array. Read-only Nil/boolean controls and pinned source evidence are documented in Sentinel PR #8; the result is classified UPSTREAM/API LIMITATION, not a missing client return channel. The client no longer labels height-only balance read-back as verified finality; the matching finalized hash and explicit inclusion-block finality assertion are required. Those observations still require the separate assurance verifier and external trust policy.
 
 ## Deployment pins
 
@@ -21,7 +21,7 @@ The former REV term replaced every Vault response with true. The canonical v1 te
 
 Do not count aliases of one node as separate observers. Failure domains must come from operator knowledge. Match Sentinel's `RCHAIN_RNODE_URLS` and `RCHAIN_ASSURANCE_FAILURE_DOMAINS` in order. Set `RCHAIN_SENTINEL_REVISION` to Sentinel's deployed commit SHA. Serve Sentinel with the existing approved test infrastructure; these draft PRs do not deploy or change infrastructure.
 
-The expected package commitment is computed from the response received over this operator-pinned transport. It is not copied from the package's self-declared digest. This is trust in the configured producer/transport, not proof that its observations are truthful.
+`received_payload_digest` is computed from the transport response for integrity bookkeeping. It is not an independent whole-package pin. The separately fetched operator configuration may supply `external_payload_digests: { "<deploy-id>": "<independently reviewed snapshot digest>" }`. That value is never filled from the received package. Missing independent pins keep assurance BLOCKED/UNPINNED; mismatches FAIL/PIN_MISMATCH; only a matching independent pin can report EXTERNALLY_PINNED. All raw-evidence, network, observer, revision, task and claim gates remain. A pin selects one exact snapshot; a newly generated snapshot needs its own independent approval. The default map is empty and core transfer capability remains available.
 
 The verifier in `vendor/rchain-assurance-v1` is generated from the canonical RCHAIN-COMPLIER implementation. SOURCE.json pins its revision and file digests; `npm run test:assurance` checks drift. Update it only by running Compiler's `node scripts/export-rchain-assurance.mjs ../Rholox/vendor/rchain-assurance-v1`, then review the pin changes.
 
@@ -36,7 +36,7 @@ cd ../../Rholox
 SENTINEL_BIN=../rchain-sentinel/backend/target/debug/rchain-sentinel node scripts/test-assurance-e2e.mjs
 ```
 
-This starts two loopback synthetic RNode fixtures and the real Sentinel binary, runs the actual Rholox signing/submission modules, retains deploy identity, obtains canonical assurance evidence, executes the canonical Compiler verifier and renders the real Rholox evidence component. A raw-byte tamper must return FAIL. It does not claim to execute Rholang or prove external execution. Output defaults to `/tmp/rchain-assurance-e2e`.
+This starts two loopback synthetic RNode fixtures and the real Sentinel binary, runs the actual Rholox signing/submission modules, retains deploy identity, obtains canonical assurance evidence, executes the canonical Compiler verifier and renders the real Rholox evidence component. The runner does not manufacture a reviewer pin: without `ASSURANCE_EXTERNAL_PAYLOAD_DIGEST` supplied independently, the complete synthetic path correctly returns BLOCKED solely at the external-pin gate; positive PASS coverage uses separately selected controlled fixtures. A raw-byte tamper must return FAIL. It does not claim to execute Rholang or prove external execution. Output defaults to `/tmp/rchain-assurance-e2e`.
 
 For the final authorized live proof, configure the approved testnet observers as above, run Sentinel locally on port 18181, then:
 
@@ -76,3 +76,5 @@ cargo run --locked
 ```
 
 From Rholox, run the resume command above with `ASSURANCE_LIVE_POLICY=docs/evidence/rchain-assurance-v1/live/policy.json`. That historical policy independently retains the approved observer identity; the command overrides its producer revision and uses a current freshness time. This observation remains BLOCKED until the authorized environment supplies a usable transfer-result receipt and the operator configures a second approved independent observer. Save the new output outside the retained original evidence directory.
+
+Historical evidence/policies and renderer snapshots are retained unchanged. Legacy `expected_payload_digest` is rejected by the hardened verifier; migrate policies explicitly and obtain independent approval rather than copying the historical received digest into an external pin. Live output accepts the operator pin map above; a balance change or a Nil/empty result never becomes successful execution proof.
