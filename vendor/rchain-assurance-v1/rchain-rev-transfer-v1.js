@@ -2,7 +2,7 @@ import { validateRevTransferPackage, canonicalAssurance, assuranceDigest, rawAss
 export function revTransferTerm(to, amount) {
     if (!/^[A-Za-z0-9]{1,128}$/.test(to) || !Number.isSafeInteger(amount) || amount <= 0)
         throw new Error("Invalid REV transfer parameters");
-    return `new revVault(\`rho:rchain:revVault\`), deployerId(\`rho:rchain:deployerId\`), deployId(\`rho:rchain:deployId\`), resultCh in {\n    revVault!("transfer", *deployerId, "${to}", ${amount}, *resultCh) |\n    for (@result <- resultCh) { deployId!(result) }\n  }`;
+    return `new return, revVault(\`rho:rchain:revVault\`), deployerId(\`rho:rchain:deployerId\`), deployId(\`rho:rchain:deployId\`), resultCh in {\n    revVault!("transfer", *deployerId, "${to}", ${amount}, *resultCh) |\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\n  }`;
 }
 export function revBalanceTerm(to) {
     if (!/^[A-Za-z0-9]{1,128}$/.test(to))
@@ -31,7 +31,7 @@ function compareBlock(a, b) {
         canonicalAssurance(info(a)[key]) === canonicalAssurance(info(b)[key]));
 }
 function trueResult(results) {
-    const bool = results?.[0]?.ExprTuple?.ps?.[0]?.ExprBool;
+    const bool = results?.[0]?.ExprTuple?.ps?.[0]?.ExprBool ?? results?.[0]?.ExprBool;
     return typeof bool === "boolean" ? bool : typeof bool?.data === "boolean" ? bool.data : undefined;
 }
 const finality = (v) => typeof v === "boolean"

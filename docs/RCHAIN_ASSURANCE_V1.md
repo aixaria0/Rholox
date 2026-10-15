@@ -4,7 +4,7 @@ REV Transfer retains the exact public signed deploy and submission acknowledgmen
 
 The existing Network, Wallet, Proof, Explorer, REV Transfer, Asset Lab and Exchange surfaces remain available. An unavailable write gateway can coexist with a live observation plane (DEGRADED). An unavailable assurance plane does not disable transfer signing/submission. No policy configuration means WAITING/BLOCKED, never PASS. No observer count establishes independent stake-weighted Casper finality.
 
-The former REV term replaced every Vault response with true. The canonical v1 term now forwards the actual Vault result. The client no longer labels height-only balance read-back as verified finality; the matching finalized hash and explicit inclusion-block finality assertion are required. Those observations still require the separate assurance verifier and external trust policy.
+The former REV term replaced every Vault response with true. The canonical v1 term now forwards the actual Vault result to both the first private return channel and the deploy identity channel. A read-only test established that consuming the first private reply leaves the node result empty; retaining it makes the actual result observable. The client no longer labels height-only balance read-back as verified finality; the matching finalized hash and explicit inclusion-block finality assertion are required. Those observations still require the separate assurance verifier and external trust policy.
 
 ## Deployment pins
 
@@ -48,3 +48,14 @@ node scripts/test-assurance-e2e.mjs --live
 ```
 
 Live mode refuses any gateway other than the existing hardcoded public testnet unless source code is changed, and checks `networkId=testnet` and `devMode=true` before creating ephemeral test keys, requesting test faucet funding and submitting one tiny REV transfer. Private keys remain in process memory. Evidence includes public signed bytes, deploy/block identities, exact raw responses, observer/package digests, source pins, policy, rendered HTML and the tamper verdict. No production keys or mainnet paths exist in this runner. With fewer than two external observer pins, the live verdict is BLOCKED and the exact missing infrastructure is recorded.
+
+An omitted contract result does not erase inclusion or disable observation of an existing action. The assurance execution/claim remains UNKNOWN/BLOCKED even if the client later observes a recipient balance. The synthetic integration also tests this exact negative case (`ASSURANCE_MOCK_EMPTY_RESULT=1`).
+
+Refresh an already signed live action without requesting faucet funds, creating keys, or resubmitting:
+
+```sh
+ASSURANCE_SENTINEL_URL=http://127.0.0.1:18181 \
+ASSURANCE_SENTINEL_REVISION=$(git -C ../rchain-sentinel rev-parse HEAD) \
+ASSURANCE_LIVE_POLICY=public/rchain-assurance-policy.json \
+node scripts/test-assurance-e2e.mjs --live --resume docs/evidence/rchain-assurance-v1/live/signed-action.json
+```

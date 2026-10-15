@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { moduleUrl } from './load-ts-for-test.mjs'
 const rchain = moduleUrl('../src/lib/rchain.ts')
-const assurance = await import(moduleUrl('../src/lib/assurance.ts', { './rchain': rchain }))
+const assuranceUrl = moduleUrl('../src/lib/assurance.ts', { './rchain': rchain })
+const assurance = await import(assuranceUrl)
+const { AssuranceEvidence } = await import(moduleUrl('../src/AssurancePanel.tsx', { './lib/assurance': assuranceUrl }))
+const render = (observation, action, gatewayUnavailable=false) => renderToStaticMarkup(createElement(AssuranceEvidence,{deployId:action?.deployId??'unknown',action,observation,gatewayUnavailable}))
 const NOW = 1792080001000
 const originalNow = Date.now
 const originalFetch = globalThis.fetch
@@ -35,6 +40,9 @@ try {
   respond({...pkg, reproduction_digest:'0'.repeat(64)})
   assert.equal((await assurance.observeTransferAssurance(action.deployId,action,config)).verdict.status,'FAIL')
   const waiting=await assurance.observeTransferAssurance(action.deployId,action,{...config,sentinel_url:null})
+  for (const observation of [pass, blocked, unavailable, conflict, waiting]) { const html=render(observation,action); assert.ok(html.includes('WHY THIS ACTION?')); assert.ok(html.includes(assurance.assurancePresentation(observation,action).verdict)); }
+  assert.ok(render(pass,{...action,submittedAt:undefined,submissionError:'Gateway unavailable'}).includes('DEGRADED'))
+  assert.ok(render(pass,action,true).includes('DEGRADED'))
   assert.equal(waiting.state,'WAITING');assert.equal(assurance.assurancePresentation(waiting,action).verdict,'BLOCKED')
   respond(pkg)
   const unseen=await assurance.observeTransferAssurance(action.deployId,undefined,config)

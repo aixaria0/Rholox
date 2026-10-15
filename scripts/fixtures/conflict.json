@@ -38,7 +38,7 @@
       "observed_at": 1792080000000,
       "finalized_height": 10,
       "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "observation_digest": "40bb0a245c8404a7c403e97e679dead9da49be234a8306b14fe1b2b981d7db82",
+      "observation_digest": "44c24daaeb95bb6b00b6a748c89d13513c481a41dc717608a5007834147d612e",
       "status": "OBSERVED",
       "reason": null,
       "evidence": {
@@ -56,8 +56,8 @@
         },
         "block": {
           "path": "/api/block/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { deployId!(result) }\\n  }\",\"errored\":false}]}",
-          "digest": "25ff0069266a96af8ab7c12bf47b57deb76e4ff5d66cedc792553daf2acef95a",
+          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\\n  }\",\"errored\":false}]}",
+          "digest": "2cdd53566c893d73cc216b3c1e2dfa87a6c4ff60f3b78a4251c78f2f184aa0fd",
           "observed_at": 1792080000000
         },
         "finalized": {
@@ -68,8 +68,8 @@
         },
         "finalized_block": {
           "path": "/api/block/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { deployId!(result) }\\n  }\",\"errored\":false}]}",
-          "digest": "25ff0069266a96af8ab7c12bf47b57deb76e4ff5d66cedc792553daf2acef95a",
+          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\\n  }\",\"errored\":false}]}",
+          "digest": "2cdd53566c893d73cc216b3c1e2dfa87a6c4ff60f3b78a4251c78f2f184aa0fd",
           "observed_at": 1792080000000
         },
         "is_finalized": {
@@ -96,7 +96,7 @@
       "observed_at": 1792080000000,
       "finalized_height": 10,
       "finalized_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "observation_digest": "c45f75b7bddd020b66f74a57dddd08782e7196aad1b5299abf9fb908c071a6ea",
+      "observation_digest": "db3e71344e5bf87c28e8fbe4a317b762af5512a2df298a77ee1548eea1fd3386",
       "status": "OBSERVED",
       "reason": null,
       "evidence": {
@@ -114,8 +114,8 @@
         },
         "block": {
           "path": "/api/block/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { deployId!(result) }\\n  }\",\"errored\":false}]}",
-          "digest": "25ff0069266a96af8ab7c12bf47b57deb76e4ff5d66cedc792553daf2acef95a",
+          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\\n  }\",\"errored\":false}]}",
+          "digest": "2cdd53566c893d73cc216b3c1e2dfa87a6c4ff60f3b78a4251c78f2f184aa0fd",
           "observed_at": 1792080000000
         },
         "finalized": {
@@ -166,7 +166,7 @@
   "provenance": {
     "producer": "rchain-sentinel",
     "source_revision": "synthetic-fixture-v1",
-    "payload_digest": "aefc65a9bced3f795041ea25bdfff20f06fc0d53613e5768ae74e44b9e231eb6",
+    "payload_digest": "89cc31d624476a60456769d1d289d7f0354b9af3c8a9cd3f6b379e00edfc2eae",
     "generated_at": 1792080000000
   }
 }

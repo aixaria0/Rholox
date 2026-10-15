@@ -38,7 +38,7 @@
       "observed_at": 1792080000000,
       "finalized_height": 10,
       "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "observation_digest": "329ab4ad83cc973610f794a32bf3218279cd4fdb9cd17ae6cde71d2f33bdadc3",
+      "observation_digest": "e052e93e931b1a43acabafb1fbc2f912e123ef8ebb3a2b18191ffb70515224e0",
       "status": "OBSERVED",
       "reason": null,
       "evidence": {
@@ -56,8 +56,8 @@
         },
         "block": {
           "path": "/api/block/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { deployId!(result) }\\n  }\",\"errored\":false}]}",
-          "digest": "25ff0069266a96af8ab7c12bf47b57deb76e4ff5d66cedc792553daf2acef95a",
+          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\\n  }\",\"errored\":false}]}",
+          "digest": "2cdd53566c893d73cc216b3c1e2dfa87a6c4ff60f3b78a4251c78f2f184aa0fd",
           "observed_at": 1792080000000
         },
         "finalized": {
@@ -68,8 +68,8 @@
         },
         "finalized_block": {
           "path": "/api/block/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { deployId!(result) }\\n  }\",\"errored\":false}]}",
-          "digest": "25ff0069266a96af8ab7c12bf47b57deb76e4ff5d66cedc792553daf2acef95a",
+          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\\n  }\",\"errored\":false}]}",
+          "digest": "2cdd53566c893d73cc216b3c1e2dfa87a6c4ff60f3b78a4251c78f2f184aa0fd",
           "observed_at": 1792080000000
         },
         "is_finalized": {
@@ -90,7 +90,7 @@
       "observed_at": 1792080000000,
       "finalized_height": 10,
       "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "observation_digest": "67cda84b29125573788e90e4b5851c1bcb3d1100983b94b97214c71f23f609cd",
+      "observation_digest": "352b7cdf058bbc401e2a5ab5093b441b9417ab0cb4146c0b46142be36f04f4bc",
       "status": "OBSERVED",
       "reason": null,
       "evidence": {
@@ -108,8 +108,8 @@
         },
         "block": {
           "path": "/api/block/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { deployId!(result) }\\n  }\",\"errored\":false}]}",
-          "digest": "25ff0069266a96af8ab7c12bf47b57deb76e4ff5d66cedc792553daf2acef95a",
+          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\\n  }\",\"errored\":false}]}",
+          "digest": "2cdd53566c893d73cc216b3c1e2dfa87a6c4ff60f3b78a4251c78f2f184aa0fd",
           "observed_at": 1792080000000
         },
         "finalized": {
@@ -120,8 +120,8 @@
         },
         "finalized_block": {
           "path": "/api/block/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { deployId!(result) }\\n  }\",\"errored\":false}]}",
-          "digest": "25ff0069266a96af8ab7c12bf47b57deb76e4ff5d66cedc792553daf2acef95a",
+          "body": "{\"blockInfo\":{\"blockHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"blockNumber\":10,\"shardId\":\"root\",\"sender\":\"synthetic-validator\",\"seqNum\":10,\"preStateHash\":\"pre\",\"postStateHash\":\"post\",\"justifications\":[],\"bonds\":[{\"validator\":\"synthetic-validator\",\"stake\":100}],\"sigAlgorithm\":\"secp256k1\",\"sig\":\"synthetic-block-signature\",\"parents\":[]},\"deploys\":[{\"sig\":\"abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab\",\"deployer\":\"synthetic-signer\",\"term\":\"new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\\n    revVault!(\\\"transfer\\\", *deployerId, \\\"1111syntheticRecipient\\\", 100, *resultCh) |\\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\\n  }\",\"errored\":false}]}",
+          "digest": "2cdd53566c893d73cc216b3c1e2dfa87a6c4ff60f3b78a4251c78f2f184aa0fd",
           "observed_at": 1792080000000
         },
         "is_finalized": {
@@ -154,7 +154,7 @@
   "provenance": {
     "producer": "rchain-sentinel",
     "source_revision": "synthetic-fixture-v1",
-    "payload_digest": "a4cac2b77068f674f091d26b399a89cd501c6dc69f5ad4312c3593cc06408c56",
+    "payload_digest": "3a25d85f36980e24c0f1ffe19fdd3b23beeb8137083258a203f9d267137c9680",
     "generated_at": 1792080000000
   }
 }

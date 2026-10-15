@@ -11,6 +11,9 @@ import { assurancePayloadDigest, rawAssuranceDigest } from '@aixaria/rchain-assu
 import { moduleUrl } from './load-ts-for-test.mjs'
 
 const live = process.argv.includes('--live')
+const resumeIndex = process.argv.indexOf('--resume')
+const resumeAction = resumeIndex >= 0 ? JSON.parse(readFileSync(process.argv[resumeIndex + 1], 'utf8')) : null
+if (resumeAction && !live) throw new Error('--resume requires --live; it performs observations only')
 const output = resolve(process.env.ASSURANCE_OUTPUT ?? (live ? 'docs/evidence/rchain-assurance-v1/live' : '/tmp/rchain-assurance-e2e'))
 const livePolicy = live && process.env.ASSURANCE_LIVE_POLICY ? JSON.parse(readFileSync(process.env.ASSURANCE_LIVE_POLICY, "utf8")) : null
 const servers = []
@@ -31,7 +34,7 @@ async function mockNode(id) {
     let data
     if(req.url==='/api/status')data={networkId:'synthetic-testnet',shardId:'root',node:{id},latestBlockNumber:10,minPhloPrice:1,devMode:true}
     else if(req.url==='/api/deploy'&&req.method==='POST'){mockSigned=body;data=`DeployId is: ${body.signature}`}
-    else if(req.url.startsWith('/api/v1/deploy-status/'))data=mockSigned?{ProcessedWithSuccess:{deployResult:resultTuple,block:baseBlock}}:{NotProcessed:{status:'Unknown'}}
+    else if(req.url.startsWith('/api/v1/deploy-status/'))data=mockSigned?{ProcessedWithSuccess:{deployResult:process.env.ASSURANCE_MOCK_EMPTY_RESULT?[]:resultTuple,block:baseBlock}}:{NotProcessed:{status:'Unknown'}}
     else if(req.url==='/api/last-finalized-block')data={blockInfo:baseBlock}
     else if(req.url.startsWith('/api/block/'))data=canonical
     else if(req.url.startsWith('/api/is-finalized/'))data={finalized:true}
@@ -62,20 +65,21 @@ try {
   const status=await rchain.getJson('/api/status')
   if(live&&(status.networkId!=='testnet'||status.devMode!==true))throw new Error('Live transfer is restricted to the authorized dev testnet')
   const {createWallet}=await import(moduleUrl('../src/lib/wallet.ts'))
-  const sender=createWallet(),recipient=createWallet();mockRecipient=recipient.revAddress
-  if(live){
+  const sender=resumeAction?null:createWallet(),recipient=resumeAction?null:createWallet();mockRecipient=recipient?.revAddress
+  if(live && !resumeAction){
     const funded=await rchain.requestFaucet(sender.revAddress);console.log(`LIVE faucet deploy: ${funded.deployId}`)
     for(let i=0;i<30;i++){if(await rchain.readBalance(sender.revAddress)>1000000)break;if(i===29)throw new Error('EXTERNAL LIVE BLOCKER: testnet faucet funding did not become available');await pause(1000)}
     pins=livePolicy?.observers??[{observer_id:gateway,source:gateway,node_identity:status.node?.id??status.address,failure_domain:'public-testnet-gateway'}]
   }
-  let action,receipt,transferError
+  if(live) pins=livePolicy?.observers??[{observer_id:gateway,source:gateway,node_identity:status.node?.id??status.address,failure_domain:'public-testnet-gateway'}]
+  let action=resumeAction,receipt,transferError
   const {sendRev}=await import(moduleUrl('../src/lib/transfer.ts',{'./rchain':rchainUrl}))
-  try{receipt=await sendRev(sender,recipient.revAddress,'0.000001',next=>{action=next;console.log(`${live?'LIVE':'SYNTHETIC'} ${next.submittedAt?'SUBMITTED':'SIGNED'} ${next.deployId}`)})}catch(error){transferError=error.message;if(!action)throw error;console.log(`Action retained: ${transferError}`)}
+  try{if(!resumeAction)receipt=await sendRev(sender,recipient.revAddress,'0.000001',next=>{action=next;console.log(`${live?'LIVE':'SYNTHETIC'} ${next.submittedAt?'SUBMITTED':'SIGNED'} ${next.deployId}`)})}catch(error){transferError=error.message;if(!action)throw error;console.log(`Action retained: ${transferError}`)}
   if(!action)throw new Error('No signed deploy identity retained')
   const pkg=await json(`${sentinelUrl}/api/assurance/action/${action.deployId}`)
   const policy={verifier:'rchain-rev-transfer-assurance/v1',action_id:action.deployId,deploy_id:action.deployId,claim_id:`rev-transfer:${action.deployId}`,network_id:live?'testnet':'synthetic-testnet',shard_id:live?'/root':'root',signer:action.signer,term:action.signed.data.term,recipient:action.to,amount_drops:action.amountDrops,recipient_balance_before:action.recipientBalanceBefore,now_ms:Date.now(),max_age_ms:60000,max_future_skew_ms:5000,min_observers:2,min_failure_domains:2,observers:pins,producer:'rchain-sentinel',source_revision:producerRevision??'',expected_payload_digest:await assurancePayloadDigest(pkg)}
   const verdict=await verifyRevTransferAssurance(pkg,policy)
-  if(!live)assert.equal(verdict.status,'PASS',JSON.stringify(verdict))
+  if(!live)assert.equal(verdict.status,process.env.ASSURANCE_MOCK_EMPTY_RESULT?'BLOCKED':'PASS',JSON.stringify(verdict))
   const assuranceUrl=moduleUrl('../src/lib/assurance.ts',{'./rchain':rchainUrl})
   const {AssuranceEvidence}=await import(moduleUrl('../src/AssurancePanel.tsx',{'./lib/assurance':assuranceUrl}))
   const observation={state:verdict.status==='FAIL'?'REJECTED':'OBSERVED',package:pkg,verdict,policy,reason:verdict.reasons.join(' ')||'All bounded checks reproduced.'}
@@ -86,8 +90,12 @@ try {
   const negative=await verifyRevTransferAssurance(tampered,policy)
   assert.equal(negative.status,'FAIL')
   const vendor=JSON.parse(readFileSync(new URL('../vendor/rchain-assurance-v1/SOURCE.json',import.meta.url),'utf8'))
-  const blocker=live&&verdict.status!=='PASS'?'EXTERNAL LIVE BLOCKER: No operator-approved second independently addressable observer endpoint/identity pin is available. The public aggregate observer feed is not a substitute.':null
-  const report={mode:live?'LIVE_TESTNET':'SYNTHETIC_INTEGRATION',revisions:{Rholox:revision(),Sentinel:producerRevision,Compiler:vendor.revision},deploy_id:action.deployId,submission_observed_at:action.submittedAt??null,inclusion:pkg.inclusion,execution:pkg.execution,finalized_state:pkg.finalized_state,observers:pkg.observers.map(o=>({observer_id:o.observer_id,node_identity:o.node_identity,finalized_height:o.finalized_height,finalized_hash:o.finalized_hash,observation_digest:o.observation_digest,status:o.status})),assurance_package_digest:pkg.provenance.payload_digest,rendered_html_digest:await rawAssuranceDigest(html),verdict:verdict.status,negative_control:negative.status==='FAIL'?'PASS':'FAIL',transfer_error:transferError??null,blocker}
+  const missing=[]
+  if(live&&pins.length<2)missing.push('no operator-approved second independently addressable observer endpoint/identity pin')
+  if(live&&pkg.execution.status!=='OBSERVED')missing.push('node deploy-status omits a successful contract result (deployResult is empty or unknown)')
+  if(live&&pkg.finalized_state.status!=='OBSERVED')missing.push('required finalized transfer read-back is unavailable')
+  const blocker=live&&verdict.status!=='PASS'?`EXTERNAL LIVE BLOCKER: authorized testnet evidence is incomplete: ${missing.join('; ') || verdict.reasons.join('; ')}.`:null
+  const report={mode:live?'LIVE_TESTNET':process.env.ASSURANCE_MOCK_EMPTY_RESULT?'SYNTHETIC_EMPTY_RESULT':'SYNTHETIC_INTEGRATION',revisions:{Rholox:revision(),Sentinel:producerRevision,Compiler:vendor.revision},deploy_id:action.deployId,submission_observed_at:action.submittedAt??null,inclusion:pkg.inclusion,execution:pkg.execution,finalized_state:pkg.finalized_state,observers:pkg.observers.map(o=>({observer_id:o.observer_id,node_identity:o.node_identity,finalized_height:o.finalized_height,finalized_hash:o.finalized_hash,observation_digest:o.observation_digest,status:o.status})),assurance_package_digest:pkg.provenance.payload_digest,rendered_html_digest:await rawAssuranceDigest(html),verdict:verdict.status,negative_control:negative.status==='FAIL'?'PASS':'FAIL',transfer_error:transferError??null,client_receipt:receipt??null,blocker}
   mkdirSync(output,{recursive:true})
   for(const [name,value] of Object.entries({package:pkg,policy,verdict,report,'signed-action':action,'negative-verdict':negative}))writeFileSync(resolve(output,`${name}.json`),JSON.stringify(value,null,2)+'\n')
   writeFileSync(resolve(output,'rendered.html'),html)

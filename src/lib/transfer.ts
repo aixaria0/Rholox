@@ -18,6 +18,7 @@ export type TransferAction = {
   signedAt: number
   submittedAt?: number
   submissionSource?: string
+  submissionError?: string
   signed: { data: DeployData; deployer: string; signature: string; sigAlgorithm: string }
   to: string
   amountDrops: number
@@ -169,13 +170,23 @@ async function submit(wallet: RholoxWallet, to: string, amountDrops: number, rec
   const signed = signDeploy(data, wallet)
   const action: TransferAction = { deployId: signed.signature, signer: wallet.publicKey, signedAt: Date.now(), signed, to, amountDrops, recipientBalanceBefore }
   onProgress?.(action)
-  const response = await fetchWithTimeout(`${RCHAIN_API}/api/deploy`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(signed),
-  })
+  let response: Response
+  try {
+    response = await fetchWithTimeout(`${RCHAIN_API}/api/deploy`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(signed),
+    })
+  } catch (cause) {
+    onProgress?.({ ...action, submissionError: cause instanceof Error ? cause.message : 'Write gateway unavailable' })
+    throw cause
+  }
   const text = await response.text()
-  if (!response.ok) throw new Error(text || `Deploy returned ${response.status}`)
+  if (!response.ok) {
+    const message = text || `Deploy returned ${response.status}`
+    onProgress?.({ ...action, submissionError: message })
+    throw new Error(message)
+  }
   let result = text
   try {
     const parsed = JSON.parse(text)
@@ -193,11 +204,11 @@ async function waitForInclusion(deployId: string): Promise<TransferBlock> {
   for (let i = 0; i < 40; i += 1) {
     const status = await getJson<DeployExecStatus>(`/api/v1/deploy-status/${deployId}`)
     if ('ProcessedWithSuccess' in status) {
-      const result = status.ProcessedWithSuccess.deployResult[0] as { ExprTuple?: { ps?: Array<{ ExprBool?: boolean | { data?: boolean } }> } } | undefined
-      const value = result?.ExprTuple?.ps?.[0]?.ExprBool
+      const result = status.ProcessedWithSuccess.deployResult[0] as { ExprBool?: boolean | { data?: boolean }; ExprTuple?: { ps?: Array<{ ExprBool?: boolean | { data?: boolean } }> } } | undefined
+      const value = result?.ExprTuple?.ps?.[0]?.ExprBool ?? result?.ExprBool
       const success = typeof value === 'boolean' ? value : value?.data
       if (success === false) throw new Error('REV Vault rejected the transfer.')
-      if (success !== true) throw new Error('Transfer was included, but its contract result is unknown. Inspect assurance before retrying.')
+      // Inclusion remains usable when a node omits the contract result; assurance stays UNKNOWN/BLOCKED.
       return status.ProcessedWithSuccess.block
     }
     if ('ProcessedWithError' in status) throw new Error(status.ProcessedWithError.deployError || 'Transfer deploy failed.')

@@ -17,13 +17,13 @@ export default function AssurancePanel({ deployId, action, gatewayUnavailable = 
 }
 
 export function AssuranceEvidence({ deployId, action, gatewayUnavailable = false, observation, busy = false, onRefresh = () => {} }: { deployId: string; action?: TransferAction; gatewayUnavailable?: boolean; observation: AssuranceObservation; busy?: boolean; onRefresh?: () => void }) {
-  const view = assurancePresentation(observation, action, gatewayUnavailable)
+  const view = assurancePresentation(observation, action, gatewayUnavailable || Boolean(action?.submissionError))
   const pkg = observation.package
   const source = pkg?.provenance?.producer ?? 'Sentinel unavailable'
   const verdict = observation.verdict
   const stages = [
     { name: 'SIGNED', status: action ? 'OBSERVED LOCALLY' : 'UNKNOWN', time: action?.signedAt, evidence: action ? `${action.signer} · session signer` : 'No local signed action in this session.' },
-    { name: 'SUBMITTED', status: action?.submittedAt ? 'SUBMITTED' : 'UNKNOWN', time: action?.submittedAt, evidence: action?.submittedAt ? action.submissionSource : 'No submission acknowledgment observed.' },
+    { name: 'SUBMITTED', status: action?.submittedAt ? 'SUBMITTED' : 'UNKNOWN', time: action?.submittedAt, evidence: action?.submittedAt ? action.submissionSource : action?.submissionError ?? 'No submission acknowledgment observed.' },
     ...(['execution','inclusion','finalized_state'] as const).map((key) => {
       const stage = pkg?.[key]
       return { name: key === 'finalized_state' ? 'FINALIZED STATE OBSERVED' : key === 'execution' ? 'EXECUTED' : 'INCLUDED', status: stage?.status === 'OBSERVED' ? verdict?.checks[key === 'finalized_state' ? 'finalized_state_observation' : key] === 'PASS' ? 'OBSERVED' : 'OBSERVED · UNVERIFIED' : stage?.status ?? 'WAITING', time: stage?.observed_at, evidence: stage?.block_hash || stage?.finalized_block_hash ? `#${stage.block_height ?? stage.finalized_block_height} · ${stage.block_hash ?? stage.finalized_block_hash} · ${source}` : stage?.reason ?? observation.reason }

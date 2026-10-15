@@ -1,9 +1,9 @@
 {
   "repository": "aixaria0/RCHAIN-COMPLIER",
-  "revision": "4aa04cebd925fbe8504783279c4bd238a33bfbb0",
+  "revision": "389d874afc4f8e30cdcf7e0b5085077051f9d38c",
   "contract": "rchain-assurance/v1",
   "files": {
-    "rchain-rev-transfer-v1.js": "f531c4ac8444a9a60464a95db42c8cbe08ad1d802add0f6212684de92833e095",
+    "rchain-rev-transfer-v1.js": "6b0a0acc4f668a7f76568fa1fcab3a9eee268b1e623b9c2486ea308cdaeb6b5b",
     "rchain-rev-transfer-v1.d.ts": "d115a17b63f049fa790dde3ec469cae62cbe274245e308992ba4ad56977ca2fc",
     "rchain-assurance-validation.js": "571297ead3c0dc3103614104fc4f05ec21250ac0e904c7814373088199aad686",
     "rchain-assurance-validation.d.ts": "50dd11f7d9cc8463c6b47d73b9230bd1d5ef22bb465a29e02244c1a60fd57d33",
