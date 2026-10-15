@@ -1,0 +1,133 @@
+{
+  "mode": "LIVE_TESTNET",
+  "revisions": {
+    "Rholox": "5720c3307bd5d0179622c3ccdf2343a9439ac7ef",
+    "Sentinel": "b275b0ef0e6e7e06359d27390e6e1f26e8f9b39a",
+    "Compiler": "9f31dd1a4254796ce81a43005d5fdeed013bd23b"
+  },
+  "deploy_id": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+  "submission_observed_at": 1792094877434,
+  "inclusion": {
+    "block_hash": "d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57",
+    "block_height": 765,
+    "observed_at": 1792094892695,
+    "status": "OBSERVED"
+  },
+  "execution": {
+    "block_hash": "d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57",
+    "block_height": 765,
+    "observed_at": 1792094892695,
+    "status": "UNKNOWN"
+  },
+  "finalized_state": {
+    "reason": "Finalized transfer read-back not observed",
+    "status": "UNAVAILABLE"
+  },
+  "observers": [
+    {
+      "observer_id": "https://testnet.rhobot.net",
+      "node_identity": "6b70152e0dfe887101428710a5c5a14c9933a3d6",
+      "finalized_height": 769,
+      "finalized_hash": "c63d3f08be1b74f5327775e55542160c2df2e4b40187ebb52ca53078d78a0dd9",
+      "observation_digest": "ed2c6160ce1b7dc5de0c13128f0e49840d78c4a1f40b6555eec95eed0547151b",
+      "status": "OBSERVED"
+    }
+  ],
+  "assurance_package_digest": "1a029ebd84d1842ad610e013a6dc7ac512f0cdb2a1f119d138776487567883bb",
+  "rendered_html_digest": "e257b35e8a68769699488fd616d1a82a75e7211cef49abc2dc30085a54f9072c",
+  "verdict": "BLOCKED",
+  "negative_control": "PASS",
+  "transfer_error": null,
+  "client_receipt": {
+    "deployId": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+    "amountDrops": 100,
+    "amountRev": "0.000001",
+    "to": "11112YEic2AYT5vR8tMs2tQnJQdisyAMPCeQzrjHze9SuCPQKqYDm4",
+    "inclusionBlock": {
+      "version": 1,
+      "shardId": "/root",
+      "blockHash": "d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57",
+      "blockNumber": 765,
+      "sender": "0410b8c59d04df768160eb97f8773db56a9e861f3b8c53ba4ef80a1d4f71bb2c6c9cc977b3c93d5cc3dbe9465fa7f501014be4238a5a74b2d2256f95321a0c3c73",
+      "seqNum": 765,
+      "preStateHash": "b15f29646f5d512648771e821708e447dbdde9502492854856e46867b2e28b7c",
+      "postStateHash": "f920930f102aa955c9ae8e2e8574b6a683467b4e6d88fe56f251e73197220bc7",
+      "justifications": [
+        "3862996de4de5aea4afb9a79e61637f2d6b3f6db199decc1b65c5e8f69cc8c40",
+        "3caf0dbaa81e04ef5ad698cfda35950bc3c877c70890bffcb8d8b1dc08fc67ce",
+        "5df0cc17991002018b6cf55952e4f40945c98c78f05ef98050092d5c2d30129e",
+        "ef78e8f56145543bd37fd0bb479d63df9db6efc809a03233cf7ed3c7c003d774"
+      ],
+      "bonds": [
+        {
+          "validator": "0410b8c59d04df768160eb97f8773db56a9e861f3b8c53ba4ef80a1d4f71bb2c6c9cc977b3c93d5cc3dbe9465fa7f501014be4238a5a74b2d2256f95321a0c3c73",
+          "stake": 250
+        },
+        {
+          "validator": "041ed2a25819ada35a65dbcce3b42c6a03a414ce6c13cd908aa169876294bf12100698876b4ea5dca09afe23ad7ce27f6bbe7ad0ec4330ca2759645dc4c8b31266",
+          "stake": 250
+        },
+        {
+          "validator": "04d7707c7d31abc15f961da732f759311a24d5ff7431af2a25f75abd82a188be5e367ccce681e444cc8b671e27ca544d2e4a824d21363667e76c1d4c937ca25b92",
+          "stake": 250
+        },
+        {
+          "validator": "04dce59b572da605b9eaa554deca8d364ef541a36ff4386d7ba49087d86866fd3c2d14db6b237aeee46cf732e8880420fe5af5734f01e8a715fc7f7c8da08b045c",
+          "stake": 250
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "304402200b2138a0de1a3edb38bf13c24cac8a10c4d0367a9045bc7a74f4ac545e65437702203373458810c56d271617fc8986e56ac12cc5b2073d4f3e4d5c7c4ad47e3f1db4",
+      "blockSize": "1871",
+      "deployCount": 1,
+      "rejectedDeploys": [],
+      "timestamp": 1792094878079
+    },
+    "finalizedBlock": {
+      "version": 1,
+      "shardId": "/root",
+      "blockHash": "80d15e19effc1d95824b17f25261b5e41c2b8f393ed5a7d9b4e0a7e0c54f228c",
+      "blockNumber": 768,
+      "sender": "04dce59b572da605b9eaa554deca8d364ef541a36ff4386d7ba49087d86866fd3c2d14db6b237aeee46cf732e8880420fe5af5734f01e8a715fc7f7c8da08b045c",
+      "seqNum": 767,
+      "preStateHash": "f9f042c26743671d53d86f03609d68d20e70258031d488d50b1843a6ccf5c3e8",
+      "postStateHash": "f9f042c26743671d53d86f03609d68d20e70258031d488d50b1843a6ccf5c3e8",
+      "justifications": [
+        "02abadf48a48855f36fe7ccd93663c09c5bc55135ea0fd69cfa3df844cf5836e",
+        "072d47b4c9ec36573fbf41b2a418d93035583ee8649028782664db491450a6d2",
+        "555af469ccd3d669bc2664e64e41c0ddf6dfc97cdad85ba3b95e74566d041daf",
+        "75424b00a007b2ba1f6e7dfa24b6a931d1120e80604f7b535304609a0663198f"
+      ],
+      "bonds": [
+        {
+          "validator": "0410b8c59d04df768160eb97f8773db56a9e861f3b8c53ba4ef80a1d4f71bb2c6c9cc977b3c93d5cc3dbe9465fa7f501014be4238a5a74b2d2256f95321a0c3c73",
+          "stake": 250
+        },
+        {
+          "validator": "041ed2a25819ada35a65dbcce3b42c6a03a414ce6c13cd908aa169876294bf12100698876b4ea5dca09afe23ad7ce27f6bbe7ad0ec4330ca2759645dc4c8b31266",
+          "stake": 250
+        },
+        {
+          "validator": "04d7707c7d31abc15f961da732f759311a24d5ff7431af2a25f75abd82a188be5e367ccce681e444cc8b671e27ca544d2e4a824d21363667e76c1d4c937ca25b92",
+          "stake": 250
+        },
+        {
+          "validator": "04dce59b572da605b9eaa554deca8d364ef541a36ff4386d7ba49087d86866fd3c2d14db6b237aeee46cf732e8880420fe5af5734f01e8a715fc7f7c8da08b045c",
+          "stake": 250
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "304402207f7b11200dbaa04d7811282d07d4f649b6af8bcd7cc87ddac2e5e18453df04280220571f9b30afd24766f3bdb72c9d2f66defb1609838c0628f1a64954c17f425824",
+      "blockSize": "702",
+      "deployCount": 0,
+      "rejectedDeploys": [],
+      "timestamp": 1792094884078
+    },
+    "senderBalanceBefore": 30000000,
+    "senderBalanceAfter": 29499900,
+    "recipientBalanceBefore": 0,
+    "recipientBalanceAfter": 100,
+    "finalized": true
+  },
+  "blocker": "EXTERNAL LIVE BLOCKER: authorized testnet evidence is incomplete: no operator-approved second independently addressable observer endpoint/identity pin; node deploy-status omits a successful contract result (deployResult is empty or unknown); required finalized transfer read-back is unavailable."
+}

@@ -1,0 +1,36 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "PASS",
+  "reasons": [],
+  "checks": {
+    "schema": "PASS",
+    "external_policy": "PASS",
+    "task_binding": "PASS",
+    "claim_binding": "PASS",
+    "network_identity": "PASS",
+    "producer_binding": "PASS",
+    "payload_integrity": "PASS",
+    "freshness": "PASS",
+    "deterministic_reproduction": "PASS",
+    "observation_integrity": "PASS",
+    "observer_policy": "PASS",
+    "raw_integrity": "PASS",
+    "source_binding": "PASS",
+    "observer_identity": "PASS",
+    "canonical_consistency": "PASS",
+    "signed_action_binding": "PASS",
+    "cross_node_agreement": "PASS",
+    "inclusion": "PASS",
+    "execution": "PASS",
+    "finalized_state_observation": "PASS"
+  },
+  "package_digest": "a2a499b73b315d956bc0020738db971f7cce00615fed1327010706cff84b5485",
+  "policy_digest": "e4b33fe7c663da1b5330d913686df58262a220be4307c1ec4e721585561bf700",
+  "agreement": "EXACT_AGREEMENT",
+  "stages": {
+    "inclusion": true,
+    "execution": true,
+    "finalized_state": true,
+    "corroborated": true
+  }
+}

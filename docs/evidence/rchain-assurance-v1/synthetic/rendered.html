@@ -1,0 +1,66 @@
+<section class="assurance-panel" aria-label="RChain Assurance" aria-busy="false"><div class="panel-head"><div><div class="eyebrow">RCHAIN ASSURANCE</div><strong>PASS · OBSERVATION AVAILABLE</strong></div><button type="button" class="ghost">REFRESH EVIDENCE</button></div><p class="muted">DEPLOY <code>30440220264c864b1bcb2e2a08b15f965c1c6907c15885be458317ab74e97185a1bb203c022026a3601880d528e67d9fd1b95f62fa1fa6a6230ef42eddaa2c2d5207c48aad3b</code></p><div class="assurance-stages"><div><span>SIGNED</span><strong class="receipt-warn">OBSERVED LOCALLY</strong><small>2026-10-15T20:07:36.902Z · 04db0753533bc5b77c659211a71e20966101061f4e13ad9bfcc9f315f520350e3994267b1d37bc5d5995c0e0708858b21ead0e5bf3f504812c4d51c390fdb8d908 · session signer</small></div><div><span>SUBMITTED</span><strong class="receipt-warn">SUBMITTED</strong><small>2026-10-15T20:07:36.927Z · http://127.0.0.1:42697/api/deploy</small></div><div><span>EXECUTED</span><strong class="receipt-warn">OBSERVED</strong><small>2026-10-15T20:07:37.018Z · #10 · aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa · rchain-sentinel</small></div><div><span>INCLUDED</span><strong class="receipt-warn">OBSERVED</strong><small>2026-10-15T20:07:37.018Z · #10 · aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa · rchain-sentinel</small></div><div><span>FINALIZED STATE OBSERVED</span><strong class="receipt-warn">OBSERVED</strong><small>2026-10-15T20:07:37.027Z · #10 · aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa · rchain-sentinel</small></div><div><span>OBSERVER AGREEMENT</span><strong class="receipt-warn">EXACT_AGREEMENT</strong><small>2026-10-15T20:07:37.035Z · 2 configured observations · rchain-sentinel. Node observations do not prove stake-weighted Casper finality.</small></div><div><span>ASSURANCE VERDICT</span><strong class="receipt-good">PASS</strong><small>2026-10-15T20:07:37.057Z · All bounded checks reproduced.</small></div></div><div class="assurance-why" role="status"><strong>WHY THIS ACTION?</strong><p>Transfer execution was observed in block aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa. Finalized-state read-back was observed at block aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa. Configured observers produced compatible evidence. The assurance verifier reproduced the required checks and returned PASS.</p></div><details><summary>WHAT WAS SIGNED?</summary><pre>{
+  &quot;data&quot;: {
+    &quot;term&quot;: &quot;new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\n    revVault!(\&quot;transfer\&quot;, *deployerId, \&quot;11112hgG4gdUxRz7Xhkq3opWrVaAQmPDbXZWZy1RdgtqficFN3yyup\&quot;, 100, *resultCh) |\n    for (@result &lt;- resultCh) { return!(result) | deployId!(result) }\n  }&quot;,
+    &quot;timestamp&quot;: 1792094856887,
+    &quot;phloPrice&quot;: 1,
+    &quot;phloLimit&quot;: 500000,
+    &quot;validAfterBlockNumber&quot;: 10,
+    &quot;shardId&quot;: &quot;root&quot;
+  },
+  &quot;deployer&quot;: &quot;04db0753533bc5b77c659211a71e20966101061f4e13ad9bfcc9f315f520350e3994267b1d37bc5d5995c0e0708858b21ead0e5bf3f504812c4d51c390fdb8d908&quot;,
+  &quot;signature&quot;: &quot;30440220264c864b1bcb2e2a08b15f965c1c6907c15885be458317ab74e97185a1bb203c022026a3601880d528e67d9fd1b95f62fa1fa6a6230ef42eddaa2c2d5207c48aad3b&quot;,
+  &quot;sigAlgorithm&quot;: &quot;secp256k1&quot;
+}</pre></details><details><summary>OBSERVATION SOURCES &amp; DIGESTS</summary><pre>{
+  &quot;observers&quot;: [
+    {
+      &quot;observer_id&quot;: &quot;http://127.0.0.1:42697&quot;,
+      &quot;node_identity&quot;: &quot;one&quot;,
+      &quot;source&quot;: &quot;http://127.0.0.1:42697&quot;,
+      &quot;status&quot;: &quot;OBSERVED&quot;,
+      &quot;observed_at&quot;: 1792094857030,
+      &quot;finalized_height&quot;: 10,
+      &quot;finalized_hash&quot;: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;,
+      &quot;observation_digest&quot;: &quot;8500a8038f43f01ec503a7e78570c54c456cfe8e7ca52813d8b06942e8e9e8a9&quot;,
+      &quot;reason&quot;: null
+    },
+    {
+      &quot;observer_id&quot;: &quot;http://127.0.0.1:41567&quot;,
+      &quot;node_identity&quot;: &quot;two&quot;,
+      &quot;source&quot;: &quot;http://127.0.0.1:41567&quot;,
+      &quot;status&quot;: &quot;OBSERVED&quot;,
+      &quot;observed_at&quot;: 1792094857033,
+      &quot;finalized_height&quot;: 10,
+      &quot;finalized_hash&quot;: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;,
+      &quot;observation_digest&quot;: &quot;ed4de1bb1863206507db10c1c96e40d9754566569f7a8e87144e2d048c777e4f&quot;,
+      &quot;reason&quot;: null
+    }
+  ],
+  &quot;provenance&quot;: {
+    &quot;generated_at&quot;: 1792094857035,
+    &quot;payload_digest&quot;: &quot;a2a499b73b315d956bc0020738db971f7cce00615fed1327010706cff84b5485&quot;,
+    &quot;producer&quot;: &quot;rchain-sentinel&quot;,
+    &quot;source_revision&quot;: &quot;b275b0ef0e6e7e06359d27390e6e1f26e8f9b39a&quot;
+  },
+  &quot;checks&quot;: {
+    &quot;schema&quot;: &quot;PASS&quot;,
+    &quot;external_policy&quot;: &quot;PASS&quot;,
+    &quot;task_binding&quot;: &quot;PASS&quot;,
+    &quot;claim_binding&quot;: &quot;PASS&quot;,
+    &quot;network_identity&quot;: &quot;PASS&quot;,
+    &quot;producer_binding&quot;: &quot;PASS&quot;,
+    &quot;payload_integrity&quot;: &quot;PASS&quot;,
+    &quot;freshness&quot;: &quot;PASS&quot;,
+    &quot;deterministic_reproduction&quot;: &quot;PASS&quot;,
+    &quot;observation_integrity&quot;: &quot;PASS&quot;,
+    &quot;observer_policy&quot;: &quot;PASS&quot;,
+    &quot;raw_integrity&quot;: &quot;PASS&quot;,
+    &quot;source_binding&quot;: &quot;PASS&quot;,
+    &quot;observer_identity&quot;: &quot;PASS&quot;,
+    &quot;canonical_consistency&quot;: &quot;PASS&quot;,
+    &quot;signed_action_binding&quot;: &quot;PASS&quot;,
+    &quot;cross_node_agreement&quot;: &quot;PASS&quot;,
+    &quot;inclusion&quot;: &quot;PASS&quot;,
+    &quot;execution&quot;: &quot;PASS&quot;,
+    &quot;finalized_state_observation&quot;: &quot;PASS&quot;
+  }
+}</pre><button class="ghost">DOWNLOAD EVIDENCE + POLICY</button></details></section>

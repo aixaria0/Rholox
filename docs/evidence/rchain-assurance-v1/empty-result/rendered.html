@@ -1,0 +1,66 @@
+<section class="assurance-panel" aria-label="RChain Assurance" aria-busy="false"><div class="panel-head"><div><div class="eyebrow">RCHAIN ASSURANCE</div><strong>BLOCKED · OBSERVATION AVAILABLE</strong></div><button type="button" class="ghost">REFRESH EVIDENCE</button></div><p class="muted">DEPLOY <code>3044022073e3b1149a750f53e92562514a160586e17de483c8937e7d94df7ffadf14682c022036a684a5ec25dbcc5c6bdf7920596274dfe0b09d611d6bf5e1276d2f7cdfff91</code></p><div class="assurance-stages"><div><span>SIGNED</span><strong class="receipt-warn">OBSERVED LOCALLY</strong><small>2026-10-15T20:07:40.411Z · 046042bb5e5649b98f6435efb03b8bd27736cccc071726e95f926a48941aa84106653636f56470552cfbd46a6e9b00438a668f6f4641eee5383b74441cb9c4d879 · session signer</small></div><div><span>SUBMITTED</span><strong class="receipt-warn">SUBMITTED</strong><small>2026-10-15T20:07:40.435Z · http://127.0.0.1:45567/api/deploy</small></div><div><span>EXECUTED</span><strong class="receipt-warn">UNKNOWN</strong><small>2026-10-15T20:07:40.504Z · #10 · aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa · rchain-sentinel</small></div><div><span>INCLUDED</span><strong class="receipt-warn">OBSERVED</strong><small>2026-10-15T20:07:40.504Z · #10 · aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa · rchain-sentinel</small></div><div><span>FINALIZED STATE OBSERVED</span><strong class="receipt-warn">UNAVAILABLE</strong><small>Timestamp unknown · Finalized transfer read-back not observed</small></div><div><span>OBSERVER AGREEMENT</span><strong class="receipt-warn">EXACT_AGREEMENT</strong><small>2026-10-15T20:07:40.516Z · 2 configured observations · rchain-sentinel. Node observations do not prove stake-weighted Casper finality.</small></div><div><span>ASSURANCE VERDICT</span><strong class="receipt-warn">BLOCKED</strong><small>2026-10-15T20:07:40.539Z · execution evidence unavailable Finalized transfer read-back unavailable or insufficient</small></div></div><div class="assurance-why" role="status"><strong>WHY THIS ACTION?</strong><p>The transfer was submitted and included, but required finalized-state assurance evidence is not available. Assurance remains BLOCKED. execution evidence unavailable Finalized transfer read-back unavailable or insufficient</p></div><details><summary>WHAT WAS SIGNED?</summary><pre>{
+  &quot;data&quot;: {
+    &quot;term&quot;: &quot;new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\n    revVault!(\&quot;transfer\&quot;, *deployerId, \&quot;1111wEQNLYNWWZhj3piTTurNdUCpKq9nmZmRg5oYtt2u9tKxhWMSN\&quot;, 100, *resultCh) |\n    for (@result &lt;- resultCh) { return!(result) | deployId!(result) }\n  }&quot;,
+    &quot;timestamp&quot;: 1792094860394,
+    &quot;phloPrice&quot;: 1,
+    &quot;phloLimit&quot;: 500000,
+    &quot;validAfterBlockNumber&quot;: 10,
+    &quot;shardId&quot;: &quot;root&quot;
+  },
+  &quot;deployer&quot;: &quot;046042bb5e5649b98f6435efb03b8bd27736cccc071726e95f926a48941aa84106653636f56470552cfbd46a6e9b00438a668f6f4641eee5383b74441cb9c4d879&quot;,
+  &quot;signature&quot;: &quot;3044022073e3b1149a750f53e92562514a160586e17de483c8937e7d94df7ffadf14682c022036a684a5ec25dbcc5c6bdf7920596274dfe0b09d611d6bf5e1276d2f7cdfff91&quot;,
+  &quot;sigAlgorithm&quot;: &quot;secp256k1&quot;
+}</pre></details><details><summary>OBSERVATION SOURCES &amp; DIGESTS</summary><pre>{
+  &quot;observers&quot;: [
+    {
+      &quot;observer_id&quot;: &quot;http://127.0.0.1:45567&quot;,
+      &quot;node_identity&quot;: &quot;one&quot;,
+      &quot;source&quot;: &quot;http://127.0.0.1:45567&quot;,
+      &quot;status&quot;: &quot;OBSERVED&quot;,
+      &quot;observed_at&quot;: 1792094860514,
+      &quot;finalized_height&quot;: 10,
+      &quot;finalized_hash&quot;: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;,
+      &quot;observation_digest&quot;: &quot;c11240b3f87beaabb08390ec532af8094040e9f1a4caee4ede9303636c816a0e&quot;,
+      &quot;reason&quot;: null
+    },
+    {
+      &quot;observer_id&quot;: &quot;http://127.0.0.1:42755&quot;,
+      &quot;node_identity&quot;: &quot;two&quot;,
+      &quot;source&quot;: &quot;http://127.0.0.1:42755&quot;,
+      &quot;status&quot;: &quot;OBSERVED&quot;,
+      &quot;observed_at&quot;: 1792094860513,
+      &quot;finalized_height&quot;: 10,
+      &quot;finalized_hash&quot;: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;,
+      &quot;observation_digest&quot;: &quot;2c1817bf1803da96325fba07dabd4593924c9c6faa8c206aad8fd307c8d4391f&quot;,
+      &quot;reason&quot;: null
+    }
+  ],
+  &quot;provenance&quot;: {
+    &quot;generated_at&quot;: 1792094860516,
+    &quot;payload_digest&quot;: &quot;f7d7fbf3a9c9b1eb10265ae613a1ff9d5572bb586ad56a6eb6240914f9340e96&quot;,
+    &quot;producer&quot;: &quot;rchain-sentinel&quot;,
+    &quot;source_revision&quot;: &quot;b275b0ef0e6e7e06359d27390e6e1f26e8f9b39a&quot;
+  },
+  &quot;checks&quot;: {
+    &quot;schema&quot;: &quot;PASS&quot;,
+    &quot;external_policy&quot;: &quot;PASS&quot;,
+    &quot;task_binding&quot;: &quot;PASS&quot;,
+    &quot;claim_binding&quot;: &quot;PASS&quot;,
+    &quot;network_identity&quot;: &quot;PASS&quot;,
+    &quot;producer_binding&quot;: &quot;PASS&quot;,
+    &quot;payload_integrity&quot;: &quot;PASS&quot;,
+    &quot;freshness&quot;: &quot;PASS&quot;,
+    &quot;deterministic_reproduction&quot;: &quot;PASS&quot;,
+    &quot;observation_integrity&quot;: &quot;PASS&quot;,
+    &quot;observer_policy&quot;: &quot;PASS&quot;,
+    &quot;raw_integrity&quot;: &quot;PASS&quot;,
+    &quot;source_binding&quot;: &quot;PASS&quot;,
+    &quot;observer_identity&quot;: &quot;PASS&quot;,
+    &quot;canonical_consistency&quot;: &quot;PASS&quot;,
+    &quot;signed_action_binding&quot;: &quot;PASS&quot;,
+    &quot;cross_node_agreement&quot;: &quot;PASS&quot;,
+    &quot;inclusion&quot;: &quot;PASS&quot;,
+    &quot;execution&quot;: &quot;BLOCKED&quot;,
+    &quot;finalized_state_observation&quot;: &quot;BLOCKED&quot;
+  }
+}</pre><button class="ghost">DOWNLOAD EVIDENCE + POLICY</button></details></section>

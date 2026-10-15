@@ -1,0 +1,101 @@
+{
+  "mode": "SYNTHETIC_INTEGRATION",
+  "revisions": {
+    "Rholox": "5720c3307bd5d0179622c3ccdf2343a9439ac7ef",
+    "Sentinel": "b275b0ef0e6e7e06359d27390e6e1f26e8f9b39a",
+    "Compiler": "9f31dd1a4254796ce81a43005d5fdeed013bd23b"
+  },
+  "deploy_id": "30440220264c864b1bcb2e2a08b15f965c1c6907c15885be458317ab74e97185a1bb203c022026a3601880d528e67d9fd1b95f62fa1fa6a6230ef42eddaa2c2d5207c48aad3b",
+  "submission_observed_at": 1792094856927,
+  "inclusion": {
+    "block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "block_height": 10,
+    "observed_at": 1792094857018,
+    "status": "OBSERVED"
+  },
+  "execution": {
+    "block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "block_height": 10,
+    "observed_at": 1792094857018,
+    "status": "OBSERVED"
+  },
+  "finalized_state": {
+    "finalized_block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "finalized_block_height": 10,
+    "observed_at": 1792094857027,
+    "status": "OBSERVED"
+  },
+  "observers": [
+    {
+      "observer_id": "http://127.0.0.1:42697",
+      "node_identity": "one",
+      "finalized_height": 10,
+      "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "observation_digest": "8500a8038f43f01ec503a7e78570c54c456cfe8e7ca52813d8b06942e8e9e8a9",
+      "status": "OBSERVED"
+    },
+    {
+      "observer_id": "http://127.0.0.1:41567",
+      "node_identity": "two",
+      "finalized_height": 10,
+      "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "observation_digest": "ed4de1bb1863206507db10c1c96e40d9754566569f7a8e87144e2d048c777e4f",
+      "status": "OBSERVED"
+    }
+  ],
+  "assurance_package_digest": "a2a499b73b315d956bc0020738db971f7cce00615fed1327010706cff84b5485",
+  "rendered_html_digest": "b8e68e1e10e0c7033c258ceb2947d325525b2d9604e4934f4a6caee099cfa6cf",
+  "verdict": "PASS",
+  "negative_control": "PASS",
+  "transfer_error": null,
+  "client_receipt": {
+    "deployId": "30440220264c864b1bcb2e2a08b15f965c1c6907c15885be458317ab74e97185a1bb203c022026a3601880d528e67d9fd1b95f62fa1fa6a6230ef42eddaa2c2d5207c48aad3b",
+    "amountDrops": 100,
+    "amountRev": "0.000001",
+    "to": "11112hgG4gdUxRz7Xhkq3opWrVaAQmPDbXZWZy1RdgtqficFN3yyup",
+    "inclusionBlock": {
+      "blockHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "blockNumber": 10,
+      "shardId": "root",
+      "sender": "synthetic-validator",
+      "seqNum": 10,
+      "preStateHash": "pre",
+      "postStateHash": "post",
+      "justifications": [],
+      "bonds": [
+        {
+          "validator": "synthetic-validator",
+          "stake": 100
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "synthetic-block-signature",
+      "parents": []
+    },
+    "finalizedBlock": {
+      "blockHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "blockNumber": 10,
+      "shardId": "root",
+      "sender": "synthetic-validator",
+      "seqNum": 10,
+      "preStateHash": "pre",
+      "postStateHash": "post",
+      "justifications": [],
+      "bonds": [
+        {
+          "validator": "synthetic-validator",
+          "stake": 100
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "synthetic-block-signature",
+      "parents": []
+    },
+    "senderBalanceBefore": 1000000000,
+    "senderBalanceAfter": 1000000000,
+    "recipientBalanceBefore": 1000,
+    "recipientBalanceAfter": 1100,
+    "finalized": true
+  },
+  "blocker": null
+}

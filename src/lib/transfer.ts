@@ -1,3 +1,4 @@
+import { revTransferTerm } from '@aixaria/rchain-assurance-v1'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { blake2b } from 'blakejs'
 import bs58 from 'bs58'
@@ -9,6 +10,19 @@ export type TransferBlock = {
   blockNumber: number
   shardId: string
   sender: string
+}
+
+export type TransferAction = {
+  deployId: string
+  signer: string
+  signedAt: number
+  submittedAt?: number
+  submissionSource?: string
+  submissionError?: string
+  signed: { data: DeployData; deployer: string; signature: string; sigAlgorithm: string }
+  to: string
+  amountDrops: number
+  recipientBalanceBefore: number
 }
 
 export type TransferReceipt = {
@@ -121,12 +135,7 @@ export function isValidRevAddress(address: string): boolean {
 }
 
 function transferTerm(to: string, amountDrops: number) {
-  return `new revVault(\`rho:rchain:revVault\`), deployerId(\`rho:rchain:deployerId\`), deployId(\`rho:rchain:deployId\`), resultCh in {
-    revVault!("transfer", *deployerId, "${to}", ${amountDrops}, *resultCh) |
-    for (_ <- resultCh) {
-      deployId!((true, "Transfer successful (not yet finalized)."))
-    }
-  }`
+  return revTransferTerm(to, amountDrops)
 }
 
 async function readBalanceWithBlock(address: string): Promise<{ balance: number; block?: TransferBlock }> {
@@ -148,7 +157,7 @@ async function readBalanceWithBlock(address: string): Promise<{ balance: number;
   return { balance, block: parsed.block }
 }
 
-async function submit(wallet: RholoxWallet, to: string, amountDrops: number): Promise<string> {
+async function submit(wallet: RholoxWallet, to: string, amountDrops: number, recipientBalanceBefore: number, onProgress?: (action: TransferAction) => void): Promise<string> {
   const status = await getJson<NodeStatus>('/api/status')
   const data: DeployData = {
     term: transferTerm(to, amountDrops),
@@ -158,13 +167,26 @@ async function submit(wallet: RholoxWallet, to: string, amountDrops: number): Pr
     validAfterBlockNumber: status.latestBlockNumber ?? 0,
     shardId: status.shardId ?? '/root',
   }
-  const response = await fetchWithTimeout(`${RCHAIN_API}/api/deploy`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(signDeploy(data, wallet)),
-  })
+  const signed = signDeploy(data, wallet)
+  const action: TransferAction = { deployId: signed.signature, signer: wallet.publicKey, signedAt: Date.now(), signed, to, amountDrops, recipientBalanceBefore }
+  onProgress?.(action)
+  let response: Response
+  try {
+    response = await fetchWithTimeout(`${RCHAIN_API}/api/deploy`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(signed),
+    })
+  } catch (cause) {
+    onProgress?.({ ...action, submissionError: cause instanceof Error ? cause.message : 'Write gateway unavailable' })
+    throw cause
+  }
   const text = await response.text()
-  if (!response.ok) throw new Error(text || `Deploy returned ${response.status}`)
+  if (!response.ok) {
+    const message = text || `Deploy returned ${response.status}`
+    onProgress?.({ ...action, submissionError: message })
+    throw new Error(message)
+  }
   let result = text
   try {
     const parsed = JSON.parse(text)
@@ -172,6 +194,8 @@ async function submit(wallet: RholoxWallet, to: string, amountDrops: number): Pr
   } catch { /* plain text is valid */ }
   const match = result.match(/DeployId is: ([0-9a-fA-F]+)/)
   if (!match) throw new Error(result || 'Node accepted no deploy id.')
+  if (match[1] !== signed.signature) throw new Error('Submission returned a different deploy identity.')
+  onProgress?.({ ...action, submittedAt: Date.now(), submissionSource: `${RCHAIN_API}/api/deploy` })
   return match[1]
 }
 
@@ -179,7 +203,14 @@ async function waitForInclusion(deployId: string): Promise<TransferBlock> {
   let unknown = 0
   for (let i = 0; i < 40; i += 1) {
     const status = await getJson<DeployExecStatus>(`/api/v1/deploy-status/${deployId}`)
-    if ('ProcessedWithSuccess' in status) return status.ProcessedWithSuccess.block
+    if ('ProcessedWithSuccess' in status) {
+      const result = status.ProcessedWithSuccess.deployResult[0] as { ExprBool?: boolean | { data?: boolean }; ExprTuple?: { ps?: Array<{ ExprBool?: boolean | { data?: boolean } }> } } | undefined
+      const value = result?.ExprTuple?.ps?.[0]?.ExprBool ?? result?.ExprBool
+      const success = typeof value === 'boolean' ? value : value?.data
+      if (success === false) throw new Error('REV Vault rejected the transfer.')
+      // Inclusion remains usable when a node omits the contract result; assurance stays UNKNOWN/BLOCKED.
+      return status.ProcessedWithSuccess.block
+    }
     if ('ProcessedWithError' in status) throw new Error(status.ProcessedWithError.deployError || 'Transfer deploy failed.')
     unknown = status.NotProcessed.status === 'Unknown' ? unknown + 1 : 0
     if (unknown >= 5) throw new Error('The node has no record of this transfer after five polls.')
@@ -188,7 +219,7 @@ async function waitForInclusion(deployId: string): Promise<TransferBlock> {
   throw new Error('Timed out waiting for transfer inclusion.')
 }
 
-export async function sendRev(wallet: RholoxWallet, toInput: string, amountInput: string): Promise<TransferReceipt> {
+export async function sendRev(wallet: RholoxWallet, toInput: string, amountInput: string, onProgress?: (action: TransferAction) => void): Promise<TransferReceipt> {
   const to = toInput.trim()
   if (!isValidRevAddress(to)) throw new Error('Recipient is not a valid REV address.')
   if (to === wallet.revAddress) throw new Error('Recipient cannot be this wallet itself.')
@@ -197,7 +228,7 @@ export async function sendRev(wallet: RholoxWallet, toInput: string, amountInput
   const recipientBefore = await readBalanceWithBlock(to)
   if (senderBefore.balance <= amountDrops) throw new Error('Insufficient balance after allowing for deploy cost.')
 
-  const deployId = await submit(wallet, to, amountDrops)
+  const deployId = await submit(wallet, to, amountDrops, recipientBefore.balance, onProgress)
   const inclusionBlock = await waitForInclusion(deployId)
 
   let finalizedBlock: TransferBlock | undefined
@@ -211,8 +242,16 @@ export async function sendRev(wallet: RholoxWallet, toInput: string, amountInput
     senderAfter = sender.balance
     recipientAfter = recipient.balance
     if (recipient.balance >= recipientBefore.balance + amountDrops && recipient.block && recipient.block.blockNumber >= inclusionBlock.blockNumber) {
-      finalizedBlock = recipient.block
-      break
+      const [tip, assertion] = await Promise.allSettled([
+        getJson<{ blockInfo?: TransferBlock }>('/api/last-finalized-block'),
+        getJson<boolean | { finalized?: boolean }>(`/api/is-finalized/${inclusionBlock.blockHash}`),
+      ])
+      const nodeFinality = assertion.status === 'fulfilled' && (assertion.value === true || (typeof assertion.value === 'object' && assertion.value.finalized === true))
+      const tipBlock = tip.status === 'fulfilled' ? tip.value.blockInfo : undefined
+      if (nodeFinality && tipBlock?.blockHash === recipient.block.blockHash && tipBlock.blockNumber === recipient.block.blockNumber) {
+        finalizedBlock = recipient.block
+        break
+      }
     }
     await sleep(3000)
   }

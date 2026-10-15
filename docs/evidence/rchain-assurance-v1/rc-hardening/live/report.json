@@ -1,0 +1,44 @@
+{
+  "mode": "LIVE_TESTNET",
+  "revisions": {
+    "Rholox": "59bddb2adca42a146f260be5e4555de5ce0dc840",
+    "Sentinel": "65862e4069df22e5569b914e086376d1fb6256e3",
+    "Compiler": "1054e4919ad2557a57bedf6c8a54ef2d6173747e"
+  },
+  "deploy_id": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+  "submission_observed_at": 1792094877434,
+  "inclusion": {
+    "block_hash": "d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57",
+    "block_height": 765,
+    "observed_at": 1792101382899,
+    "status": "OBSERVED"
+  },
+  "execution": {
+    "block_hash": "d968c7f8b8ffeffef0043a54f9fa10c7f3f75007fe3d54ac7f3f722f096c6a57",
+    "block_height": 765,
+    "observed_at": 1792101382899,
+    "status": "UNKNOWN"
+  },
+  "finalized_state": {
+    "reason": "Finalized transfer read-back not observed",
+    "status": "UNAVAILABLE"
+  },
+  "observers": [
+    {
+      "observer_id": "https://testnet.rhobot.net",
+      "node_identity": "6b70152e0dfe887101428710a5c5a14c9933a3d6",
+      "finalized_height": 771,
+      "finalized_hash": "8f3fb55fe7341f4cb72dbc8e88192f20a6517e59601b438a241e32ee3f4d7ffb",
+      "observation_digest": "f20e088160e8633165f528474247b99092a393db48176de18e688ed351d7078e",
+      "status": "OBSERVED"
+    }
+  ],
+  "assurance_package_digest": "e005467ee4cc863e9d36d26e700afb91764332e807b1bff653482fc9f2048cf2",
+  "rendered_html_digest": "7d8db9f90887810ff224b84e1e3d409967ae7b0764de4d1fd895f2520ce21009",
+  "verdict": "BLOCKED",
+  "payload_trust": "UNPINNED",
+  "negative_control": "PASS",
+  "transfer_error": null,
+  "client_receipt": null,
+  "blocker": "EXTERNAL LIVE BLOCKER: authorized testnet evidence is incomplete: independent reviewer/operator package pin not supplied; no operator-approved second independently addressable observer endpoint/identity pin; node deploy-status omits a successful contract result (deployResult is empty or unknown); required finalized transfer read-back is unavailable."
+}

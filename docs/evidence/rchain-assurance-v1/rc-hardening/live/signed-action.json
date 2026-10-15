@@ -1,0 +1,23 @@
+{
+  "deployId": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+  "signer": "049f4668da8d11b6a2bf596cc5f3c68bbf169312bd3a497493a37b16e4e427ae03bd217b16524a6bb93062f0909b197bff4aaef8e83356bff1acc993e4f8edca8f",
+  "signedAt": 1792094877146,
+  "signed": {
+    "data": {
+      "term": "new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\n    revVault!(\"transfer\", *deployerId, \"11112YEic2AYT5vR8tMs2tQnJQdisyAMPCeQzrjHze9SuCPQKqYDm4\", 100, *resultCh) |\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\n  }",
+      "timestamp": 1792094877128,
+      "phloPrice": 1,
+      "phloLimit": 500000,
+      "validAfterBlockNumber": 765,
+      "shardId": "/root"
+    },
+    "deployer": "049f4668da8d11b6a2bf596cc5f3c68bbf169312bd3a497493a37b16e4e427ae03bd217b16524a6bb93062f0909b197bff4aaef8e83356bff1acc993e4f8edca8f",
+    "signature": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+    "sigAlgorithm": "secp256k1"
+  },
+  "to": "11112YEic2AYT5vR8tMs2tQnJQdisyAMPCeQzrjHze9SuCPQKqYDm4",
+  "amountDrops": 100,
+  "recipientBalanceBefore": 0,
+  "submittedAt": 1792094877434,
+  "submissionSource": "https://testnet.rhobot.net/api/deploy"
+}

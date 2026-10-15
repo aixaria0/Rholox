@@ -1,0 +1,102 @@
+{
+  "mode": "SYNTHETIC_INTEGRATION",
+  "revisions": {
+    "Rholox": "59bddb2adca42a146f260be5e4555de5ce0dc840",
+    "Sentinel": "65862e4069df22e5569b914e086376d1fb6256e3",
+    "Compiler": "1054e4919ad2557a57bedf6c8a54ef2d6173747e"
+  },
+  "deploy_id": "3045022100f6eabb3808af88c94091a5e829d8c28046161603800d28990997747a8ec334fd02207bd2befd8741b9e1064c95661bcca08c8cacc8019ae6e27b7bc7864163fb8ce8",
+  "submission_observed_at": 1792101378620,
+  "inclusion": {
+    "block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "block_height": 10,
+    "observed_at": 1792101378635,
+    "status": "OBSERVED"
+  },
+  "execution": {
+    "block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "block_height": 10,
+    "observed_at": 1792101378635,
+    "status": "OBSERVED"
+  },
+  "finalized_state": {
+    "finalized_block_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "finalized_block_height": 10,
+    "observed_at": 1792101378638,
+    "status": "OBSERVED"
+  },
+  "observers": [
+    {
+      "observer_id": "http://127.0.0.1:39607",
+      "node_identity": "one",
+      "finalized_height": 10,
+      "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "observation_digest": "c3e4604cbadf66ce83262c6affccee5e6ebcbc04b47fb8de1f5613201f16de80",
+      "status": "OBSERVED"
+    },
+    {
+      "observer_id": "http://127.0.0.1:36705",
+      "node_identity": "two",
+      "finalized_height": 10,
+      "finalized_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "observation_digest": "6a2817dd9caef2e1a32d0eb7f2d5475e85a729d15ab565013bf16c6c72999965",
+      "status": "OBSERVED"
+    }
+  ],
+  "assurance_package_digest": "c5c7bb6e16bf1be5e4e6149fe7eb2e4c296b25470adf35ae2c3776089f7285e6",
+  "rendered_html_digest": "c0642226590c01d5650101783607c043fdba1443a7d7d86586e3a232d08a0ab8",
+  "verdict": "BLOCKED",
+  "payload_trust": "UNPINNED",
+  "negative_control": "PASS",
+  "transfer_error": null,
+  "client_receipt": {
+    "deployId": "3045022100f6eabb3808af88c94091a5e829d8c28046161603800d28990997747a8ec334fd02207bd2befd8741b9e1064c95661bcca08c8cacc8019ae6e27b7bc7864163fb8ce8",
+    "amountDrops": 100,
+    "amountRev": "0.000001",
+    "to": "1111nhZGnLdkdRdN78zsCAPCUonMhw2rfRCFbz2zwf5pp1727cb9o",
+    "inclusionBlock": {
+      "blockHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "blockNumber": 10,
+      "shardId": "root",
+      "sender": "synthetic-validator",
+      "seqNum": 10,
+      "preStateHash": "pre",
+      "postStateHash": "post",
+      "justifications": [],
+      "bonds": [
+        {
+          "validator": "synthetic-validator",
+          "stake": 100
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "synthetic-block-signature",
+      "parents": []
+    },
+    "finalizedBlock": {
+      "blockHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "blockNumber": 10,
+      "shardId": "root",
+      "sender": "synthetic-validator",
+      "seqNum": 10,
+      "preStateHash": "pre",
+      "postStateHash": "post",
+      "justifications": [],
+      "bonds": [
+        {
+          "validator": "synthetic-validator",
+          "stake": 100
+        }
+      ],
+      "sigAlgorithm": "secp256k1",
+      "sig": "synthetic-block-signature",
+      "parents": []
+    },
+    "senderBalanceBefore": 1000000000,
+    "senderBalanceAfter": 1000000000,
+    "recipientBalanceBefore": 1000,
+    "recipientBalanceAfter": 1100,
+    "finalized": true
+  },
+  "blocker": null
+}

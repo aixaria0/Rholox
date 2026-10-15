@@ -1,0 +1,47 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "FAIL",
+  "reasons": [
+    "Internal payload digest mismatch",
+    "Received-package digest missing or mismatched (receipt bookkeeping only)",
+    "Independent reviewer/operator package pin not supplied",
+    "Observation digest mismatch",
+    "Exact observation bytes/digest mismatch",
+    "Observer reports wrong network/shard",
+    "Raw node identity does not match observer pin"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "payload_integrity": "FAIL",
+    "received_payload_integrity": "FAIL",
+    "external_payload_pin": "BLOCKED",
+    "external_policy": "PASS",
+    "task_binding": "PASS",
+    "claim_binding": "PASS",
+    "network_identity": "BLOCKED",
+    "producer_binding": "PASS",
+    "freshness": "PASS",
+    "deterministic_reproduction": "PASS",
+    "observation_integrity": "FAIL",
+    "observer_policy": "PASS",
+    "raw_integrity": "FAIL",
+    "source_binding": "PASS",
+    "observer_identity": "BLOCKED",
+    "canonical_consistency": "PASS",
+    "signed_action_binding": "PASS",
+    "cross_node_agreement": "PASS",
+    "inclusion": "PASS",
+    "execution": "PASS",
+    "finalized_state_observation": "PASS"
+  },
+  "package_digest": "902f8fb90383fd4eda20e1920aac1082b235fe129b0409cd42352c56cf097ab7",
+  "policy_digest": "cf2fa6d3c5be6dddb499485b218b0299897fa08e1527580b816ae46c2debcd6a",
+  "payload_trust": "UNPINNED",
+  "agreement": "EXACT_AGREEMENT",
+  "stages": {
+    "inclusion": true,
+    "execution": true,
+    "finalized_state": true,
+    "corroborated": true
+  }
+}

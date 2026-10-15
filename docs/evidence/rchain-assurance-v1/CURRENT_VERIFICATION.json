@@ -1,0 +1,28 @@
+{
+  "Rholox": "bec5353f9839d4d94222f9dfcd5704888c211463",
+  "Compiler": "b61642c6443eefd4c6867a2fec617bac212c9370",
+  "scope": "Historical snapshots replayed with their recorded external policy/time under current shipping verifier and actual Rholox renderer; not a fresh live finality claim",
+  "checks": [
+    {
+      "name": "synthetic",
+      "package_digest": "a2a499b73b315d956bc0020738db971f7cce00615fed1327010706cff84b5485",
+      "result": "PASS",
+      "renderer": "MATCH",
+      "tamper": "REJECTED"
+    },
+    {
+      "name": "empty-result",
+      "package_digest": "f7d7fbf3a9c9b1eb10265ae613a1ff9d5572bb586ad56a6eb6240914f9340e96",
+      "result": "BLOCKED",
+      "renderer": "MATCH",
+      "tamper": "REJECTED"
+    },
+    {
+      "name": "live",
+      "package_digest": "1a029ebd84d1842ad610e013a6dc7ac512f0cdb2a1f119d138776487567883bb",
+      "result": "BLOCKED",
+      "renderer": "MATCH",
+      "tamper": "REJECTED"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "action_id": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+  "deploy_id": "304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+  "claim_id": "rev-transfer:304402203a7a87b2fe2fdb23d583f7f98871979636bd171cf4cb1238d58e0c26ba4f2ae50220592d5a704d5c3bab32b2ed4231b7d8a42ca0efcae31769f2468ebd0cf2023385",
+  "network_id": "testnet",
+  "shard_id": "/root",
+  "signer": "049f4668da8d11b6a2bf596cc5f3c68bbf169312bd3a497493a37b16e4e427ae03bd217b16524a6bb93062f0909b197bff4aaef8e83356bff1acc993e4f8edca8f",
+  "term": "new return, revVault(`rho:rchain:revVault`), deployerId(`rho:rchain:deployerId`), deployId(`rho:rchain:deployId`), resultCh in {\n    revVault!(\"transfer\", *deployerId, \"11112YEic2AYT5vR8tMs2tQnJQdisyAMPCeQzrjHze9SuCPQKqYDm4\", 100, *resultCh) |\n    for (@result <- resultCh) { return!(result) | deployId!(result) }\n  }",
+  "recipient": "11112YEic2AYT5vR8tMs2tQnJQdisyAMPCeQzrjHze9SuCPQKqYDm4",
+  "amount_drops": 100,
+  "recipient_balance_before": 0,
+  "now_ms": 1792100299543,
+  "max_age_ms": 60000,
+  "max_future_skew_ms": 5000,
+  "min_observers": 2,
+  "min_failure_domains": 2,
+  "observers": [
+    {
+      "observer_id": "https://testnet.rhobot.net",
+      "source": "https://testnet.rhobot.net",
+      "node_identity": "6b70152e0dfe887101428710a5c5a14c9933a3d6",
+      "failure_domain": "public-testnet-gateway"
+    }
+  ],
+  "producer": "rchain-sentinel",
+  "source_revision": "5ecc4a185f20fb5e5964831057305869acb65dc2",
+  "expected_payload_digest": "a281346a659f3aab7c60c6db363e7294d931255cecb2f3d55e3db08492fc4788"
+}

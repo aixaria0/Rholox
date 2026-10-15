@@ -1,0 +1,25 @@
+{
+  "verifier": "rchain-rev-transfer-assurance/v1",
+  "status": "BLOCKED",
+  "reasons": [
+    "Independent reviewer/operator package pin not supplied",
+    "External observer/revision policy or received-package digest is incomplete"
+  ],
+  "checks": {
+    "schema": "PASS",
+    "payload_integrity": "PASS",
+    "received_payload_integrity": "PASS",
+    "external_payload_pin": "BLOCKED",
+    "external_policy": "BLOCKED"
+  },
+  "package_digest": "e005467ee4cc863e9d36d26e700afb91764332e807b1bff653482fc9f2048cf2",
+  "policy_digest": null,
+  "payload_trust": "UNPINNED",
+  "agreement": "INSUFFICIENT_EVIDENCE",
+  "stages": {
+    "execution": false,
+    "inclusion": false,
+    "finalized_state": false,
+    "corroborated": false
+  }
+}

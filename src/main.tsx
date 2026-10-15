@@ -9,9 +9,10 @@ import './styles.css'
 import rholoxLogo from './assets/rholox-logo.svg'
 import AssetLabPanel from './AssetLabPanel'
 import ExchangePanel from './ExchangePanel'
+import AssurancePanel from './AssurancePanel'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
-import { sendRev, type TransferReceipt } from './lib/transfer'
+import { sendRev, type TransferReceipt, type TransferAction } from './lib/transfer'
 import {
   RCHAIN_API,
   dropsToRev,
@@ -121,7 +122,7 @@ function TopologyMark() {
   )
 }
 
-function WalletPanel() {
+function WalletPanel({ onTransferAction, gatewayUnavailable }: { onTransferAction: (action: TransferAction) => void; gatewayUnavailable: boolean }) {
   const [wallet, setWallet] = useState<RholoxWallet | null>(null)
   const [balance, setBalance] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
@@ -280,7 +281,7 @@ function WalletPanel() {
     </section>
     <div className="signed-actions-grid">
       <ProofPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
-      <TransferPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} />
+      <TransferPanel wallet={wallet} balance={balance} onBalance={() => updateBalance(wallet)} onAction={onTransferAction} gatewayUnavailable={gatewayUnavailable} />
     </div>
     <AssetLabPanel wallet={wallet} revBalance={balance} onRevBalance={() => updateBalance(wallet)} />
     <ExchangePanel wallet={wallet} onRevBalance={() => updateBalance(wallet)} />
@@ -288,7 +289,8 @@ function WalletPanel() {
   )
 }
 
-function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; balance: number | null; onBalance: () => Promise<void> }) {
+function TransferPanel({ wallet, balance, onBalance, onAction, gatewayUnavailable }: { wallet: RholoxWallet; balance: number | null; onBalance: () => Promise<void>; onAction: (action: TransferAction) => void; gatewayUnavailable: boolean }) {
+  const [action, setAction] = useState<TransferAction>()
   const [recipient, setRecipient] = useState('')
   const [amount, setAmount] = useState('0.01')
   const [receipt, setReceipt] = useState<TransferReceipt | null>(null)
@@ -300,8 +302,9 @@ function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; b
     setBusy(true)
     setError(null)
     setReceipt(null)
+    setAction(undefined)
     try {
-      const next = await sendRev(wallet, recipient, amount)
+      const next = await sendRev(wallet, recipient, amount, nextAction => { setAction(nextAction); onAction(nextAction) })
       setReceipt(next)
       await onBalance()
     } catch (cause) {
@@ -317,7 +320,7 @@ function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; b
         <div><div className="eyebrow">REV TRANSFER</div><h2>Send test REV with a signed deploy.</h2></div>
         <span className="badge">PUBLIC TESTNET</span>
       </div>
-      <p className="proof-copy">The transfer is signed locally with this session key. Rholox waits for inclusion, then confirms the recipient balance from finalized state.</p>
+      <p className="proof-copy">The transfer is signed locally with this session key. Rholox retains the signed deploy, observes inclusion, and checks finalized-state read-back. RChain Assurance reports the bounded evidence verdict separately.</p>
       <div className="transfer-grid">
         <input value={recipient} onChange={(event) => setRecipient(event.target.value)} placeholder="Recipient REV address" aria-label="Recipient REV address" spellCheck={false} autoComplete="off" />
         <input value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Amount in REV" aria-label="Amount in REV" inputMode="decimal" />
@@ -332,10 +335,11 @@ function TransferPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; b
           <div><span>TO</span><code>{receipt.to}</code></div>
           <div><span>DEPLOY</span><code>{receipt.deployId}</code></div>
           <div><span>INCLUSION</span><code>#{receipt.inclusionBlock.blockNumber} · {short(receipt.inclusionBlock.blockHash, 14, 10)}</code></div>
-          <div><span>FINALITY</span><strong className={receipt.finalized ? 'receipt-good' : 'receipt-warn'}>{receipt.finalized ? `VERIFIED @ #${receipt.finalizedBlock?.blockNumber}` : 'PENDING — inclusion verified'}</strong></div>
+          <div><span>FINALITY</span><strong className={receipt.finalized ? 'receipt-good' : 'receipt-warn'}>{receipt.finalized ? `FINALIZED STATE OBSERVED @ #${receipt.finalizedBlock?.blockNumber}` : 'PENDING — finalized-state evidence unavailable'}</strong></div>
           <div><span>RECIPIENT</span><code>{receipt.recipientBalanceAfter === undefined ? '—' : `${dropsToRev(receipt.recipientBalanceAfter)} REV`}</code></div>
         </div>
       )}
+      {action && <AssurancePanel deployId={action.deployId} action={action} gatewayUnavailable={gatewayUnavailable} />}
       {error && <div className="error" role="alert">{error}</div>}
     </section>
   )
@@ -383,7 +387,7 @@ function ProofPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; bala
           <div><span>SHA-256</span><code>{receipt.sha256}</code></div>
           <div><span>DEPLOY</span><code>{receipt.deployId}</code></div>
           <div><span>INCLUSION</span><code>#{receipt.inclusionBlock.blockNumber} · {short(receipt.inclusionBlock.blockHash, 14, 10)}</code></div>
-          <div><span>FINALITY</span><strong className={receipt.finalized ? 'receipt-good' : 'receipt-warn'}>{receipt.finalized ? `VERIFIED @ #${receipt.finalizedBlock?.blockNumber}` : 'PENDING — inclusion verified'}</strong></div>
+          <div><span>FINALITY</span><strong className={receipt.finalized ? 'receipt-good' : 'receipt-warn'}>{receipt.finalized ? `FINALIZED STATE OBSERVED @ #${receipt.finalizedBlock?.blockNumber}` : 'PENDING — finalized-state evidence unavailable'}</strong></div>
         </div>
       )}
       {error && <div className="error" role="alert">{error}</div>}
@@ -391,7 +395,8 @@ function ProofPanel({ wallet, balance, onBalance }: { wallet: RholoxWallet; bala
   )
 }
 
-function ExplorerPanel() {
+function ExplorerPanel({ action, gatewayUnavailable }: { action?: TransferAction; gatewayUnavailable: boolean }) {
+  const [assuranceDeploy, setAssuranceDeploy] = useState<string>()
   const [recent, setRecent] = useState<LightBlock[]>([])
   const [query, setQuery] = useState('')
   const [block, setBlock] = useState<BlockDetails | null>(null)
@@ -418,6 +423,7 @@ function ExplorerPanel() {
   useEffect(() => { void loadRecent() }, [])
 
   async function openBlock(hash: string) {
+    setAssuranceDeploy(undefined)
     setBusy(true)
     setError(null)
     setDeployStatus(null)
@@ -438,6 +444,7 @@ function ExplorerPanel() {
     setError(null)
     setBlock(null)
     setDeployStatus(null)
+    setAssuranceDeploy(undefined)
     try {
       if (/^[0-9a-fA-F]{64}$/.test(value)) {
         setBlock(await getBlockByHash(value))
@@ -446,6 +453,7 @@ function ExplorerPanel() {
         if (!match) throw new Error('That height is not in the recent block window. Paste a block hash for older blocks.')
         setBlock(await getBlockByHash(match.blockHash))
       } else {
+        setAssuranceDeploy(value)
         setDeployStatus(await readDeployStatus(value) as Record<string, unknown>)
       }
     } catch (cause) {
@@ -500,8 +508,8 @@ function ExplorerPanel() {
           <div><span>REJECTED</span><strong>{block.blockInfo.rejectedDeploys.length}</strong></div>
           {block.deploys.map((deploy) => (
             <div className="deploy-detail" key={deploy.sig}>
-              <span>DEPLOY {short(deploy.sig, 12, 10)}</span>
-              <code>{short(deploy.deployer, 16, 12)} · cost {deploy.cost} · {deploy.errored ? 'ERROR' : 'SUCCESS'}</code>
+              <button className="text-button" type="button" onClick={() => setAssuranceDeploy(deploy.sig)}>DEPLOY {short(deploy.sig, 12, 10)} · ASSURANCE</button>
+              <code>{short(deploy.deployer, 16, 12)} · cost {deploy.cost} · {deploy.errored ? 'EXECUTION ERROR' : 'NO VM ERROR REPORTED'}</code>
             </div>
           ))}
         </div>
@@ -509,17 +517,19 @@ function ExplorerPanel() {
 
       {deployStatus && (
         <div className="explorer-detail">
-          <div><span>DEPLOY STATUS</span><strong>{'ProcessedWithSuccess' in deployStatus ? 'PROCESSED · SUCCESS' : 'ProcessedWithError' in deployStatus ? 'PROCESSED · ERROR' : 'NOT PROCESSED'}</strong></div>
+          <div><span>DEPLOY STATUS</span><strong>{'ProcessedWithSuccess' in deployStatus ? 'EXECUTION OBSERVED · RESULT REQUIRES CHECKING' : 'ProcessedWithError' in deployStatus ? 'PROCESSED · ERROR' : 'NOT PROCESSED'}</strong></div>
           {deployBlock && <div><span>BLOCK</span><button className="text-button" onClick={() => openBlock(deployBlock.blockHash)}>#{deployBlock.blockNumber} · {short(deployBlock.blockHash, 14, 10)}</button></div>}
           {'NotProcessed' in deployStatus && <div><span>STATE</span><code>{JSON.stringify(deployStatus.NotProcessed)}</code></div>}
         </div>
       )}
+      {assuranceDeploy && <AssurancePanel deployId={assuranceDeploy} action={action?.deployId === assuranceDeploy ? action : undefined} gatewayUnavailable={gatewayUnavailable} />}
       {error && <div className="error" role="alert">{error}</div>}
     </section>
   )
 }
 
 function App() {
+  const [lastTransferAction, setLastTransferAction] = useState<TransferAction>()
   const [status, setStatus] = useState<NodeStatus | null>(null)
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null)
   const [finalized, setFinalized] = useState<Finalized | null>(null)
@@ -753,8 +763,8 @@ function App() {
         <article><div className="concept-glyph concept-glyph--fractal" aria-hidden="true"><i /><i /><i /><i /><i /></div><div><strong>Fractal structure</strong><p>Repeated node-and-edge motifs keep dense, horizontal evidence navigable.</p></div></article>
       </section>
 
-      <WalletPanel />
-      <ExplorerPanel />
+      <WalletPanel onTransferAction={setLastTransferAction} gatewayUnavailable={Boolean(statusError)} />
+      <ExplorerPanel action={lastTransferAction} gatewayUnavailable={Boolean(statusError)} />
 
       <section className="roadmap" id="roadmap">
         <div><div className="eyebrow">VERIFIED SURFACE</div><h2>Implemented before expanded.</h2><p>Each capability stays explicit about what is observed, signed, included, and finalized.</p></div>
