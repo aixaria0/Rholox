@@ -106,6 +106,23 @@ export async function verifyRevTransferAssurance(input, policy) {
     check("schema", "PASS");
     const pkg = input;
     try {
+        const declaredConflict = pkg.agreement.status === "CONFLICT" || pkg.finalized_state.status === "CONFLICT";
+        const summaryConflict = pkg.observers.some((a, i) => pkg.observers
+            .slice(i + 1)
+            .some((b) => a.finalized_height !== null &&
+            a.finalized_height === b.finalized_height &&
+            a.finalized_hash !== null &&
+            b.finalized_hash !== null &&
+            a.finalized_hash !== b.finalized_hash));
+        if (declaredConflict || summaryConflict) {
+            result.agreement = "CONFLICT";
+            check("cross_node_agreement", "FAIL", "Finalized/canonical conflict remains a contradiction even without complete trust pins");
+        }
+        if (pkg.execution.status === "FAILED")
+            check("execution", "FAIL", "Producer retains a failed transfer execution");
+        for (const [key, status] of Object.entries(pkg.verification))
+            if (status === "FAIL")
+                check(key, "FAIL", `Producer contradiction: ${key}`);
         if (!policy ||
             !Array.isArray(policy.observers) ||
             policy.observers.length < 2 ||
@@ -326,19 +343,20 @@ export async function verifyRevTransferAssurance(input, policy) {
             o.hash &&
             Number.isSafeInteger(o.height) &&
             pkg.observers.find((p) => p.observer_id === o.id)?.status === "OBSERVED");
-        result.agreement = conflict
-            ? "CONFLICT"
-            : Object.values(result.checks).includes("FAIL") && pkg.agreement.status === "CONFLICT"
+        result.agreement =
+            conflict || declaredConflict || summaryConflict
                 ? "CONFLICT"
-                : comparable.length < policy.observers.length
-                    ? "INSUFFICIENT_EVIDENCE"
-                    : skew
-                        ? "HEIGHT_SKEW"
-                        : lag
-                            ? "PROVEN_LAG"
-                            : comparable.length >= 2
-                                ? "EXACT_AGREEMENT"
-                                : "INSUFFICIENT_EVIDENCE";
+                : Object.values(result.checks).includes("FAIL") && pkg.agreement.status === "CONFLICT"
+                    ? "CONFLICT"
+                    : comparable.length < policy.observers.length
+                        ? "INSUFFICIENT_EVIDENCE"
+                        : skew
+                            ? "HEIGHT_SKEW"
+                            : lag
+                                ? "PROVEN_LAG"
+                                : comparable.length >= 2
+                                    ? "EXACT_AGREEMENT"
+                                    : "INSUFFICIENT_EVIDENCE";
         check("cross_node_agreement", conflict
             ? "FAIL"
             : ["EXACT_AGREEMENT", "PROVEN_LAG"].includes(result.agreement) &&
