@@ -1,0 +1,20 @@
+{
+  "version": "0.8.0",
+  "source_revision": "f8d8506c85278c059210d72dc1420bb9177e7903",
+  "source_repository": "https://github.com/aixaria0/Rholox",
+  "files": {
+    "assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff": "328d50b6ece9ca25c46eea3e885ba497f6237f2fb84ef7b92f88e14a1a25e381",
+    "assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2": "08949f728dc52d528e69b1667d15c89a5686a4ee9a296ff90983985f99c380f7",
+    "assets/ibm-plex-mono-latin-500-normal-CB9ihrfo.woff": "09f018c58556e5801ecc49d5b5275dcff4c73311c2af6b88e31c51d76d076a9d",
+    "assets/ibm-plex-mono-latin-500-normal-DSY6xOcd.woff2": "01d285447409c8a588692162439a038b8cbd7871309ee20267b0d2d91c6e8e22",
+    "assets/ibm-plex-mono-latin-600-normal-BgSNZQsw.woff2": "0d1f0b8d0722224e32e9f28261bdc86c79115be73444ae5eceb73976a1bcdf83",
+    "assets/ibm-plex-mono-latin-600-normal-DWFSQ4vo.woff": "cb96282f22c6f19112856fd6e0b34e2baefaf4ca6551e851d58c5ab0aabcd2be",
+    "assets/index-BaCZ8Fah.js": "f5da9a3900635502dcb5e42c6616375093d081c13bce7bca5f43c498336d4aa7",
+    "assets/index-C4-8l7-h.css": "fd3f4ad68673337f6440e315794200a497dff8b1f54c7f579a3c50fddec9b1d7",
+    "assets/rholox-logo-DMSP3MTx.svg": "b5c686e7502dd1f58ae97640577d574ec92e43cd9c485797f76e32b5093f4d41",
+    "favicon.svg": "b5c686e7502dd1f58ae97640577d574ec92e43cd9c485797f76e32b5093f4d41",
+    "index.html": "2b1a7addd5cb51a171242d38916ce0665bd15312e41ae353133c1f0b3f363623",
+    "rholox-blue-v2.svg": "b5c686e7502dd1f58ae97640577d574ec92e43cd9c485797f76e32b5093f4d41",
+    "site.webmanifest": "c6deaa31df67a1c31cf8e5bb4f3bfd53ba754802cf0d7fe55b9eb153d3fd3831"
+  }
+}
