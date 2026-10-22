@@ -32,3 +32,10 @@ jobs:
 
       - name: Audit production dependency tree
         run: npm audit --audit-level=high
+
+      - name: Upload reviewed static build
+        uses: actions/upload-artifact@v4
+        with:
+          name: rholox-static-site
+          path: dist/
+          if-no-files-found: error

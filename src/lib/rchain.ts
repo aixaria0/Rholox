@@ -1,3 +1,4 @@
+import { parseObserverReport } from './observer'
 export const RCHAIN_API = 'https://testnet.rhobot.net'
 export const OBSERVER_API = `${RCHAIN_API}/observer`
 export const DROPS_PER_REV = 100_000_000
@@ -42,10 +43,19 @@ export type Finalized = {
   }
 }
 
-export type ObserverVerdictClass = 'agreement' | 'proven_lag' | 'height_skew' | 'majority' | 'conflicting_finalized_history' | 'divergence' | 'unavailable'
+export type ObserverVerdictClass =
+  | 'agreement'
+  | 'proven_lag'
+  | 'height_skew'
+  | 'majority'
+  | 'conflicting_finalized_history'
+  | 'divergence'
+  | 'unavailable'
 
-
-export type ObserverAncestryClass = 'proven_lag' | 'conflicting_finalized_history' | 'unresolved_height_skew'
+export type ObserverAncestryClass =
+  | 'proven_lag'
+  | 'conflicting_finalized_history'
+  | 'unresolved_height_skew'
 
 export type ObserverFinalizedIdentity = {
   network_id: string
@@ -77,6 +87,9 @@ export type ObserverNode = {
 }
 
 export type ObserverReport = {
+  schema_version?: number
+  completed_at_ms?: number
+  duration_ms?: number
   observed_at_ms: number
   heights: {
     reachable_nodes: number
@@ -96,7 +109,6 @@ export type ObserverReport = {
     reference?: ObserverFinalizedIdentity | null
   }
 }
-
 
 export type LightBlock = {
   version: number
@@ -142,31 +154,192 @@ export type FaucetResponse = {
   deployError?: string | null
 }
 
-export async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = 12_000): Promise<Response> {
+// The deadline remains active until the response body finishes, including stalled streams.
+export async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = 12_000,
+): Promise<Response> {
   const controller = new AbortController()
-  const timer = window.setTimeout(() => controller.abort(), timeoutMs)
-  try {
-    return await fetch(input, { ...init, signal: controller.signal })
-  } catch (cause) {
-    if (cause instanceof DOMException && cause.name === 'AbortError') {
-      throw new Error('Connected node request timed out.')
-    }
-    throw cause
-  } finally {
+  const forwardAbort = () => controller.abort(init.signal?.reason)
+  if (init.signal?.aborted) forwardAbort()
+  else init.signal?.addEventListener('abort', forwardAbort, { once: true })
+  let timedOut = false
+  const timer = window.setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, timeoutMs)
+  const cleanup = () => {
     window.clearTimeout(timer)
+    init.signal?.removeEventListener('abort', forwardAbort)
+  }
+  try {
+    const response = await fetch(input, {
+      ...init,
+      signal: controller.signal,
+      redirect: 'error',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+    })
+    if (!response.body) {
+      cleanup()
+      return response
+    }
+    const reader = response.body.getReader()
+    let bytes = 0
+    const body = new ReadableStream<Uint8Array>({
+      async pull(stream) {
+        try {
+          const chunk = await reader.read()
+          if (chunk.done) {
+            cleanup()
+            stream.close()
+            return
+          }
+          bytes += chunk.value.byteLength
+          if (bytes > 8 * 1024 * 1024) {
+            controller.abort()
+            await reader.cancel()
+            throw new Error('Connected node response exceeded the 8 MiB limit.')
+          }
+          stream.enqueue(chunk.value)
+        } catch (cause) {
+          cleanup()
+          stream.error(timedOut ? new Error('Connected node request timed out.') : cause)
+        }
+      },
+      async cancel(reason) {
+        cleanup()
+        controller.abort()
+        await reader.cancel(reason)
+      },
+    })
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    })
+  } catch (cause) {
+    cleanup()
+    if (timedOut) throw new Error('Connected node request timed out.')
+    throw cause
   }
 }
 
-export async function getJson<T>(path: string): Promise<T> {
-  const response = await fetchWithTimeout(`${RCHAIN_API}${path}`, { cache: 'no-store' })
+export async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetchWithTimeout(`${RCHAIN_API}${path}`, { cache: 'no-store', signal })
   if (!response.ok) throw new Error(`${path} returned ${response.status}`)
-  return response.json() as Promise<T>
+  const parsed: unknown = await response.json()
+  validateNetworkRead(path, parsed)
+  return parsed as T
 }
 
-export async function getObserverObservation(): Promise<ObserverReport> {
-  const response = await fetchWithTimeout(`${OBSERVER_API}/v1/observation`, { cache: 'no-store' }, 6_000)
+function validateNetworkRead(path: string, value: unknown): void {
+  if (
+    ![
+      '/api/status',
+      '/api/last-finalized-block',
+      '/api/v1/capabilities',
+      '/api/v1/blocks',
+    ].includes(path) &&
+    !path.startsWith('/api/v1/block/') &&
+    !path.startsWith('/api/v1/deploy-status/')
+  )
+    return
+  const fail = () => {
+    throw new Error(`${path} returned an invalid observation.`)
+  }
+  const isCount = (n: unknown) => typeof n === 'number' && Number.isSafeInteger(n) && n >= 0
+  const isBlock = (v: unknown) => {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return false
+    const block = v as Record<string, unknown>
+    return (
+      isCount(block.blockNumber) &&
+      typeof block.blockHash === 'string' &&
+      /^[0-9a-fA-F]{64}$/.test(block.blockHash) &&
+      isCount(block.deployCount) &&
+      Array.isArray(block.rejectedDeploys) &&
+      Array.isArray(block.justifications) &&
+      Array.isArray(block.bonds)
+    )
+  }
+  if (path === '/api/v1/blocks') {
+    if (!Array.isArray(value) || value.length > 4096 || !value.every(isBlock)) fail()
+    return
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) fail()
+  const data = value as Record<string, unknown>
+  const count = (n: unknown) => typeof n === 'number' && Number.isSafeInteger(n) && n >= 0
+  if (path === '/api/status') {
+    if (
+      typeof data.networkId !== 'string' ||
+      !data.networkId.trim() ||
+      typeof data.shardId !== 'string' ||
+      !data.shardId.trim() ||
+      !count(data.latestBlockNumber)
+    )
+      fail()
+    for (const key of ['peers', 'nodes']) if (data[key] !== undefined && !count(data[key])) fail()
+  } else if (path === '/api/last-finalized-block') {
+    if (!data.blockInfo || typeof data.blockInfo !== 'object' || Array.isArray(data.blockInfo))
+      fail()
+    const block = data.blockInfo as Record<string, unknown>
+    if (
+      !count(block.blockNumber) ||
+      typeof block.blockHash !== 'string' ||
+      !/^[0-9a-fA-F]{64}$/.test(block.blockHash)
+    )
+      fail()
+    if (
+      block.bonds !== undefined &&
+      (!Array.isArray(block.bonds) ||
+        block.bonds.length > 4096 ||
+        block.bonds.some(
+          (bond: unknown) =>
+            !bond || typeof bond !== 'object' || !count((bond as Record<string, unknown>).stake),
+        ))
+    )
+      fail()
+  } else if (path.startsWith('/api/v1/block/')) {
+    if (
+      !isBlock(data.blockInfo) ||
+      !Array.isArray(data.deploys) ||
+      data.deploys.some(
+        (deploy: unknown) =>
+          !deploy ||
+          typeof deploy !== 'object' ||
+          typeof (deploy as Record<string, unknown>).sig !== 'string' ||
+          typeof (deploy as Record<string, unknown>).deployer !== 'string',
+      )
+    )
+      fail()
+  } else if (path.startsWith('/api/v1/deploy-status/')) {
+    if (
+      ['ProcessedWithSuccess', 'ProcessedWithError', 'NotProcessed'].filter((key) => key in data)
+        .length !== 1
+    )
+      fail()
+  } else {
+    for (const key of [
+      'autopropose',
+      'proposeOnDeploy',
+      'manualPropose',
+      'adminHttp',
+      'devMode',
+      'faucet',
+    ])
+      if (data[key] !== undefined && typeof data[key] !== 'boolean') fail()
+  }
+}
+
+export async function getObserverObservation(signal?: AbortSignal): Promise<ObserverReport> {
+  const response = await fetchWithTimeout(
+    `${OBSERVER_API}/v1/observation`,
+    { cache: 'no-store', signal },
+    6_000,
+  )
   if (!response.ok) throw new Error(`Observer returned ${response.status}`)
-  return response.json() as Promise<ObserverReport>
+  return parseObserverReport(await response.json())
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -200,7 +373,8 @@ export async function readBalance(revAddress: string): Promise<number> {
   const first = parsed.expr?.[0]
   const wrapped = first?.ExprInt
   const balance = typeof wrapped === 'number' ? wrapped : wrapped?.data
-  if (typeof balance !== 'number') throw new Error('Unexpected balance response from connected node.')
+  if (typeof balance !== 'number' || !Number.isSafeInteger(balance) || balance < 0)
+    throw new Error('Unexpected balance response from connected node.')
   return balance
 }
 
@@ -209,7 +383,7 @@ export async function requestFaucet(revAddress: string): Promise<FaucetResponse>
 }
 
 export async function readDeployStatus(deployId: string): Promise<unknown> {
-  return getJson<unknown>(`/api/v1/deploy-status/${deployId}`)
+  return getJson<unknown>(`/api/v1/deploy-status/${encodeURIComponent(deployId)}`)
 }
 
 export async function getRecentBlocks(): Promise<LightBlock[]> {
