@@ -39,6 +39,8 @@ The build runs TypeScript, Vite and runtime-license packaging, writing the appli
 
 ## Current surface
 
+**State Integrity (#420)** compares reported Root keys and checks offline supplied justification graphs. A table-level discrepancy is not proof of lost finalized writes. See [the verification runbook](docs/STATE-INTEGRITY-420.md).
+
 **Network Evidence** allows local import and bounded inspection of read-only Sentinel/Rholo incident captures without posting source data or connecting to a validator. This is an observational preview, not a Casper CBC certificate. See [the integration and verification boundary](docs/NETWORK-EVIDENCE.md).
 
 **Legacy REV** provides the independent historical balance reference described below.
