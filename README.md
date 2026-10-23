@@ -32,7 +32,7 @@ The v0.8.1 hardening pass requires complete, ordered sampling metadata for schem
 
 `dist/.htaccess` supplies Apache/LiteSpeed response headers, including frame-ancestor denial, `nosniff`, no-referrer, restricted browser permissions, and HSTS for the current host without subdomain/preload enrollment. The index and manifest are served with `no-store`. Other hosts must configure equivalent HTTP headers: the HTML meta policy alone cannot deny embedding. Test the configuration on an isolated path on the actual host before publishing it. CI includes hidden deployment files and reads the artifact back to verify the hosting policy survives packaging.
 
-Builds also include `third-party-notices.txt`, generated from the installed runtime packages' own license files, including the font license. The footer opens these notices separately so the in-memory session stays mounted. An unused font dependency was removed.
+Builds also include UTF-8 `third-party-notices.txt`, served with an explicit text charset and generated from the installed runtime packages' own license files, including the font license. The footer opens these notices separately so the in-memory session stays mounted. An unused font dependency was removed.
 
 ### Verify this change
 

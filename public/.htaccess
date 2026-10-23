@@ -7,6 +7,9 @@ Options -Indexes
   Header always set Referrer-Policy "no-referrer"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
   Header always set Strict-Transport-Security "max-age=31536000"
+  <Files "third-party-notices.txt">
+    Header always set Content-Type "text/plain; charset=utf-8"
+  </Files>
   <FilesMatch "^(index\.html|site\.webmanifest)$">
     Header always set Cache-Control "no-store"
   </FilesMatch>
