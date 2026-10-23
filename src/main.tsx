@@ -9,6 +9,7 @@ import rholoxLogo from './assets/rholox-logo.svg'
 import AssetLabPanel from './AssetLabPanel'
 import ExchangePanel from './ExchangePanel'
 import RevSnapshotPanel from './RevSnapshotPanel'
+import NetworkEvidencePanel from './NetworkEvidencePanel'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
 import { sendRev, type TransferReceipt } from './lib/transfer'
@@ -898,6 +899,7 @@ function App() {
     : 'Awaiting first sample'
   const nav = [
     { id: 'network', name: 'Network Console', icon: '◈' },
+    { id: 'network-evidence', name: 'Network Evidence', icon: '◇' },
     { id: 'legacy-rev', name: 'Legacy REV', icon: '◷' },
     { id: 'dapps', name: 'DApps', icon: '▤' },
     { id: 'explorer', name: 'Explorer', icon: '⌕' },
@@ -982,14 +984,14 @@ function App() {
         <header className="topbar">
           <div className="breadcrumb">
             RChain <span>/</span>{' '}
-            <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : active === 'dapps' ? 'DApps' : 'Public testnet'}</strong>
+            <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : active === 'network-evidence' ? 'Offline evidence' : active === 'dapps' ? 'DApps' : 'Public testnet'}</strong>
           </div>
           <div className="top-actions">
             <span
-              className={`environment-pill ${active === 'legacy-rev' || active === 'dapps' ? 'environment-pill--reference' : evidence.tone === 'good' ? 'environment-pill--online' : observer ? 'environment-pill--degraded' : 'environment-pill--pending'}`}
+              className={`environment-pill ${active === 'legacy-rev' || active === 'network-evidence' || active === 'dapps' ? 'environment-pill--reference' : evidence.tone === 'good' ? 'environment-pill--online' : observer ? 'environment-pill--degraded' : 'environment-pill--pending'}`}
             >
               <span className="dot" />
-              {active === 'legacy-rev' ? 'Historical reference' : active === 'dapps' ? 'Directory preview' : evidence.label}
+              {active === 'legacy-rev' ? 'Historical reference' : active === 'network-evidence' ? 'Offline files only' : active === 'dapps' ? 'Directory preview' : evidence.label}
             </span>
             <button
               type="button"
@@ -1397,6 +1399,7 @@ function App() {
             )}
           </section>
 
+          <NetworkEvidencePanel />
           <RevSnapshotPanel />
           <section id="dapps" className="dapps-section" aria-labelledby="dapps-title">
             <div className="dapps-heading">
