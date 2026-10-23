@@ -132,7 +132,7 @@ for (const label of [
 ]) {
   if (!exchange.includes(`aria-label="${label}"`)) failures.push(`Exchange accessible label missing: ${label}`)
 }
-if (!main.includes('target="exchange"')) failures.push('Exchange Core module navigation is missing')
+if (!main.includes("id: 'exchange'")) failures.push('Exchange Core module navigation is missing')
 
 if (failures.length) {
   console.error('Source verification failed:')

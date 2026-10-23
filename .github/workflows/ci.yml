@@ -32,3 +32,23 @@ jobs:
 
       - name: Audit production dependency tree
         run: npm audit --audit-level=high
+
+      - name: Upload reviewed static build
+        uses: actions/upload-artifact@v4
+        with:
+          name: rholox-static-site
+          path: dist/
+          if-no-files-found: error
+          include-hidden-files: true
+
+      - name: Read back the deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rholox-static-site
+          path: artifact-check/
+
+      - name: Verify hosting policy and notices survived packaging
+        run: |
+          cmp dist/.htaccess artifact-check/.htaccess
+          cmp dist/third-party-notices.txt artifact-check/third-party-notices.txt
+          cmp dist/index.html artifact-check/index.html

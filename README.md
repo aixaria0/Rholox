@@ -4,6 +4,53 @@ Rholox is an evidence-first public-testnet interface for observing network state
 
 The current vertical slice covers observation, session-only signing, test-value funding, proof anchoring, block/deploy inspection, finalized REV transfer verification, fixed-supply MakeMint assets, and a capability-custodied testnet exchange core.
 
+[Desktop preview and browser verification](docs/UI-ASSURANCE.md)
+
+## Network evidence workspace (v0.8)
+
+The interface now starts with a source matrix and an explicit evidence boundary. A persistent navigation rail links to Network Console, Explorer, Wallet + Test REV, Rholox Proof, REV transfer, Asset Lab and Exchange Core. Phone layouts use a scrollable section navigation; data tables scroll within their own labeled region. Keys remain mounted in the session when navigating between sections.
+
+A positive **Snapshots agree** state requires a structurally valid, internally consistent report, at least two configured sources, complete comparable/reachable coverage, and a sample younger than 30 seconds. The UI validates node labels, exact reference support, height summaries, counters, verdict consistency, ancestry endpoints, path shape and verified-block counts. These are report-contract checks: the browser does **not** independently reverify the raw block signatures or a consensus finality certificate.
+
+| Display | Condition |
+|---|---|
+| Awaiting / unavailable | No validated report available |
+| Snapshots agree | Fresh, complete multi-source snapshot agreement |
+| Limited coverage | Singleton observation or any incomplete/unreachable configured source |
+| Ancestry connected · lag observed | Verified ancestry reported for every lower identity, with different observed heights |
+| Unresolved height skew | Ancestry evidence remains incomplete |
+| Conflicting observations | Same-height, identity-domain or complete raw-history non-connection finding |
+| Stale evidence / clock mismatch | Request failure, sample age at least 30 seconds, or implausible future timestamp |
+
+Freshness updates every second even when polling fails. Polling runs every 15 seconds while visible; returning to the tab requests a refresh. Overlapping refreshes are refused and unmounted/obsolete requests cannot overwrite newer state. The retained report remains inspectable after a failed request, with its stale state explicit. Fresh sampling does not itself establish chain progress.
+
+Each source keeps its full finalized hash in an expandable cell. The reference hash can be copied with explicit success/failure feedback. **Download JSON** exports the validated observation report; it contains no wallet state. Missing proof/transfer prerequisites have navigable locked panels rather than missing section targets.
+
+Transport deadlines cover response-body consumption, including streams stalled after headers. Bodies are capped at 8 MiB. Redirects are refused; requests omit credentials and referrers. Malformed status/finalized/capability/explorer responses are rejected before presentation. The production build adds a restrictive content-security policy: scripts/styles/fonts/images come from this origin, and outbound connections are limited to this origin and the configured public testnet gateway. Vite development behavior is separate from that production policy.
+
+The v0.8.1 hardening pass requires complete, ordered sampling metadata for schema version 1. Wall-clock window length and the reported monotonic duration may differ by at most five seconds; contradictory samples cannot receive a positive state. Legacy reports without sampling-window metadata remain supported. Explorer reads validate nested block/deploy/status fields and bounded arrays, reject duplicate block identities, and require a returned block hash to match its lookup. These checks validate reported JSON; the browser does not recompute an explorer block's content address. Block selection is serialized while a lookup is pending.
+
+`dist/.htaccess` supplies Apache/LiteSpeed response headers, including frame-ancestor denial, `nosniff`, no-referrer, restricted browser permissions, and HSTS for the current host without subdomain/preload enrollment. The index and manifest are served with `no-store`. Other hosts must configure equivalent HTTP headers: the HTML meta policy alone cannot deny embedding. Test the configuration on an isolated path on the actual host before publishing it. CI includes hidden deployment files and reads the artifact back to verify the hosting policy survives packaging.
+
+Builds also include UTF-8 `third-party-notices.txt`, served with an explicit text charset and generated from the installed runtime packages' own license files, including the font license. The footer opens these notices separately so the in-memory session stays mounted. An unused font dependency was removed.
+
+### Verify this change
+
+```bash
+npm ci
+npm run verify
+npm audit --audit-level=high
+git diff --check
+```
+
+The suite includes 57 deterministic observer/transport checks in `scripts/test-observer.mjs`, the existing 119,434-case accepted-swap arithmetic sweep, the multi-actor transition model, source-level recovery guards, TypeScript compilation and the production build. The models/source checks do not replace the isolated-node/live contract gates documented below and in the existing review record.
+
+`src/lib/observer.ts` owns report validation and freshness/coverage display policy. `src/lib/rchain.ts` owns bounded, cancellable transport and direct API read validation. The observer service remains a separate repository and release: the UI accepts the existing report shape and the additive version-1 sampling metadata.
+
+Browser QA uses live **read-only** observations and block exploration. No faucet funding, signed transfer, proof deployment, asset creation, liquidity change or swap is needed to verify this UI change. Existing unmerged assurance work is preserved on its own branches; it is not included in this main-based redesign.
+
+Production assets are built into `dist/` and uploaded as a CI artifact. Deploy reviewed assets to the existing site's root, retain the prior index/assets for rollback, upload content-addressed assets first, then atomically replace `index.html`. Keep existing hosting configuration and credentials outside this repository. Publishing a preview or opening a PR does not establish that rholox.com was updated.
+
 ## Current surface
 
 1. **Network Console** — live node status, shard, latest height, finalized block, validators, peers, and advertised capabilities.
@@ -103,7 +150,7 @@ npm audit --audit-level=high
 git diff --check
 ```
 
-`npm run verify` runs the source-level invariant guard, deterministic AMM regression/property sweep, strict TypeScript compilation, and production Vite build.
+`npm run verify` runs the source-level invariant guard, AMM arithmetic and actor models, recovery source guards, observer/transport regression checks, strict TypeScript compilation, and production Vite build.
 
 ## Run locally
 
