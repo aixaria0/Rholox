@@ -8,6 +8,7 @@ import { comparableIdentity, evidenceState } from './lib/observer'
 import rholoxLogo from './assets/rholox-logo.svg'
 import AssetLabPanel from './AssetLabPanel'
 import ExchangePanel from './ExchangePanel'
+import RevSnapshotPanel from './RevSnapshotPanel'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
 import { sendRev, type TransferReceipt } from './lib/transfer'
@@ -864,6 +865,17 @@ function App() {
     return () => listener.disconnect()
   }, [])
 
+  useEffect(() => {
+    const id = window.location.hash.slice(1)
+    const target = id ? document.getElementById(id) : null
+    if (!target) return
+    const frame = window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: 'auto', block: 'start' })
+      setActive(id)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
+
   const evidence = evidenceState(observer, observerError, now)
   const reference = observer?.verdict.reference
   const fresh = (at: number, error: string | null) => Boolean(at && !error && now - at < 45_000)
@@ -886,6 +898,7 @@ function App() {
     : 'Awaiting first sample'
   const nav = [
     { id: 'network', name: 'Network Console', icon: '◈' },
+    { id: 'legacy-rev', name: 'Legacy REV', icon: '◷' },
     { id: 'explorer', name: 'Explorer', icon: '⌕' },
     { id: 'wallet', name: 'Wallet + Test REV', icon: '▣' },
     { id: 'proof', name: 'Rholox Proof', icon: '◇' },
@@ -926,7 +939,7 @@ function App() {
           {nav.map((item, index) => (
             <React.Fragment key={item.id}>
               {index === 0 && <span className="nav-group">OBSERVE</span>}
-              {index === 2 && <span className="nav-group">INTERACT</span>}
+              {item.id === 'wallet' && <span className="nav-group">INTERACT</span>}
               <a
                 href={`#${item.id}`}
                 aria-current={active === item.id ? 'location' : undefined}
@@ -944,12 +957,12 @@ function App() {
         <div className="sidebar-bottom">
           <div className="testnet-note">
             <span className="small-square" />
-            PUBLIC TESTNET
+            TESTNET WORKSPACE
           </div>
           <p>
-            Test value only.
+            Signed actions use test values.
             <br />
-            The network may reset.
+            Legacy balances are a separate snapshot.
           </p>
           <a
             href="https://github.com/rchain-community/rchain-observer"
@@ -959,7 +972,7 @@ function App() {
             Observer source <span aria-hidden="true">↗</span>
           </a>
           <a href="https://github.com/aixaria0/Rholox" target="_blank" rel="noreferrer">
-            Workspace source <span aria-hidden="true">↗</span>
+            Application source <span aria-hidden="true">↗</span>
           </a>
         </div>
       </aside>
@@ -967,14 +980,15 @@ function App() {
       <div className="workspace-column">
         <header className="topbar">
           <div className="breadcrumb">
-            RChain <span>/</span> <strong>Public testnet</strong>
+            RChain <span>/</span>{' '}
+            <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : 'Public testnet'}</strong>
           </div>
           <div className="top-actions">
             <span
-              className={`environment-pill ${evidence.tone === 'good' ? 'environment-pill--online' : observer ? 'environment-pill--degraded' : 'environment-pill--pending'}`}
+              className={`environment-pill ${active === 'legacy-rev' ? 'environment-pill--reference' : evidence.tone === 'good' ? 'environment-pill--online' : observer ? 'environment-pill--degraded' : 'environment-pill--pending'}`}
             >
               <span className="dot" />
-              {evidence.label}
+              {active === 'legacy-rev' ? 'Historical reference' : evidence.label}
             </span>
             <button
               type="button"
@@ -1382,6 +1396,7 @@ function App() {
             )}
           </section>
 
+          <RevSnapshotPanel />
           <div className="workspace-divider">
             <div className="eyebrow">SIGNED INTERACTIONS</div>
             <h2>Your testnet workspace</h2>
@@ -1393,7 +1408,7 @@ function App() {
           <WalletPanel />
           <ExplorerPanel />
           <footer>
-            <span>Rholox · public testnet · test value only</span>
+            <span>Rholox · legacy snapshot reference + public testnet workspace</span>
             <div className="footer-links">
               <a
                 href="https://github.com/rchain-community/rchain-observer#trust-boundary"
@@ -1403,7 +1418,7 @@ function App() {
                 Trust boundary ↗
               </a>
               <a href="https://github.com/aixaria0/Rholox" target="_blank" rel="noreferrer">
-                Source ↗
+                Application source ↗
               </a>
               <a
                 href={`${import.meta.env.BASE_URL}third-party-notices.txt`}

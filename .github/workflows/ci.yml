@@ -52,3 +52,5 @@ jobs:
           cmp dist/.htaccess artifact-check/.htaccess
           cmp dist/third-party-notices.txt artifact-check/third-party-notices.txt
           cmp dist/index.html artifact-check/index.html
+          cmp dist/api/legacy-rev.php artifact-check/api/legacy-rev.php
+          npm run check:public-package

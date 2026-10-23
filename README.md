@@ -10,18 +10,18 @@ A public-testnet workspace for comparing RChain observations and exercising loca
 
 | Component | Recorded release |
 | --- | --- |
-| Browser application | `0.8.1`, declared in `package.json` |
-| Application integration | Source `d5eb4c4`; [PR #17](https://github.com/aixaria0/Rholox/pull/17), merge `6324f06` |
+| Browser application | `0.9.1`, declared in `package.json`; adds a data-independent legacy REV lookup utility |
+| Evidence-console integration | Source `d5eb4c4`; [PR #17](https://github.com/aixaria0/Rholox/pull/17), merge `6324f06` |
 | Companion observer | `0.2.0`; [PR #4](https://github.com/rchain-community/rchain-observer/pull/4), merge `a5d0796` |
 | Application post-merge CI | [Run 39885484816](https://github.com/aixaria0/Rholox/actions/runs/39885484816), successful |
 | Observer post-merge CI | [Run 39885469376](https://github.com/rchain-community/rchain-observer/actions/runs/39885469376), successful |
-| Production verification | 23 October 2026: all 14 public release files matched the reviewed artifact; the fifteenth artifact file was the non-public hosting policy |
+| v0.8.1 production record | 23 October 2026: all 14 public release files matched the reviewed artifact; the fifteenth artifact file was the non-public hosting policy |
 
 This is a dated release record. A later source commit, merge or successful workflow does not by itself deploy the website or guarantee current availability.
 
 ## Start locally
 
-Use Node.js 22 and npm to match CI, and a modern browser with Web Crypto support. Secure-context browser features require HTTPS or a trustworthy local development origin.
+Use Node.js 22 and npm to match CI. Full verification also needs PHP 8.2+ with Sodium. Use a modern browser with Web Crypto support. Secure-context browser features require HTTPS or a trustworthy local development origin.
 
 ```bash
 npm ci
@@ -35,9 +35,11 @@ npm run build
 npm run preview
 ```
 
-The build runs TypeScript, Vite and runtime-license packaging, writing the static application to `dist/`. Preview serves that build locally; it is not the production deployment procedure.
+The build runs TypeScript, Vite and runtime-license packaging, writing the application and PHP utility to `dist/`. Preview serves that build locally; it is not the production deployment procedure.
 
 ## Current surface
+
+**Legacy REV** provides the independent historical balance reference described below. The live and signed testnet surfaces remain:
 
 1. **Network Console** — multi-source finalized observations, coverage, sample age, full hashes and ancestry evidence, alongside a separate execution-gateway status/capability view.
 2. **Wallet + Test REV** — session-only secp256k1 key generation/import, REV address derivation, faucet funding, and finalized balance reads.
@@ -47,12 +49,32 @@ The build runs TypeScript, Vite and runtime-license packaging, writing the stati
 6. **Asset Lab** — fixed-supply MakeMint asset creation, finalized metadata/balance reads, purse-brand verification, signed asset transfer, and an exchange capability bridge in runtime v2.
 7. **Exchange Core** — two-asset capability custody, integer constant-product quotes, LP accounting, add/remove liquidity, swaps, compensation on partial two-asset failure, and finalized reserve/custody verification.
 
+## Legacy REV balance lookup
+
+Open **Legacy REV** and enter a public REV address. A session wallet, signature or private key is unnecessary. This historical reference is separate from live testnet balances.
+
+The repository contains the utility, importer, endpoint and synthetic tests. Reference records, source spreadsheets and deployment manifests are operator-managed files outside the repository and public web directory. A normal build needs no dataset and packages no balances or spreadsheet link.
+
+| Behavior | Boundary |
+| --- | --- |
+| Lookup | A same-origin JSON POST submits one checksum-valid public REV address |
+| Data access | PHP reads a private, digest-checked reference and returns one exact integer amount or explicit absence |
+| Public metadata | Reference date, its basis, record count, decimal scale and a dataset revision identifier |
+| Amount handling | Decimal integer strings and BigInt; eight-decimal formatting, including values above JavaScript safe-number precision |
+| Privacy | The address is sent over HTTPS to Rholox; it is not placed in a URL or sent to the source document or execution gateway |
+| Failures | Malformed, unavailable or integrity-failing data returns an error; it cannot become a missing-address result |
+
+A missing row differs from a recorded zero. Editing input clears the previous result. Historical records do not establish a current spendable balance or migration entitlement. Source rounding cannot be reconstructed, and the utility does not authenticate historical chain state.
+
+See [endpoint contract, private import and deployment](docs/LEGACY-REV-LOOKUP.md). `npm run test:rev-snapshot` uses generated synthetic addresses; `npm run test:rev-endpoint` requires PHP 8.2+ with Sodium. The application build remains data-independent. Vite alone does not execute PHP.
+
 ## Architecture and configuration
 
 | Path | Destination | Boundary |
 | --- | --- | --- |
 | Observation | Browser → cached observer → configured node HTTP endpoints | Read-only comparison; page requests do not initiate validator fan-out |
 | Execution | Browser → public execution gateway | One execution source; submission/inclusion are separate from finalized read-back |
+| Legacy REV | Browser → same-origin read-only endpoint → private reference files | One-address result; no public dataset download |
 | Signing | Session memory → locally signed deploy → gateway | Keys stay in the browser; the observer never signs or proxies writes |
 
 The browser gateway is `https://testnet.rhobot.net`; the observer base is `https://testnet.rhobot.net/observer`. Both are source constants in `src/lib/rchain.ts`, not runtime environment settings. Changing the gateway also requires reviewing the API contract and updating both production connection allowlists: `vite.config.ts` and `public/.htaccess`.
@@ -72,6 +94,9 @@ The observer compares configured finalized identities. When heights differ, it c
 | `src/lib/exchange.ts` | Rholang pool runtime and client verification |
 | `src/AssetLabPanel.tsx`, `src/ExchangePanel.tsx` | Asset and pool interaction surfaces |
 | `src/main.tsx`, `src/styles.css` | Workspace state, navigation and presentation |
+| `src/RevSnapshotPanel.tsx`, `src/lib/rev-snapshot.ts` | Historical lookup interface and response/address validation |
+| `server/legacy-rev.php` | Bounded one-address endpoint; private reference integrity checks |
+| `scripts/prepare-rev-snapshot.mjs` | Explicit private CSV import, independent of the application build |
 | `scripts/write-notices.mjs` | Runtime JavaScript/font license packaging |
 
 ## Network evidence workspace
@@ -171,9 +196,12 @@ git diff --check
 | `test:amm:actors` | Modeled multi-actor transitions and negative controls |
 | `test:exchange:recovery-source` | Static compensation and custody source guards |
 | `test:observer` | 57 deterministic report, sampling, transport and direct-read checks |
-| `build` | TypeScript compilation, production assets, content policy and runtime notices |
+| `test:rev-snapshot` | Synthetic client/import checks for exact amounts, checksums, zero/absence, response binding and private output guards |
+| `test:rev-endpoint` | PHP contract checks with synthetic records, including malformed requests, private-data failures and metadata-only GET |
+| `check:public-package` | Rejects reference data directories, spreadsheet artifacts and spreadsheet links in the public build |
+| `build` | TypeScript compilation, production assets, the data-free PHP endpoint, content policy and runtime notices |
 | Dependency audit | Known advisory results at scan time; CI fails at high severity or above |
-| Artifact read-back | Byte equality for index, hidden hosting policy and notices after upload/download |
+| Artifact read-back | Byte equality for index, hidden hosting policy, notices and PHP utility after upload/download |
 
 CI runs these gates on pull requests and pushes to `main`. The static artifact is named `rholox-static-site`; hidden files are explicitly included.
 
@@ -183,7 +211,7 @@ The dated [UI review](docs/UI-ASSURANCE.md) covers responsive layouts, read-only
 
 ## Production hosting and rollback
 
-Deploy the reviewed CI artifact, including `.htaccess` and `third-party-notices.txt`. Copying only visible files drops part of the hosting policy.
+Deploy the reviewed CI artifact, including `.htaccess`, `third-party-notices.txt` and `api/legacy-rev.php`, to a PHP 8.2+ host with Sodium. Install the reference separately outside the web root as described in the lookup runbook. Copying only visible files drops part of the hosting policy.
 
 | Apache/LiteSpeed control | Policy |
 | --- | --- |

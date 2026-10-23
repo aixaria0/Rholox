@@ -34,6 +34,18 @@ No funding, signed deploy, transfer, asset creation or exchange mutation was per
 
 These checks concern the deployed observation UI and HTTP policy. They do not execute or replace the separate contract-assurance gates.
 
+## Legacy REV utility follow-up — 23 October 2026
+
+The v0.9.1 utility uses a private historical reference through a same-origin read-only endpoint. The public source and build contain no reference records, source spreadsheet URL or bulk dataset. Tests generate synthetic addresses and amounts independently of the operator's data.
+
+- Client checks cover checksum validation, exact large integer strings, eight-decimal formatting, zero versus absence, response-address binding and contradictory/bulk results.
+- The private importer refuses duplicate addresses, noncanonical amounts, invalid checksums and output in the repository or public web directories.
+- PHP contract checks cover metadata-only GET, one-address POST, malformed/oversized requests, unsupported methods, private-file absence and digest mismatch. Data failures return service errors rather than false zero/absence.
+- The lookup requires no session wallet, signature or private key. Its privacy text states that the public address is sent to Rholox over HTTPS and is not included in the URL.
+- Historical reference status remains separate from live network evidence and signed testnet actions. No historical-chain authenticity, current-balance or migration-entitlement claim is made.
+
+Live deployment and browser verification are separate from these source/contract gates. [The endpoint runbook](LEGACY-REV-LOOKUP.md) describes private provisioning and its operational limits.
+
 ## Display policy
 
 - Full-coverage positive state requires at least two fresh comparable configured endpoints.

@@ -147,3 +147,10 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Operator-managed reference data (never publish or commit)
+.private/
+rholox-private/
+data/rev-snapshot/
+public/data/rev-snapshot-*.json
+src/data/rev-snapshot-manifest.json

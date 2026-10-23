@@ -1738,3 +1738,192 @@ footer {
     transition: none !important;
   }
 }
+
+/* Historical reference is visually separate from live observation and signed actions. */
+.environment-pill--reference {
+  color: var(--blue);
+}
+.environment-pill--reference .dot {
+  background: var(--blue);
+}
+.snapshot-panel {
+  margin-top: 32px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  scroll-margin-top: 94px;
+}
+.snapshot-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+.snapshot-heading h2 {
+  margin-top: 9px;
+  font-size: 26px;
+}
+.snapshot-date {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid #355171;
+  border-radius: 5px;
+  color: var(--blue);
+  font-family: var(--font-data);
+  font-size: 11px;
+}
+.snapshot-intro {
+  max-width: 760px;
+  margin-top: 13px;
+  color: var(--text-2);
+}
+.snapshot-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin-top: 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+.snapshot-facts strong {
+  color: var(--text-2);
+  font-weight: 600;
+}
+.snapshot-form {
+  margin-top: 22px;
+}
+.snapshot-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+.snapshot-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+.snapshot-controls input {
+  font-family: var(--font-data);
+  font-size: 12px;
+}
+.snapshot-controls button {
+  white-space: nowrap;
+}
+.snapshot-help {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.snapshot-result {
+  margin-top: 22px;
+  padding: 24px;
+  border: 1px solid #365678;
+  border-radius: 8px;
+  background: #101e2d;
+}
+.snapshot-result-address {
+  display: block;
+  margin: 10px 0 18px;
+  color: var(--text-2);
+  word-break: break-all;
+}
+.snapshot-amount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+.snapshot-amount strong {
+  font-family: var(--font-data);
+  font-size: clamp(20px, 3vw, 34px);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.snapshot-amount span {
+  color: var(--blue);
+  font-size: 13px;
+}
+.snapshot-result p {
+  margin-top: 9px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.snapshot-boundary {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 12px;
+  max-width: 850px;
+}
+.snapshot-boundary strong {
+  color: var(--text-2);
+}
+.snapshot-source {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.snapshot-source > a {
+  color: var(--blue);
+}
+.snapshot-source details {
+  margin-top: 14px;
+  color: var(--muted);
+}
+.snapshot-source summary {
+  cursor: pointer;
+  padding: 6px 0;
+  width: fit-content;
+}
+.snapshot-source dl {
+  display: grid;
+  grid-template-columns: 115px minmax(0, 1fr);
+  gap: 8px 18px;
+  margin-top: 12px;
+}
+.snapshot-source dd {
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.snapshot-source p {
+  margin-top: 14px;
+  max-width: 800px;
+}
+@media (max-width: 760px) {
+  .snapshot-panel {
+    scroll-margin-top: 140px;
+  }
+  .snapshot-controls input {
+    font-size: 16px;
+  }
+}
+@media (max-width: 640px) {
+  .snapshot-panel {
+    padding: 20px 16px;
+    margin-top: 22px;
+  }
+  .snapshot-heading {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .snapshot-heading h2 {
+    font-size: 23px;
+  }
+  .snapshot-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .snapshot-result {
+    padding: 18px 14px;
+  }
+  .snapshot-source dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .snapshot-source dd {
+    margin-bottom: 7px;
+  }
+}
