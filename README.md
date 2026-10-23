@@ -39,6 +39,8 @@ The build runs TypeScript, Vite and runtime-license packaging, writing the appli
 
 ## Current surface
 
+**Network Evidence** allows local import and bounded inspection of read-only Sentinel/Rholo incident captures without posting source data or connecting to a validator. This is an observational preview, not a Casper CBC certificate. See [the integration and verification boundary](docs/NETWORK-EVIDENCE.md).
+
 **Legacy REV** provides the independent historical balance reference described below.
 
 **DApps** lists `rev.exchange` first as an exchange preview. Its destination is pending launch verification, so the listing does not open a wallet connection or trading page. A listing is not evidence that an external application is operating or that Rholox's testnet Exchange Core is a production exchange.
