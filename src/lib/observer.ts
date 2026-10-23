@@ -7,6 +7,8 @@ import type {
 } from './rchain'
 
 export const EVIDENCE_MAX_AGE_MS = 30_000
+const CLOCK_TOLERANCE_MS = 5_000
+const MAX_DATE_MS = 8_640_000_000_000_000
 const HASH = /^[0-9a-fA-F]{64}$/
 const classes = [
   'agreement',
@@ -95,7 +97,7 @@ export function parseObserverReport(input: unknown): ObserverReport {
     'unsupported schema version',
   )
   requireValue(
-    integer(v.observed_at_ms) && v.observed_at_ms > 0 && v.observed_at_ms <= 8_640_000_000_000_000,
+    integer(v.observed_at_ms) && v.observed_at_ms > 0 && v.observed_at_ms <= MAX_DATE_MS,
     'invalid sample time',
   )
   requireValue(
@@ -103,6 +105,17 @@ export function parseObserverReport(input: unknown): ObserverReport {
     'invalid completion time',
   )
   requireValue(v.duration_ms === undefined || integer(v.duration_ms), 'invalid duration')
+  if (v.schema_version === 1 || v.completed_at_ms !== undefined || v.duration_ms !== undefined) {
+    requireValue(integer(v.completed_at_ms) && integer(v.duration_ms), 'incomplete sampling window')
+    requireValue(
+      v.completed_at_ms >= v.observed_at_ms && v.completed_at_ms <= MAX_DATE_MS,
+      'completion precedes sampling or exceeds the supported date range',
+    )
+    requireValue(
+      Math.abs(v.completed_at_ms - v.observed_at_ms - v.duration_ms) <= CLOCK_TOLERANCE_MS,
+      'wall-clock sampling window contradicts its monotonic duration',
+    )
+  }
   requireValue(
     Array.isArray(v.observations) && v.observations.length > 0 && v.observations.length <= 32,
     'invalid node count',
@@ -300,7 +313,8 @@ export function evidenceState(report: ObserverReport | null, error: string | nul
       ageMs: null,
     }
   const ageMs = now - report.observed_at_ms
-  const clockInvalid = ageMs < -5_000 || (report.completed_at_ms ?? 0) > now + 5_000
+  const clockInvalid =
+    ageMs < -CLOCK_TOLERANCE_MS || (report.completed_at_ms ?? 0) > now + CLOCK_TOLERANCE_MS
   if (error || ageMs >= EVIDENCE_MAX_AGE_MS || clockInvalid)
     return {
       tone: 'warning',
@@ -312,9 +326,19 @@ export function evidenceState(report: ObserverReport | null, error: string | nul
     }
   const v = report.verdict
   if (['divergence', 'majority', 'conflicting_finalized_history'].includes(v.class))
-    return { tone: 'danger', label: 'Conflicting observations', detail: v.summary, ageMs }
+    return {
+      tone: 'danger',
+      label: 'Conflicting observations',
+      detail: v.summary,
+      ageMs,
+    }
   if (v.class === 'unavailable')
-    return { tone: 'warning', label: 'No comparable evidence', detail: v.summary, ageMs }
+    return {
+      tone: 'warning',
+      label: 'No comparable evidence',
+      detail: v.summary,
+      ageMs,
+    }
   if (
     v.observed_nodes < 2 ||
     v.comparable_nodes < v.observed_nodes ||
@@ -334,6 +358,16 @@ export function evidenceState(report: ObserverReport | null, error: string | nul
       ageMs,
     }
   if (v.class === 'proven_lag')
-    return { tone: 'warning', label: 'Ancestry connected · lag observed', detail: v.summary, ageMs }
-  return { tone: 'warning', label: 'Unresolved height skew', detail: v.summary, ageMs }
+    return {
+      tone: 'warning',
+      label: 'Ancestry connected · lag observed',
+      detail: v.summary,
+      ageMs,
+    }
+  return {
+    tone: 'warning',
+    label: 'Unresolved height skew',
+    detail: v.summary,
+    ageMs,
+  }
 }

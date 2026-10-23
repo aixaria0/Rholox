@@ -545,8 +545,10 @@ function ExplorerPanel() {
   }, [])
 
   async function openBlock(hash: string) {
+    if (busy) return
     setBusy(true)
     setError(null)
+    setBlock(null)
     setDeployStatus(null)
     try {
       setBlock(await getBlockByHash(hash))
@@ -647,6 +649,7 @@ function ExplorerPanel() {
             key={item.blockHash}
             className="block-row"
             onClick={() => openBlock(item.blockHash)}
+            disabled={busy}
           >
             <span className="block-height">#{item.blockNumber}</span>
             <code>{short(item.blockHash, 14, 10)}</code>
@@ -893,7 +896,9 @@ function App() {
 
   function downloadEvidence() {
     if (!observer) return
-    const blob = new Blob([JSON.stringify(observer, null, 2) + '\n'], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(observer, null, 2) + '\n'], {
+      type: 'application/json',
+    })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -1399,6 +1404,13 @@ function App() {
               </a>
               <a href="https://github.com/aixaria0/Rholox" target="_blank" rel="noreferrer">
                 Source ↗
+              </a>
+              <a
+                href={`${import.meta.env.BASE_URL}third-party-notices.txt`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Third-party notices ↗
               </a>
             </div>
           </footer>

@@ -1311,6 +1311,7 @@ footer {
 }
 .footer-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 20px;
 }
 @media (min-width: 1680px) {

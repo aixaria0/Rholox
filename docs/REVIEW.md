@@ -142,10 +142,12 @@ git diff --check
 
 1. source-level product/invariant guards;
 2. deterministic AMM regression/property tests;
-3. strict TypeScript compilation;
-4. production Vite build.
+3. multi-actor AMM transitions and recovery source guards;
+4. observer-report, sampling-window, transport and nested direct-read regression checks;
+5. strict TypeScript compilation;
+6. production Vite build with runtime dependency notices.
 
-CI runs the same source/build checks on pull requests and pushes to `main`.
+CI runs the same source/build checks and dependency audit on pull requests and pushes to `main`. It reads the static artifact back to check that hosting policy, index and notices are retained, including the hidden Apache/LiteSpeed configuration.
 
 ## Manual public-testnet smoke matrix
 

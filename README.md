@@ -28,6 +28,12 @@ Each source keeps its full finalized hash in an expandable cell. The reference h
 
 Transport deadlines cover response-body consumption, including streams stalled after headers. Bodies are capped at 8 MiB. Redirects are refused; requests omit credentials and referrers. Malformed status/finalized/capability/explorer responses are rejected before presentation. The production build adds a restrictive content-security policy: scripts/styles/fonts/images come from this origin, and outbound connections are limited to this origin and the configured public testnet gateway. Vite development behavior is separate from that production policy.
 
+The v0.8.1 hardening pass requires complete, ordered sampling metadata for schema version 1. Wall-clock window length and the reported monotonic duration may differ by at most five seconds; contradictory samples cannot receive a positive state. Legacy reports without sampling-window metadata remain supported. Explorer reads validate nested block/deploy/status fields and bounded arrays, reject duplicate block identities, and require a returned block hash to match its lookup. These checks validate reported JSON; the browser does not recompute an explorer block's content address. Block selection is serialized while a lookup is pending.
+
+`dist/.htaccess` supplies Apache/LiteSpeed response headers, including frame-ancestor denial, `nosniff`, no-referrer, restricted browser permissions, and HSTS for the current host without subdomain/preload enrollment. The index and manifest are served with `no-store`. Other hosts must configure equivalent HTTP headers: the HTML meta policy alone cannot deny embedding. Test the configuration on an isolated path on the actual host before publishing it. CI includes hidden deployment files and reads the artifact back to verify the hosting policy survives packaging.
+
+Builds also include `third-party-notices.txt`, generated from the installed runtime packages' own license files, including the font license. The footer opens these notices separately so the in-memory session stays mounted. An unused font dependency was removed.
+
 ### Verify this change
 
 ```bash
@@ -37,7 +43,7 @@ npm audit --audit-level=high
 git diff --check
 ```
 
-The suite includes 28 deterministic observer/transport checks in `scripts/test-observer.mjs`, the existing 119,434-case accepted-swap arithmetic sweep, the multi-actor transition model, source-level recovery guards, TypeScript compilation and the production build. The models/source checks do not replace the isolated-node/live contract gates documented below and in the existing review record.
+The suite includes 57 deterministic observer/transport checks in `scripts/test-observer.mjs`, the existing 119,434-case accepted-swap arithmetic sweep, the multi-actor transition model, source-level recovery guards, TypeScript compilation and the production build. The models/source checks do not replace the isolated-node/live contract gates documented below and in the existing review record.
 
 `src/lib/observer.ts` owns report validation and freshness/coverage display policy. `src/lib/rchain.ts` owns bounded, cancellable transport and direct API read validation. The observer service remains a separate repository and release: the UI accepts the existing report shape and the additive version-1 sampling metadata.
 

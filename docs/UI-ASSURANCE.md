@@ -17,7 +17,7 @@ Production-build browser review, 22 October 2026. Screenshots show sampled publi
 | Explorer | Recent-height lookup loaded block details from the public node, including justifications, bonds and rejected-deploy count |
 | Copy | Reference-hash copy displayed success feedback |
 | Export | Browser downloaded the validated observer JSON without wallet state |
-| Protocol/transport policy | 28 deterministic checks cover malformed/inconsistent reports, coverage, clock/freshness boundaries, lag/conflict, stalled bodies, cancellation, body limits and malformed direct-node reads |
+| Protocol/transport policy | 57 deterministic checks cover malformed/inconsistent reports, sampling-window and clock/freshness boundaries, coverage, lag/conflict, stalled bodies, cancellation, body limits, nested direct-node schemas and requested-block identity matching |
 | Existing operation models | AMM arithmetic sweep, actor model and recovery source guards pass; those tests retain their documented execution limits |
 
 No funding, signed deploy, transfer, asset creation or exchange mutation was performed for this review. Production build verification does not establish that a deployment to the existing custom domain succeeded. Use the PR's CI artifacts and hosting deployment result as separate evidence.
