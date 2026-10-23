@@ -899,6 +899,7 @@ function App() {
   const nav = [
     { id: 'network', name: 'Network Console', icon: '◈' },
     { id: 'legacy-rev', name: 'Legacy REV', icon: '◷' },
+    { id: 'dapps', name: 'DApps', icon: '▤' },
     { id: 'explorer', name: 'Explorer', icon: '⌕' },
     { id: 'wallet', name: 'Wallet + Test REV', icon: '▣' },
     { id: 'proof', name: 'Rholox Proof', icon: '◇' },
@@ -981,14 +982,14 @@ function App() {
         <header className="topbar">
           <div className="breadcrumb">
             RChain <span>/</span>{' '}
-            <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : 'Public testnet'}</strong>
+            <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : active === 'dapps' ? 'DApps' : 'Public testnet'}</strong>
           </div>
           <div className="top-actions">
             <span
-              className={`environment-pill ${active === 'legacy-rev' ? 'environment-pill--reference' : evidence.tone === 'good' ? 'environment-pill--online' : observer ? 'environment-pill--degraded' : 'environment-pill--pending'}`}
+              className={`environment-pill ${active === 'legacy-rev' || active === 'dapps' ? 'environment-pill--reference' : evidence.tone === 'good' ? 'environment-pill--online' : observer ? 'environment-pill--degraded' : 'environment-pill--pending'}`}
             >
               <span className="dot" />
-              {active === 'legacy-rev' ? 'Historical reference' : evidence.label}
+              {active === 'legacy-rev' ? 'Historical reference' : active === 'dapps' ? 'Directory preview' : evidence.label}
             </span>
             <button
               type="button"
@@ -1397,6 +1398,25 @@ function App() {
           </section>
 
           <RevSnapshotPanel />
+          <section id="dapps" className="dapps-section" aria-labelledby="dapps-title">
+            <div className="dapps-heading">
+              <div>
+                <div className="eyebrow">RCHAIN ECOSYSTEM</div>
+                <h2 id="dapps-title">DApps</h2>
+                <p>Applications listed here have their own availability and trust boundaries.</p>
+              </div>
+              <span className="badge">01 LISTING</span>
+            </div>
+            <article className="dapp-card" aria-labelledby="rev-exchange-title">
+              <span className="dapp-index" aria-hidden="true">01</span>
+              <div className="dapp-copy">
+                <div className="eyebrow">EXCHANGE · PREVIEW LISTING</div>
+                <h3 id="rev-exchange-title">rev.exchange</h3>
+                <p>The first exchange DApp listing. Its destination awaits launch verification, so there is no wallet connection or trading link here yet.</p>
+              </div>
+              <span className="badge dapp-status">AWAITING LAUNCH</span>
+            </article>
+          </section>
           <div className="workspace-divider">
             <div className="eyebrow">SIGNED INTERACTIONS</div>
             <h2>Your testnet workspace</h2>

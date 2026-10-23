@@ -39,7 +39,11 @@ The build runs TypeScript, Vite and runtime-license packaging, writing the appli
 
 ## Current surface
 
-**Legacy REV** provides the independent historical balance reference described below. The live and signed testnet surfaces remain:
+**Legacy REV** provides the independent historical balance reference described below.
+
+**DApps** lists `rev.exchange` first as an exchange preview. Its destination is pending launch verification, so the listing does not open a wallet connection or trading page. A listing is not evidence that an external application is operating or that Rholox's testnet Exchange Core is a production exchange.
+
+The live and signed testnet surfaces are:
 
 1. **Network Console** — multi-source finalized observations, coverage, sample age, full hashes and ancestry evidence, alongside a separate execution-gateway status/capability view.
 2. **Wallet + Test REV** — session-only secp256k1 key generation/import, REV address derivation, faucet funding, and finalized balance reads.
@@ -101,7 +105,7 @@ The observer compares configured finalized identities. When heights differ, it c
 
 ## Network evidence workspace
 
-The interface starts with a source matrix and an explicit evidence boundary. A persistent navigation rail links to Network Console, Explorer, Wallet + Test REV, Rholox Proof, REV transfer, Asset Lab and Exchange Core. Phone layouts use a scrollable section navigation; data tables scroll within their own labeled region. Keys remain mounted in the session when navigating between sections.
+The interface starts with a source matrix and an explicit evidence boundary. A persistent navigation rail links to Network Console, Legacy REV, DApps, Explorer, Wallet + Test REV, Rholox Proof, REV transfer, Asset Lab and Exchange Core. Phone layouts use a scrollable section navigation; data tables scroll within their own labeled region. Keys remain mounted in the session when navigating between sections.
 
 A positive **Snapshots agree** state requires a structurally valid, internally consistent report, at least two configured sources, complete comparable/reachable coverage, and a sample younger than 30 seconds. The UI validates node labels, exact reference support, height summaries, counters, verdict consistency, ancestry endpoints, path shape and verified-block counts. These are report-contract checks: the browser does **not** independently reverify the raw block signatures or a consensus finality certificate.
 

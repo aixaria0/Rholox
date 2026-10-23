@@ -605,6 +605,61 @@ h1 > span {
   background: #12342e;
   border-color: #2e5a51;
 }
+.dapps-section {
+  margin: 28px 0 36px;
+}
+.dapps-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.dapps-heading h2 {
+  margin-top: 8px;
+}
+.dapps-heading p,
+.dapp-copy p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.dapps-heading p {
+  margin-top: 8px;
+}
+.dapp-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 22px;
+  background: var(--surface);
+}
+.dapp-index {
+  flex-shrink: 0;
+  color: var(--blue);
+  font: 16px var(--font-data);
+}
+.dapp-copy {
+  flex: 1;
+  min-width: 0;
+}
+.dapp-copy h3 {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+.dapp-status {
+  color: var(--warning);
+}
+@media (max-width: 600px) {
+  .dapp-card {
+    flex-wrap: wrap;
+  }
+  .dapp-status {
+    margin-left: 39px;
+  }
+}
 .table-scroll {
   margin: 20px -22px 0;
   overflow: auto;
