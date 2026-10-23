@@ -1,0 +1,43 @@
+{
+  "schema": "rholox-root-state-witness/v1",
+  "note": "SYNTHETIC NEGATIVE CONTROL ONLY — hashes and state records are invented test data, not Rholo observations",
+  "rootUri": "rho:id:7srrj8is8zcz6de4p1oqsi87sj1fod7x4r5dzz8pf1fnnsy176co",
+  "ancestorHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "descendantHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "blocks": [
+    {
+      "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "height": 835,
+      "justifications": []
+    },
+    {
+      "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "height": 845,
+      "justifications": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    }
+  ],
+  "reads": [
+    {
+      "blockHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "node": "syntheticB",
+      "keys": [
+        "admin-guard",
+        "governor",
+        "verifier"
+      ],
+      "postState": true
+    },
+    {
+      "blockHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "node": "syntheticB",
+      "keys": [
+        "admin-guard",
+        "clock",
+        "codec"
+      ],
+      "postState": true
+    }
+  ]
+}

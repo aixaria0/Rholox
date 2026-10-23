@@ -2110,3 +2110,47 @@ footer {
   .evidence-kpis { gap: 8px; }
   .evidence-kpis dd { font-size: 17px; }
 }
+
+/* Issue #420: reproducible, evidence-bounded Root state inspection. */
+.state-proof {display:grid;gap:16px;padding:32px 0 42px}
+.state-proof>.panel-head{align-items:flex-start;gap:16px}
+.state-proof>.panel-head .panel-description{max-width:850px;margin-top:8px}
+.state-proof-status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;padding:22px}
+.state-proof-status>div{min-width:0}
+.state-proof-status strong{display:block;font-size:13px;line-height:1.45;margin:9px 0;color:var(--warning)}
+.state-proof-status p,.state-proof-comparison .evidence-boundary,.state-proof-witness>p,.state-proof-why p{color:var(--text-2);font-size:12px;line-height:1.65}
+.state-proof-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.state-proof-comparison,.state-proof-witness,.state-proof-why{padding:24px;min-width:0}
+.state-proof-comparison h3,.state-proof-witness h3,.state-proof-why h3{margin:10px 0 18px}
+.state-proof-switcher{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.state-proof-switcher button{background:var(--surface-soft);color:var(--text-2);border:1px solid var(--line);border-radius:6px;padding:8px 12px;cursor:pointer;font-family:var(--font-data);font-size:12px}
+.state-proof-switcher button.state-proof-selected{border-color:var(--blue);color:var(--text)}
+.state-proof-switcher button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.state-proof-pair,.state-proof-set-comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.state-proof-pair>div,.state-proof-set-comparison>div{display:grid;align-content:start;min-width:0;gap:8px;background:var(--surface-soft);border:1px solid var(--line);padding:14px;border-radius:7px}
+.state-proof-pair strong{font-size:18px}
+.state-proof-pair code{font-size:11px;overflow-wrap:anywhere}
+.state-proof-set-comparison span,.state-proof-result dt{color:var(--text-2);font-size:11px}
+.state-proof-set-comparison strong{font-family:var(--font-data);font-size:27px}
+.state-proof-set-comparison p{font-size:12px;overflow-wrap:anywhere}
+.state-proof-lost strong{color:var(--warning)}
+.state-proof-note{margin:16px 0;background:var(--surface-soft);border-left:2px solid var(--warning);padding:12px;color:var(--text);line-height:1.55;font-size:12px}
+.state-proof-witness{display:flex;flex-direction:column;align-items:stretch;gap:13px}
+.state-proof-witness h3{margin-bottom:0}
+.state-proof-witness label{display:grid;gap:8px;color:var(--text-2);font-size:12px}
+.state-proof-witness input[type=file]{padding:10px;border:1px solid var(--line);border-radius:5px;color:var(--text-2);width:100%;max-width:100%}
+.state-proof-witness input::file-selector-button{background:var(--surface-strong);border:1px solid var(--line);border-radius:5px;color:var(--text);padding:7px 11px;margin-right:10px}
+.state-proof-witness>.primary{align-self:flex-start}
+.state-proof-result{background:var(--surface-soft);border:1px solid var(--line);padding:14px;border-radius:8px}
+.state-proof-result>strong{display:block;margin:10px 0;color:var(--warning);overflow-wrap:anywhere}
+.state-proof-result>p{font-size:12px;color:var(--text-2);line-height:1.6}
+.state-proof-result dl{display:grid;gap:10px;margin-top:14px}
+.state-proof-result dl>div{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:7px;overflow-wrap:anywhere}
+.state-proof-result dd{font-size:12px;text-align:right;max-width:60%}
+.state-proof-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.state-proof-steps>div{border-top:1px solid var(--line);padding-top:12px}
+.state-proof-steps strong{font-size:12px}
+.state-proof-steps p{margin-top:8px}
+.state-proof-root{font-size:11px;color:var(--text-2);overflow-wrap:anywhere}
+@media(max-width:1050px){.state-proof-status,.state-proof-grid{grid-template-columns:1fr}.state-proof-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.state-proof-comparison,.state-proof-witness,.state-proof-why{padding:16px}.state-proof-status{padding:16px}.state-proof-steps{grid-template-columns:1fr}.state-proof-pair,.state-proof-set-comparison{grid-template-columns:1fr}}
