@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Activity, ArrowLeftRight, Box, Boxes, FileStack, Fingerprint, History, LayoutGrid, RadioTower, RefreshCw, Search, ShieldCheck, Wallet } from 'lucide-react'
+import '@fontsource/space-grotesk/latin-400.css'
+import '@fontsource/space-grotesk/latin-500.css'
+import '@fontsource/space-grotesk/latin-600.css'
+import '@fontsource/space-grotesk/latin-700.css'
+import '@fontsource/ibm-plex-sans/latin-400.css'
+import '@fontsource/ibm-plex-sans/latin-500.css'
+import '@fontsource/ibm-plex-sans/latin-600.css'
+import '@fontsource/ibm-plex-sans/latin-700.css'
 import '@fontsource/ibm-plex-mono/latin-400.css'
 import '@fontsource/ibm-plex-mono/latin-500.css'
 import '@fontsource/ibm-plex-mono/latin-600.css'
@@ -900,18 +909,18 @@ function App() {
     ? new Date(observer.observed_at_ms).toUTCString()
     : 'Awaiting first sample'
   const nav = [
-    { id: 'rho-observer', name: 'Rho Observer', icon: 'ρ' },
-    { id: 'network', name: 'Network Console', icon: '◈' },
-    { id: 'network-evidence', name: 'Network Evidence', icon: '◇' },
-    { id: 'state-integrity', name: 'State Integrity', icon: '◉' },
-    { id: 'legacy-rev', name: 'Legacy REV', icon: '◷' },
-    { id: 'dapps', name: 'DApps', icon: '▤' },
-    { id: 'explorer', name: 'Explorer', icon: '⌕' },
-    { id: 'wallet', name: 'Wallet + Test REV', icon: '▣' },
-    { id: 'proof', name: 'Rholox Proof', icon: '◇' },
-    { id: 'transfer', name: 'REV transfer', icon: '⇄' },
-    { id: 'asset-lab', name: 'Asset Lab', icon: '▧' },
-    { id: 'exchange', name: 'Exchange Core', icon: '⇌' },
+    { id: 'rho-observer', name: 'Rho Observer', icon: <RadioTower size={17} strokeWidth={1.7} /> },
+    { id: 'network', name: 'Network Console', icon: <Activity size={17} strokeWidth={1.7} /> },
+    { id: 'network-evidence', name: 'Network Evidence', icon: <FileStack size={17} strokeWidth={1.7} /> },
+    { id: 'state-integrity', name: 'State Integrity', icon: <ShieldCheck size={17} strokeWidth={1.7} /> },
+    { id: 'legacy-rev', name: 'Legacy REV', icon: <History size={17} strokeWidth={1.7} /> },
+    { id: 'dapps', name: 'DApps', icon: <LayoutGrid size={17} strokeWidth={1.7} /> },
+    { id: 'explorer', name: 'Explorer', icon: <Search size={17} strokeWidth={1.7} /> },
+    { id: 'wallet', name: 'Wallet + Test REV', icon: <Wallet size={17} strokeWidth={1.7} /> },
+    { id: 'proof', name: 'Rholox Proof', icon: <Fingerprint size={17} strokeWidth={1.7} /> },
+    { id: 'transfer', name: 'REV transfer', icon: <ArrowLeftRight size={17} strokeWidth={1.7} /> },
+    { id: 'asset-lab', name: 'Asset Lab', icon: <Box size={17} strokeWidth={1.7} /> },
+    { id: 'exchange', name: 'Exchange Core', icon: <Boxes size={17} strokeWidth={1.7} /> },
   ]
 
   function downloadEvidence() {
@@ -940,13 +949,15 @@ function App() {
           </span>
         </a>
         <div className="sidebar-caption">
-          PROTOCOL WORKSPACE <span>01</span>
+          SYSTEM WORKSPACE <span>V.01</span>
         </div>
         <nav className="primary-nav" aria-label="Primary navigation">
           {nav.map((item, index) => (
             <React.Fragment key={item.id}>
               {index === 0 && <span className="nav-group">OBSERVE</span>}
-              {item.id === 'wallet' && <span className="nav-group">INTERACT</span>}
+               {item.id === 'dapps' && <span className="nav-group">EXPLORE</span>}
+              {item.id === 'wallet' && <span className="nav-group">OPERATE</span>}
+              {item.id === 'asset-lab' && <span className="nav-group">BUILD</span>}
               <a
                 href={`#${item.id}`}
                 aria-current={active === item.id ? 'location' : undefined}
@@ -956,7 +967,7 @@ function App() {
                   {item.icon}
                 </span>
                 <span>{item.name}</span>
-                <span className="nav-number">0{index + 1}</span>
+                <span className="nav-number">{String(index + 1).padStart(2, '0')}</span>
               </a>
             </React.Fragment>
           ))}
@@ -987,7 +998,7 @@ function App() {
       <div className="workspace-column">
         <header className="topbar">
           <div className="breadcrumb">
-            RChain <span>/</span>{' '}
+            <span className="breadcrumb-prefix">WORKSPACE /</span>
             <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : active === 'state-integrity' ? 'State integrity analysis' : active === 'rho-observer' ? 'Rho Observer' : active === 'network-evidence' ? 'Offline evidence' : active === 'dapps' ? 'DApps' : 'Public testnet'}</strong>
           </div>
           <div className="top-actions">
@@ -999,17 +1010,12 @@ function App() {
             </span>
             <button
               type="button"
-              className="ghost compact"
+              className="ghost compact refresh-control"
               onClick={() => void refresh()}
               disabled={refreshing}
               aria-label="Refresh network evidence"
             >
-              <span
-                className={refreshing ? 'refresh-icon spinning' : 'refresh-icon'}
-                aria-hidden="true"
-              >
-                ↻
-              </span>
+              <RefreshCw size={15} className={refreshing ? 'refresh-icon spinning' : 'refresh-icon'} aria-hidden="true" />
               {refreshing ? 'Refreshing' : 'Refresh'}
             </button>
           </div>
