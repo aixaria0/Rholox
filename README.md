@@ -25,7 +25,7 @@ A public-testnet application for source-by-source evidence, Rho Observer network
 
 | Component | Recorded release |
 | --- | --- |
-| Source release | `0.10.0`; a dedicated Rho Observer experience, updated links and existing testnet workflow compatibility (deployment is separate) |
+| Source release | `0.11.0`; professional Observer console typography and evidence UI, with preserved testnet workflows (deployment is separate) |
 | Evidence-console integration | Source `d5eb4c4`; [PR #17](https://github.com/aixaria0/Rholox/pull/17), merge `6324f06` |
 | Observer source | `0.3.0`, [CI-validated merge #7](https://github.com/rhovision-org/rho-observer/pull/7); the hosted service reports its own version at `/observer/health` |
 | Application post-merge CI | [Run 39885484816](https://github.com/aixaria0/Rholox/actions/runs/39885484816), successful |
@@ -51,6 +51,23 @@ npm run preview
 ```
 
 The build runs TypeScript, Vite and runtime-license packaging, writing the application and PHP utility to `dist/`. Preview serves that build locally; it is not the production deployment procedure.
+
+## Visual system and typography
+
+Rholox uses locally packaged **Space Grotesk** for product display and quantitative
+headlines, **IBM Plex Sans** for interface copy and **IBM Plex Mono** for telemetry,
+hashes and audit labels. The typefaces are bundled at build time with their
+third-party license notices; runtime font CDNs are not required.
+
+The Observer entry screen uses a compact evidence-first layout rather than a
+marketing landing page. Dark graphite surfaces, warm neutral typography,
+restrained status colors and a sparse source-correlation schematic make live
+data legible on tablet and desktop. The existing blue logo artwork is retained.
+
+All displayed network values come from the validated cached observer report.
+No synthetic status values, validator independence claims or finality
+certificates are introduced by the redesign. Historical REV, wallet, signed
+transactions and exchange components keep their existing behavior.
 
 ## Rho Observer experience
 

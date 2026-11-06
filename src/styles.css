@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --bg: #0b1019;
@@ -15,8 +15,8 @@
   --emerald: #73d8bd;
   --warning: #f0cb86;
   --danger: #ffa6ae;
-  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: var(--font-ui);
+  --font-ui: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
   --font-data: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 }
 * {
@@ -2154,3 +2154,70 @@ footer {
 .state-proof-root{font-size:11px;color:var(--text-2);overflow-wrap:anywhere}
 @media(max-width:1050px){.state-proof-status,.state-proof-grid{grid-template-columns:1fr}.state-proof-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.state-proof-comparison,.state-proof-witness,.state-proof-why{padding:16px}.state-proof-status{padding:16px}.state-proof-steps{grid-template-columns:1fr}.state-proof-pair,.state-proof-set-comparison{grid-template-columns:1fr}}
+
+/* Rholox global shell refinement. The logo asset retains its original blue. */
+:root {
+  --bg: #0c1012;
+  --surface: #161c1e;
+  --surface-strong: #1b2225;
+  --surface-soft: #121819;
+  --line: #303a3d;
+  --text: #e9eee7;
+  --text-2: #c1cbc6;
+  --muted: #9ba9a4;
+}
+body { background: #0c1012; font-family: var(--font-ui); }
+.sidebar {
+  background: linear-gradient(155deg, #12181a 0%, #0f1416 85%);
+  border-right-color: #303a3d;
+  padding-top: 30px;
+}
+.brand { font-family: var(--font-display); font-weight: 700; letter-spacing: -.065em; font-size: 26px; }
+.sidebar-caption {
+  margin: 27px 10px 23px;
+  color: #8e9e99;
+  letter-spacing: .12em;
+  font-size: 9px;
+}
+.sidebar-caption > span { color: #b9b7a7; }
+.primary-nav { gap: 3px; }
+.nav-group { color: #9da9a3; font-weight: 500; font-size: 9px; letter-spacing: .11em; }
+.primary-nav a { border-radius: 5px; min-height: 42px; padding: 9px 11px; font: 500 12px var(--font-ui); color: #b8c4be; }
+.primary-nav a:hover { background: #20292a; color: #f1f0e8; }
+.primary-nav a[aria-current] {
+  background: #272f30;
+  color: #f2f0e9;
+  border-color: #4c5b56;
+  box-shadow: inset 2px 0 #c5b39a;
+}
+.nav-icon { width: 19px; color: #90a29b; display: grid; place-items: center; }
+.primary-nav a[aria-current] .nav-icon { color: #e3e3d8; }
+.nav-number { color: #7b8983; font-size: 9px; }
+.sidebar-bottom { border-top: 1px solid #303a3d; margin: auto 5px 0; padding: 18px 8px 0; }
+.sidebar-bottom p { color: #98a8a1; font-size: 11px; line-height: 1.6; margin: 10px 0 15px; }
+.sidebar-bottom a { font-size: 11px; }
+.topbar {
+  min-height: 67px;
+  background: rgba(12,16,18,.965);
+  border-bottom-color: #303a3d;
+}
+.breadcrumb { font: 500 12px var(--font-ui); gap: 12px; }
+.breadcrumb-prefix { font: 500 9px var(--font-data); color: #87928b; letter-spacing: .08em; }
+.breadcrumb strong { color: #e7ebe5; font: 600 13px var(--font-ui); }
+.environment-pill { font: 500 11px var(--font-ui); }
+.refresh-control { border-color: #485553; color: #e0e4dc; background: #1f292b; border-radius: 5px; font-family: var(--font-ui); }
+.refresh-control:hover:not(:disabled) { background: #2c3738; border-color: #8e9b93; }
+.app-shell { max-width: 1590px; padding-top: 25px; }
+@media (max-width: 1050px) {
+  .sidebar { padding-left: 10px; padding-right: 10px; }
+  .primary-nav a { font-size: 11.5px; }
+}
+@media (max-width: 760px) {
+  .sidebar { padding: 12px 18px 0; background: #141a1c; }
+  .nav-icon { display: none; }
+  .sidebar-bottom, .sidebar-caption, .nav-group { display: none; }
+  .primary-nav { gap: 3px; }
+  .primary-nav a { min-height: 34px; padding: 7px 10px; font-size: 11px; }
+  .app-shell { padding-top: 16px; }
+  .topbar { min-height: 55px; }
+}
