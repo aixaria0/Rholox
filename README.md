@@ -1,8 +1,23 @@
+<div align="center">
+
 # Rholox
 
-A public-testnet workspace for comparing RChain observations and exercising locally signed DApp primitives. Source coverage, sample age, execution, block inclusion and finalized-state read-back remain separate facts.
+**One workspace. Every observation in context.**
 
-[Live workspace](https://rholox.com/) · [Observer service](https://github.com/rchain-community/rchain-observer) · [Browser verification](docs/UI-ASSURANCE.md) · [Review matrix](docs/REVIEW.md)
+A public-testnet application for source-by-source evidence, Rho Observer network monitoring, historical REV references and locally signed DApp workflows.
+
+[![CI](https://github.com/aixaria0/Rholox/actions/workflows/ci.yml/badge.svg)](https://github.com/aixaria0/Rholox/actions/workflows/ci.yml)
+
+[Live workspace](https://rholox.com/) ·
+[Rho Observer console](https://rholox.com/#rho-observer) ·
+[Observer source](https://github.com/rhovision-org/rho-observer) ·
+[Review evidence](docs/UI-ASSURANCE.md)
+
+</div>
+
+> **Evidence-first by design.** An HTTP 200, matching finalized snapshots, proven ancestry and independent consensus finality are separate assertions. The interface preserves that distinction even when only some nodes respond.
+
+[Live workspace](https://rholox.com/) · [Observer service](https://github.com/rhovision-org/rho-observer) · [Browser verification](docs/UI-ASSURANCE.md) · [Review matrix](docs/REVIEW.md)
 
 **Public testnet only.** Test REV and test assets have no monetary value; the network may reset. This release does not establish mainnet readiness, production custody or an independently audited financial protocol.
 
@@ -10,11 +25,11 @@ A public-testnet workspace for comparing RChain observations and exercising loca
 
 | Component | Recorded release |
 | --- | --- |
-| Browser application | `0.9.1`, declared in `package.json`; adds a data-independent legacy REV lookup utility |
+| Source release | `0.10.0`; a dedicated Rho Observer experience, updated links and existing testnet workflow compatibility (deployment is separate) |
 | Evidence-console integration | Source `d5eb4c4`; [PR #17](https://github.com/aixaria0/Rholox/pull/17), merge `6324f06` |
-| Companion observer | `0.2.0`; [PR #4](https://github.com/rchain-community/rchain-observer/pull/4), merge `a5d0796` |
+| Observer source | `0.3.0`, [CI-validated merge #7](https://github.com/rhovision-org/rho-observer/pull/7); the hosted service reports its own version at `/observer/health` |
 | Application post-merge CI | [Run 39885484816](https://github.com/aixaria0/Rholox/actions/runs/39885484816), successful |
-| Observer post-merge CI | [Run 39885469376](https://github.com/rchain-community/rchain-observer/actions/runs/39885469376), successful |
+| Observer post-merge CI | [Run 39885469376](https://github.com/rhovision-org/rho-observer/actions/runs/39885469376), successful |
 | v0.8.1 production record | 23 October 2026: all 14 public release files matched the reviewed artifact; the fifteenth artifact file was the non-public hosting policy |
 
 This is a dated release record. A later source commit, merge or successful workflow does not by itself deploy the website or guarantee current availability.
@@ -36,6 +51,22 @@ npm run preview
 ```
 
 The build runs TypeScript, Vite and runtime-license packaging, writing the application and PHP utility to `dist/`. Preview serves that build locally; it is not the production deployment procedure.
+
+## Rho Observer experience
+
+The dedicated [Rho Observer console](https://rholox.com/#rho-observer) is an explanatory, read-only monitoring surface built on the same validated cached report as Network Console. It adds a node-topology visualization, real per-source finalized heights and transport errors, coverage and age readouts, a method/boundaries switch, evidence verdict details and one-click export of the raw cached report.
+
+The display does not manufacture an uptime score, bond quorum, cryptographic certificate or historical chart from missing data.
+
+| State | What visitors see | Meaning |
+| --- | --- | --- |
+| Full comparable coverage, recent `agreement` | Positive snapshot signal | All configured sources have the same comparable finalized identity; **not** independent finality proof |
+| Full coverage with `proven_lag` | Ancestry connected, height lag visible | A bounded, verified path links the reported finalized identities |
+| Missing / incomplete source | Limited coverage or not ready | Matching reachable nodes do not erase absent evidence |
+| Stale report / transport failure | Stale or unavailable | Last successful sample is for inspection only |
+| `majority`, `divergence` or conflicting history | Conflict remains explicit | Count majority is not a stake-weighted quorum |
+
+The source contract is [`src/lib/observer.ts`](src/lib/observer.ts), the presentation is [`src/RhoObserverPanel.tsx`](src/RhoObserverPanel.tsx), and visual tokens are isolated in [`src/rho-observer.css`](src/rho-observer.css). Observer's [trust boundary](https://github.com/rhovision-org/rho-observer#trust-boundary) applies to every displayed result.
 
 ## Current surface
 
@@ -101,7 +132,8 @@ The observer compares configured finalized identities. When heights differ, it c
 | `src/lib/amm.ts` | Integer pool arithmetic and invariant guards |
 | `src/lib/exchange.ts` | Rholang pool runtime and client verification |
 | `src/AssetLabPanel.tsx`, `src/ExchangePanel.tsx` | Asset and pool interaction surfaces |
-| `src/main.tsx`, `src/styles.css` | Workspace state, navigation and presentation |
+| `src/main.tsx`, `src/styles.css` | Workspace state, navigation and shared presentation |
+| `src/RhoObserverPanel.tsx`, `src/rho-observer.css` | Evidence-first Rho Observer interface, responsive topology and boundaries |
 | `src/RevSnapshotPanel.tsx`, `src/lib/rev-snapshot.ts` | Historical lookup interface and response/address validation |
 | `server/legacy-rev.php` | Bounded one-address endpoint; private reference integrity checks |
 | `scripts/prepare-rev-snapshot.mjs` | Explicit private CSV import, independent of the application build |
@@ -251,7 +283,7 @@ Keep credentials, private keys, host-specific configuration and release backups 
 - [UI assurance](docs/UI-ASSURANCE.md): browser review and deployed-interface checks.
 - [Asset Lab](docs/ASSET-LAB.md): asset runtime and capability boundaries.
 - [Exchange mechanics](docs/EXCHANGE-MECHANICS.md): Phase 07 model, negative controls and recorded lifecycle.
-- [Observer README](https://github.com/rchain-community/rchain-observer#readme): API, verdicts, readiness and resource limits.
+- [Observer README](https://github.com/rhovision-org/rho-observer#readme): API, verdicts, readiness and resource limits.
 
 Phase 07 is tracked in issue #6. Its evidence is a dated public-testnet record; network resets can invalidate historical locators.
 

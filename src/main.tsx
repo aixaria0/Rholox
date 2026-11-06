@@ -11,6 +11,7 @@ import ExchangePanel from './ExchangePanel'
 import RevSnapshotPanel from './RevSnapshotPanel'
 import NetworkEvidencePanel from './NetworkEvidencePanel'
 import StateIntegrityPanel from './StateIntegrityPanel'
+import RhoObserverPanel from './RhoObserverPanel'
 import { createWallet, walletFromPrivateKey, type RholoxWallet } from './lib/wallet'
 import { createProof, type ProofReceipt } from './lib/proof'
 import { sendRev, type TransferReceipt } from './lib/transfer'
@@ -787,7 +788,7 @@ function App() {
   const [capabilitiesAt, setCapabilitiesAt] = useState(0)
   const [now, setNow] = useState(Date.now())
   const [refreshing, setRefreshing] = useState(false)
-  const [active, setActive] = useState('network')
+  const [active, setActive] = useState('rho-observer')
   const request = useRef<AbortController | null>(null)
   const generation = useRef(0)
 
@@ -899,6 +900,7 @@ function App() {
     ? new Date(observer.observed_at_ms).toUTCString()
     : 'Awaiting first sample'
   const nav = [
+    { id: 'rho-observer', name: 'Rho Observer', icon: 'ρ' },
     { id: 'network', name: 'Network Console', icon: '◈' },
     { id: 'network-evidence', name: 'Network Evidence', icon: '◇' },
     { id: 'state-integrity', name: 'State Integrity', icon: '◉' },
@@ -931,7 +933,7 @@ function App() {
         Skip to workspace
       </a>
       <aside className="sidebar">
-        <a className="brand" href="#network" aria-label="Rholox home">
+        <a className="brand" href="#rho-observer" aria-label="Rholox home">
           <img src={rholoxLogo} alt="" width="34" height="34" />
           <span>
             rholox<span className="brand-period">.</span>
@@ -970,7 +972,7 @@ function App() {
             Legacy balances are a separate snapshot.
           </p>
           <a
-            href="https://github.com/rchain-community/rchain-observer"
+            href="https://github.com/rhovision-org/rho-observer"
             target="_blank"
             rel="noreferrer"
           >
@@ -986,7 +988,7 @@ function App() {
         <header className="topbar">
           <div className="breadcrumb">
             RChain <span>/</span>{' '}
-            <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : active === 'state-integrity' ? 'State integrity analysis' : active === 'network-evidence' ? 'Offline evidence' : active === 'dapps' ? 'DApps' : 'Public testnet'}</strong>
+            <strong>{active === 'legacy-rev' ? 'Legacy REV snapshot' : active === 'state-integrity' ? 'State integrity analysis' : active === 'rho-observer' ? 'Rho Observer' : active === 'network-evidence' ? 'Offline evidence' : active === 'dapps' ? 'DApps' : 'Public testnet'}</strong>
           </div>
           <div className="top-actions">
             <span
@@ -1013,6 +1015,7 @@ function App() {
           </div>
         </header>
         <main id="workspace" className="app-shell" tabIndex={-1}>
+          <RhoObserverPanel report={observer} error={observerError} now={now} onDownload={downloadEvidence} />
           <section id="network" aria-labelledby="network-title">
             <div className="page-heading">
               <div>
@@ -1437,7 +1440,7 @@ function App() {
             <span>Rholox · legacy snapshot reference + public testnet workspace</span>
             <div className="footer-links">
               <a
-                href="https://github.com/rchain-community/rchain-observer#trust-boundary"
+                href="https://github.com/rhovision-org/rho-observer#trust-boundary"
                 target="_blank"
                 rel="noreferrer"
               >
