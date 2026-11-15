@@ -154,3 +154,5 @@ rholox-private/
 data/rev-snapshot/
 public/data/rev-snapshot-*.json
 src/data/rev-snapshot-manifest.json
+
+/dist-observer-mirror/

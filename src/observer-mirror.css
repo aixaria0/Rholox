@@ -1,0 +1,56 @@
+:root{
+  --font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-display:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-data:ui-monospace,"SFMono-Regular",Consolas,monospace;
+}
+body{background:#0c1014;color:#f0f4f5}
+.mirror-shell{min-height:100vh;max-width:1570px;margin:auto;padding:0 clamp(15px,3vw,45px)}
+.mirror-skip{position:absolute;top:-200px;background:#b9e9d8;color:#132521;padding:10px;z-index:20}
+.mirror-skip:focus-visible{top:10px;left:10px}
+.mirror-header{height:82px;display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid #293437}
+.mirror-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mirror-brand img{border-radius:8px}
+.mirror-brand div{display:flex;flex-direction:column}
+.mirror-brand strong{font:800 17px var(--font-display);letter-spacing:2px}
+.mirror-brand span{font:600 9px var(--font-data);letter-spacing:.1em;color:#95a4aa}
+.mirror-links{display:flex;align-items:center;gap:23px}
+.mirror-links a{display:inline-flex;align-items:center;gap:6px;color:#a8b7bd;font-size:11px;white-space:nowrap}
+.mirror-links a:hover{color:#acebd1}
+.mirror-context{display:flex;justify-content:space-between;align-items:end;gap:28px;padding:40px 2px 28px}
+.mirror-context-copy{max-width:710px}
+.mirror-label{color:#a2d7c2;font:700 10px var(--font-data);letter-spacing:.11em;line-height:1.4}
+.mirror-context h1{font:750 clamp(25px,3vw,40px)/1.25 var(--font-display);letter-spacing:-.04em;margin:9px 0}
+.mirror-context h1 em{font-style:normal;color:#b7d9c8}
+.mirror-context p,.mirror-export p{color:#9aabb2;font-size:12px;line-height:1.9;max-width:770px}
+.mirror-control{display:flex;flex-direction:column;align-items:flex-end;gap:11px;flex-shrink:0}
+.mirror-health{display:flex;align-items:center;gap:7px;font:11px var(--font-ui);border-radius:16px;background:#1b2729;border:1px solid #4c655d;color:#b6e3cd;padding:5px 10px}
+.mirror-health--warning{border-color:#705a43;color:#f3c597}
+.mirror-health--danger{border-color:#80545d;color:#f2adb5}
+.mirror-health--neutral{border-color:#4c5c62;color:#acbdc6}
+.mirror-refresh{display:flex;align-items:center;gap:9px;background:#b3e0d0;color:#1c3230;border:1px solid #b3e0d0;border-radius:7px;padding:10px 17px;font-weight:700;font-size:12px}
+.mirror-refresh:hover{background:#d0f2e5}
+.mirror-spinning{animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mirror-main{display:block}
+.mirror-main .rho-experience{margin-bottom:20px}
+.mirror-export{border:1px solid #324c49;border-radius:11px;background:#14211f;padding:22px 25px;display:flex;align-items:center;justify-content:space-between;gap:25px;flex-wrap:wrap}
+.mirror-export h2{font:700 clamp(15px,1.6vw,19px) var(--font-display);color:#e2f3ee;margin:7px 0}
+.mirror-export-button{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #6aa893;border-radius:7px;background:#244b40;color:#d6f3e7;padding:13px 20px;font-size:11px;white-space:nowrap;flex-shrink:0}
+.mirror-export-button:hover{background:#306852;color:#fff}
+.mirror-export-error{width:100%;color:#e6abae!important}
+.mirror-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:27px 2px 40px;color:#7c9994;font:10px var(--font-data);letter-spacing:.045em}
+.mirror-footer span{display:flex;align-items:center;gap:9px}
+@media(max-width:900px){
+ .mirror-header{height:auto;min-height:82px;padding:16px 0;flex-wrap:wrap}
+ .mirror-links{gap:14px;flex-wrap:wrap}
+ .mirror-context{align-items:flex-start;flex-direction:column;padding:29px 2px 22px}
+ .mirror-control{align-items:flex-start;flex-direction:row;flex-wrap:wrap}
+ .mirror-export{padding:17px}
+ .mirror-footer{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:470px){
+ .mirror-links a{font-size:10px}
+ .mirror-context h1{font-size:26px}
+ .mirror-context p{font-size:11px}
+ .mirror-export-button{width:100%}
+}
